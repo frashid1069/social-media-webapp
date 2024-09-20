@@ -9,8 +9,8 @@ See [the web page](https://uofa-cmput404.github.io/general/project.html) for a d
 Make a distributed social network!
 
 ## License
+[Apache 2.0(https://github.com/uofa-cmput404/f24-project-aquamarine/blob/2024/LICENSE)]
 
-* Choose an OSI approved license, name it here, and copy the license text to a file called `LICENSE`.
 
 ## Copyright
 

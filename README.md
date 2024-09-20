@@ -18,4 +18,5 @@ The authors claiming copyright, if they wish to be known, can list their names h
 
 * Rex Zheng
 * Ansh Desai
-* Sukhmanjeet Singh 
+* Sukhmanjeet Singh
+* Yolanda Chu

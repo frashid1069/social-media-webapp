@@ -11,5 +11,5 @@ app_name = "service"
 
 urlpatterns = [
     path("", views.index, name="index"),
-    #path("api/authors/", views.AuthorsView.as_view(), name="get_authors")
+    path("api/authors/", views.AuthorsView.as_view(), name="get_authors")
 ]

@@ -58,6 +58,8 @@ class Like(models.Model):
 class Follow(models.Model):
     follower = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='following')
     followed = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='followers')
+    PENDING_CHOICES = [('yes', 'Yes'), ('no', 'No')]
+    pending = models.CharField(choices=PENDING_CHOICES, default='yes')
     created_at = models.DateTimeField(default=datetime.now)
 
     def __str__(self):

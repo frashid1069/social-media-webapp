@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from . import serializers, models
 
-
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
     return HttpResponse("Hello, world. You're at the service index.")
@@ -34,6 +33,25 @@ class FollowView(ModelViewSet):
 class InboxView(ModelViewSet):
     queryset = models.Inbox.objects
     serializer_class = serializers.LikeSerializer
-    
 
+def create_post(request):
+    if request.method == "POST":
+        title = request.POST.get("title")
+        content = request.POST.get("content")
+        content_type = request.POST.get("content_type")
+        image_content = request.POST.get("image_content")
+        visibility = request.POST.get("visibility")
+        author = request.POST.get("author")
+        models.Post.objects.create(title=title, content=content, content_type = content_type, image_content = image_content, visbility=visibility, author=author)
+    return
+
+def create_comment(request, post_id):
+    return
+
+def delete_post(request):
+    return
+
+def get_public_posts(request, author_id):
+    posts = models.Post.filter(authot=author_id, visibility="public")
     
+    return

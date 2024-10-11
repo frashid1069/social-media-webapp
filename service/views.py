@@ -90,7 +90,7 @@ def edit_post(request, post_id):
 def follow_author(request, author_id):
     follower = models.Author.objects.get(id=author_id)
     followed = request.POST.get("followed")
-    model.Follow.objects.create(follower=follower, followed=followed)
+    models.Follow.objects.create(follower=follower, followed=followed)
     # Return to page now
     return
 
@@ -106,4 +106,29 @@ def handle_follow(request, follow_id):
     return
 
 def get_stream_posts(request):
+    return
+
+def sign_up(request):
+    username = request.POST.get("username")
+    display_name = request.POST.get("display_name")
+    password = request.POST.get("password")
+    bio = request.POST.get("bio")
+    github_url = request.POST.get("github_url")
+    # From https://www.devhandbook.com/django/user-profile/
+    profile_image = request.POST.get("profile_image")
+    models.Author.objects.create(username=username, display_name=display_name, password=password, bio=bio, github_url=github_url, profile_image=profile_image)
+    # Return to UI
+    return 
+
+def login(request):
+    username = request.POST.get("username")
+    password = request.POST.get("password")
+    author = models.Author.objects.get(username=username)
+    if author == None:
+        # User does not exist return
+        return 
+    if author.password != password:
+        # Invalid password return
+        return
+    # Successful return, return with username to show they are signed in now
     return

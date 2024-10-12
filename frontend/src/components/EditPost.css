@@ -1,0 +1,42 @@
+/* src/components/PostEdit/PostEdit.css */
+.post-edit {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    max-width: 400px;
+    margin: auto;
+}
+  
+.post-edit h2 {
+text-align: center;
+}
+
+.post-edit form {
+display: flex;
+flex-direction: column;
+}
+
+.post-edit label {
+margin-bottom: 5px;
+}
+
+.post-edit input, .post-edit textarea {
+margin-bottom: 15px;
+padding: 10px;
+border: 1px solid #ccc;
+border-radius: 4px;
+}
+
+.post-edit button {
+padding: 10px;
+background-color: #007BFF;
+color: white;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+}
+
+.post-edit button:hover {
+background-color: #0056b3;
+}  

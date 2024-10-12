@@ -10,7 +10,7 @@ const EditPost = ({ postId, onClose }) => {
     // Fetch the existing post details to prefill the form
     const fetchPost = async () => {
         // setIsLoading(true);
-        const response = await fetch(`/api/post/${postId}/`);
+        const response = await fetch(`/posts/${postId}/`);
         if (response.ok) {
             const data = await response.json();
             setPostContent(data.content);

@@ -3,6 +3,10 @@
     padding: 0;
     box-sizing: border-box;
 }
+a:link{
+    text-decoration: none;
+    width: 7%;
+}
 
 /* Login Styles */
 .login-image{
@@ -15,7 +19,7 @@
     width: 100px;
     height: 100px;
 }
-.username, .password{
+.username, .password, .display_name, .bio, .github_url{
     display: block;
     margin-left: auto;
     margin-right: auto;

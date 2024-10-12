@@ -20,20 +20,24 @@ class PostView(ModelViewSet):
     queryset = models.Post.objects
     serializer_class = serializers.PostSerializer
 
-@action(detail=True, methods=['put'], url_path='edit')
-def edit_post(self, request, pk=None):
-    post = self.get_object()  # Get the post object based on the provided pk
-    title = request.data.get('title', post.title)  # Get new title if provided
-    content = request.data.get('content', post.content)  # Get new content if provided
-    
-    # Update the post fields
-    post.title = title
-    post.content = content
-    post.save()  # Save the updated post
+    @action(detail=True, methods=['put'], url_path='edit')
+    def edit_post(self, request, pk=None):
+        post = self.get_object()  # Get the post object based on the provided pk
 
-    # Serialize the updated post and return it in the response
-    serializer = self.get_serializer(post)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+        if post.author != request.user:
+            return Response({'Error': 'You are not allowed to edit this post.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        title = request.data.get('title', post.title)  # Get new title if provided
+        content = request.data.get('content', post.content)  # Get new content if provided
+        
+        # Update the post fields
+        post.title = title
+        post.content = content
+        post.save()  # Save the updated post
+
+        # Serialize the updated post and return it in the response
+        serializer = self.get_serializer(post)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CommentView(ModelViewSet):

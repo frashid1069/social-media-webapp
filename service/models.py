@@ -11,8 +11,8 @@ class Author(models.Model):
     github_url = models.URLField()
     profile_image = models.ImageField()
     
-    created_at = models.DateTimeField(default=datetime.now)
-    updated_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     #email = models.EmailField(unique=True)
     
@@ -26,8 +26,8 @@ class Post(models.Model):
     content = models.TextField()
     content_type = models.CharField(max_length=50, choices=[('text/markdown', 'Markdown'), ('image/jpeg', 'JPEG')])
 
-    created_at = models.DateTimeField(default=datetime.now)
-    updated_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     VISIBILITY_CHOICES = []
     visibility = models.CharField(max_length=10, default='public')

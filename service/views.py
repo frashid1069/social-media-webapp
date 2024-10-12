@@ -26,9 +26,6 @@ class PostView(ModelViewSet):
         if post.author != request.user:
             return Response({'Error': 'You are not allowed to edit this post.'}, status=status.HTTP_403_FORBIDDEN)
         
-        title = request.data.get('title', post.title)  # Get new title if provided
-        content = request.data.get('content', post.content)  # Get new content if provided
-        
         # Update the post fields
         serializer = self.get_serializer(post, data=request.data, partial=True)
         if serializer.is_valid():

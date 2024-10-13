@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../loginStyles.css";
 
 export default function SignUp() {
-  const [newAuthor, setAuthors] = useState({});
+  // const [newAuthor, setAuthors] = useState({});
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -23,6 +23,14 @@ export default function SignUp() {
   };
   const handleGithubUrlChange = (e) => {
     setGithubUrl(e.target.value);
+  };
+
+  const newA = {
+    username: username,
+    password: password,
+    displayName: displayName,
+    bio: bio,
+    githubUrl: githubUrl,
   };
 
   function addAuthor() {}

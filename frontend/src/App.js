@@ -13,7 +13,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />}></Route>
             <Route path="/signup" element={<SignUp />}></Route>
-            <Route path="/stream" element={<Stream />}></Route>
+            <Route path="/stream/:authorId" element={<Stream />}></Route>
           </Routes>
         </Router>
       </div>

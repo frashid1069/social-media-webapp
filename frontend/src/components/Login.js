@@ -35,11 +35,12 @@ export default function Login() {
     (author) =>
       matchesUsername(author, username) && matchesPassword(author, password)
   );
+  // for existed user, redirect to its stream page, otherwise redirect to sign up page
   function verify() {
     if (filterAuthor.length === 0) {
       navigate("/signup");
     } else {
-      navigate("/stream");
+      navigate(`/stream/${filterAuthor[0].id}`);
     }
   }
   return (

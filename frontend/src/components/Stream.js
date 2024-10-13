@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import "../loginStyles.css";
 
-// export default function Stream() {
+export default function Stream({ author }) {
+  const [posts, setPosts] = useState([]);
 
-//   const [posts, setPosts] = useState([]);
-
-//   useEffect(()=>{
-//     setPosts
-//   }, [])
-//   return <div></div>;
-// }
+  useEffect(() => {
+    // ......
+  }, []);
+  return (
+    <div>
+      <p>this is stream page</p>
+    </div>
+  );
+}

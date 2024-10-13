@@ -1,21 +1,26 @@
 import "./App.css";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Login from "./components/Login";
 import Footer from "./components/Footer";
 import EditPost from "./components/EditPost";
-
+import SignUp from "./components/SignUp";
+import Stream from "./components/Stream";
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/posts/:postId/edit" element={<EditPost />} />
-        </Routes>
-        <Footer />
-      </div>
-    </Router>
+    <div className="App">
+      <div className="login">
+        <Router basename="/">
+          <Routes>
+            <Route path="/login" element={<Login />}></Route>
+            <Route path="/signup" element={<SignUp />}></Route>
+            <Route path="/stream/:authorId" element={<Stream />}></Route>
+            <Route path="/posts/:postId/edit" element={<EditPost />} />
+          </Routes>
+        </Router>
+       </div>
+       <Footer></Footer>
+    </div>
   );
 }
 

@@ -37,4 +37,4 @@ class InboxView(ModelViewSet):
     serializer_class = serializers.LikeSerializer
     
 
-    
+

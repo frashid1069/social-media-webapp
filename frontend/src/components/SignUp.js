@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "../loginStyles.css";
 
 export default function SignUp() {
@@ -30,10 +31,17 @@ export default function SignUp() {
     password: password,
     displayName: displayName,
     bio: bio,
+    profile_image: "http://localhost:8000/profile_pics/1.jpg",
     githubUrl: githubUrl,
   };
 
-  function addAuthor() {}
+  const addAuthor = async () => {
+    const response = await axios.post(
+      "http://localhost:8000/service/author/",
+      newA
+    );
+    return true;
+  };
 
   return (
     <div>

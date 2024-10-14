@@ -89,6 +89,7 @@ def delete_post(request, post_id):
 
 def get_public_posts(request, author_id):
     posts = models.Post.filter(id=author_id, visibility="public")
+    posts = posts.order_by("created_at")
     # Return to the ui page, pass through the list of posts above
     return
 

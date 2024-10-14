@@ -1,8 +1,8 @@
 ## Instructions for using branches
-backend = Backend
-frontend = Frontend
-everything working/testing = DEV
-production = 2024
+backend = Backend <br>
+frontend = Frontend <br>
+everything working/testing = DEV <br>
+production = 2024 <br>
 
 ### Set up for running 
 in project/backend/ 
@@ -26,24 +26,24 @@ Same procedures for the frontend , create a frontend directory, change the Backe
 
 you will have something look like the following(raw mode).
 
-project/
+project/ <br>
 ├── frontend/
-│   ├── f24-project-aquamarine
-│   │   ├── node_modules/
-│   │   ├── public/
-│   │   ├── src
-│   │   ├── README
-│   │   └── ...
-├── backend/
-│   ├── f24-project-aquamarine
-│   │   ├── aquamarine/
-│   │   ├── service/
-│   │   ├── .gitignore
-│   │   ├── manage.py
-│   │   ├── README
-│   │   └── ...
-│   └── ...
-└── ...
+│   ├── f24-project-aquamarine <br>
+│   │   ├── node_modules/ <br>
+│   │   ├── public/ <br>
+│   │   ├── src <br>
+│   │   ├── README <br>
+│   │   └── ... <br>
+├── backend/ <br>
+│   ├── f24-project-aquamarine <br>
+│   │   ├── aquamarine/ <br>
+│   │   ├── service/ <br>
+│   │   ├── .gitignore <br>
+│   │   ├── manage.py <br>
+│   │   ├── README <br>
+│   │   └── ... <br>
+│   └── ... <br>
+└── ... <br>
 
 
 

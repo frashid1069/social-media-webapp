@@ -15,11 +15,14 @@ function App() {
             <Route path="/login" element={<Login />}></Route>
             <Route path="/signup" element={<SignUp />}></Route>
             <Route path="/stream/:authorId" element={<Stream />}></Route>
-            <Route path="/posts/:postId/edit" element={<EditPost />} />
+            <Route
+              path="/stream/:authorId/:postId/edit"
+              element={<EditPost />}
+            />
           </Routes>
         </Router>
-       </div>
-       <Footer></Footer>
+      </div>
+      <Footer></Footer>
     </div>
   );
 }

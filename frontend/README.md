@@ -1,3 +1,21 @@
+## Frontend dependency install
+
+```
+npm install
+```
+
+## Run
+
+```
+npm start
+```
+
+## Path to Login page (will add a welcome page later)
+
+```
+/login
+```
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

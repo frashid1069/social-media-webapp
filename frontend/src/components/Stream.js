@@ -5,7 +5,7 @@ import PostCards from "./PostCards";
 
 export default function Stream() {
   const [posts, setPosts] = useState([]);
-  const { id } = useParams();
+  const id = useParams();
   const navigate = useNavigate();
 
   // get the posts list
@@ -39,9 +39,12 @@ export default function Stream() {
       );
     })
     .reverse();
-  // redirect to edit page
-  function goEdit() {
-    navigate(`/edit`);
+  // redirect to edit page ************ NEED TO BE FIXED, UNABLE TO SEND POSTID****************
+  const stringify = JSON.stringify(id);
+  const pa = JSON.parse(stringify);
+  const authorId = pa["authorId"];
+  function goEdit(postId) {
+    navigate(`/stream/${authorId}/${postId}/edit`);
   }
   // get the editable posts
   const editablePosts = posts.filter((post) => matchesAuthor(post, id));

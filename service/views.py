@@ -119,7 +119,14 @@ def handle_follow(request, follow_id):
     # Return to ui
     return
 
-def get_stream_posts(request):
+def get_stream_posts(request, author_id):
+    following = models.Follow.filter(follower=author_id)
+    following_authors = []
+    for follow in following:
+        follower = follow.get_follower()
+        following_authors.append(follower)
+    # A list of all posts made by people that the author is following 
+    following_posts = models.Post.filter(author=following_authors)
     return
 
 def sign_up(request):
@@ -147,3 +154,6 @@ def login(request):
     # Successful return, return with username to show they are signed in now
     return
 
+def notify(request, author_id):
+    follow_requests = models.Follow.filter(following=author_id)
+    return

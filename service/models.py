@@ -14,7 +14,6 @@ class Author(models.Model):
     
     created_at = models.DateTimeField(default=datetime.now)
     updated_at = models.DateTimeField(default=datetime.now)
-    
     #email = models.EmailField(unique=True)
     
     def __str__(self):
@@ -35,7 +34,6 @@ class Post(models.Model):
     visibility = models.CharField(max_length=10, default='public')
     def __str__(self):
         return self.title
-
 
 class Comment(models.Model):
     content = models.TextField()
@@ -66,6 +64,10 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower} follows {self.followed}"
+    
+    def get_follower(self):
+        return self.follower
+    
 
 # Inbox Model
 class Inbox(models.Model):

@@ -27,7 +27,7 @@ Same procedures for the frontend , create a frontend directory, change the Backe
 you will have something look like the following(raw mode).
 
 project/ <br>
-├── frontend/
+├── frontend/  <br>
 │   ├── f24-project-aquamarine <br>
 │   │   ├── node_modules/ <br>
 │   │   ├── public/ <br>

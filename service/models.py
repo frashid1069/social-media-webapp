@@ -29,9 +29,14 @@ class Post(models.Model):
     image_content = models.ImageField(upload_to="post_pics", blank=True, null=True)
     created_at = models.DateTimeField(default=datetime.now)
     updated_at = models.DateTimeField(default=datetime.now)
-    
-    VISIBILITY_CHOICES = []
-    visibility = models.CharField(max_length=10, default='public')
+    # database value/ human readable 
+    VISIBILITY_CHOICES = [
+        ('public', 'Public'),
+        ('friend-only', 'Friend Only'),
+        ('unlisted', 'Unlisted'),
+    ]
+    visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='public')
+    is_deleted = models.BooleanField(default=False)
     def __str__(self):
         return self.title
 

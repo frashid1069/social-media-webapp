@@ -35,7 +35,7 @@ class Post(models.Model):
         ('friend-only', 'Friend Only'),
         ('unlisted', 'Unlisted'),
     ]
-    visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='public')
+    visibility = models.CharField(max_length=11, choices=VISIBILITY_CHOICES, default='public')
     is_deleted = models.BooleanField(default=False)
     def __str__(self):
         return self.title

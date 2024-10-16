@@ -76,6 +76,14 @@ class LikeView(ModelViewSet):
 class FollowView(ModelViewSet):
     queryset = models.Follow.objects
     serializer_class = serializers.LikeSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        author_id = self.request.query_params.get('author_id')
+        pending =  self.request.query_params.get('pending')
+        # Query is a list of all follow requests that are pending, used for notifying user of them 
+        if author_id and pending:
+            queryset = queryset.filter(followed=author_id, pending=pending)
     
 class InboxView(ModelViewSet):
     queryset = models.Inbox.objects
@@ -188,7 +196,7 @@ def login(request):
         return
     # Successful return, return with username to show they are signed in now
     return
-
-def notify(request, author_id):
-    follow_requests = models.Follow.filter(following=author_id)
-    return
+# Now in the followView 
+# def notify(request, author_id):
+#     follow_requests = models.Follow.filter(following=author_id)
+#     return

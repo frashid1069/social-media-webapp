@@ -23,11 +23,18 @@ class PostView(ModelViewSet):
         queryset = super().get_queryset()  
         # Get 'author_id, title' from query in url
         author_id = self.request.query_params.get('author_id')  
-        title = self.request.query_params.get('title')  
-        
-        if author_id:
+        visibility = self.request.query_params.get("visibility")
+        title = self.request.query_params.get('title')
+        following_list = self.request.query_params.get("following_list")
+        # Gets a list of all public posts made by the author
+        if author_id and visibility:
+            queryset = queryset.filter(id=author_id, visibility="public").order_by("created_at")
+        # List of all posts made by people that the user follows 
+        elif following_list:
+            queryset = queryset.filter(id=following_list).order_by("created_at")
+        elif author_id:
             queryset = queryset.filter(author__id=author_id)  # Filter the queryset by 'author'
-        if title:
+        elif title:
             queryset = queryset.filter(title=title)
         
         return queryset
@@ -87,11 +94,12 @@ def delete_post(request, post_id):
     # Return to ui
     return
 
-def get_public_posts(request, author_id):
-    posts = models.Post.filter(id=author_id, visibility="public")
-    posts = posts.order_by("created_at")
-    # Return to the ui page, pass through the list of posts above
-    return
+# Now in PostView
+# def get_public_posts(request, author_id):
+#     posts = models.Post.filter(id=author_id, visibility="public")
+#     posts = posts.order_by("created_at")
+#     # Return to the ui page, pass through the list of posts above
+#     return
 
 def edit_post(request, post_id):
     post = models.Post.objects.get(id=post_id)

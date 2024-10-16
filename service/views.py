@@ -24,11 +24,10 @@ class PostView(ModelViewSet):
         #----------------------------wait for confirm----------------------------
         # assume current user is the author, return AnonymousUser if not logged in
         current_user = self.request.user
-        followed_by_user = models.Author.objects.filter(followers__follower=current_user)
         # Only return not deleted post
         is_deleted = False
         queryset = queryset.filter(is_deleted=is_deleted)
-        #----------------------------wait for confirm----------------------------
+        #----------------------------end wait for confirm----------------------------
         
         author_id = self.request.query_params.get('author_id')  
         visibility = self.request.query_params.get("visibility")
@@ -45,16 +44,20 @@ class PostView(ModelViewSet):
         elif title:
             queryset = queryset.filter(title=title)
 #----------------------------wait for confirm----------------------------
+        # ~post/?author_id=<pk>
         if author_id:
             queryset = queryset.filter(author__id=author_id, title=title) 
+        # ~post/?author_id=<pk>&title=<str%str> 
         if title:
             queryset = queryset.filter(title=title)
+        # ~post/?following_list=<True/False>
         if following_list:
+            followed_by_user = models.Author.objects.filter(followers__follower=current_user)
             # followed_by_user is a list of author id who author followed
             # author__id__in filter the posts that belong to these author, same for visibility__in
             queryset = queryset.filter(author__id__in=followed_by_user,visibility__in=["unlisted", "friend-only"] )
             
-#----------------------------wait for confirm----------------------------        
+#----------------------------end wait for confirm----------------------------        
         return queryset.order_by("created_at")
     
     # overwrite default destroy: soft delete 

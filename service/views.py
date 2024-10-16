@@ -19,9 +19,17 @@ class PostView(ModelViewSet):
     serializer_class = serializers.PostSerializer
     # overwrite the default get_queryset
     def get_queryset(self):
-        # get everything from the db
         queryset = super().get_queryset()  
-        # Get 'author_id, title' from query in url
+        
+        #----------------------------wait for confirm----------------------------
+        # assume current user is the author, return AnonymousUser if not logged in
+        current_user = self.request.user
+        followed_by_user = models.Author.objects.filter(followers__follower=current_user)
+        # Only return not deleted post
+        is_deleted = False
+        queryset = queryset.filter(is_deleted=is_deleted)
+        #----------------------------wait for confirm----------------------------
+        
         author_id = self.request.query_params.get('author_id')  
         visibility = self.request.query_params.get("visibility")
         title = self.request.query_params.get('title')
@@ -36,8 +44,23 @@ class PostView(ModelViewSet):
             queryset = queryset.filter(author__id=author_id)  # Filter the queryset by 'author'
         elif title:
             queryset = queryset.filter(title=title)
-        
-        return queryset
+#----------------------------wait for confirm----------------------------
+        if author_id:
+            queryset = queryset.filter(author__id=author_id, title=title) 
+        if title:
+            queryset = queryset.filter(title=title)
+        if following_list:
+            # followed_by_user is a list of author id who author followed
+            # author__id__in filter the posts that belong to these author, same for visibility__in
+            queryset = queryset.filter(author__id__in=followed_by_user,visibility__in=["unlisted", "friend-only"] )
+            
+#----------------------------wait for confirm----------------------------        
+        return queryset.order_by("created_at")
+    
+    # overwrite default destroy: soft delete 
+    def perform_destroy(self, instance):
+        instance.is_deleted = True
+        instance.save()
 
 class CommentView(ModelViewSet):
     queryset = models.Comment.objects

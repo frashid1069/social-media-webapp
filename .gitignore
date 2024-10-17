@@ -475,3 +475,4 @@ tests/report/
 tests/screenshots/
 
 *.sqlite3
+.DS_Store

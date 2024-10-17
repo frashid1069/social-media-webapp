@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../loginStyles.css";
-
+/**
+ * This is a component for displaying the login page
+ * after inputing correct username and password and clicking
+ * Login button, user will be redirected to a personal stream page
+ */
 export default function Login() {
   const [authors, setAuthors] = useState([]);
   const [username, setUsername] = useState("");

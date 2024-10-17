@@ -29,7 +29,7 @@
 
 import React, { useState, useEffect } from "react";
 import ReactMarkdown from 'react-markdown';  // Import react-markdown for rendering
-import "../streamStyle.css";
+import "../streamStyle_Sukh.css";
 
 export default function PostCards() {
   const [posts, setPosts] = useState([]); // State to store posts

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ReactMarkdown from 'react-markdown';
-import "../streamStyle.css";  // Import the CSS file for consistent styling
+import "../streamStyle_Sukh.css";  // Import the CSS file for consistent styling
 
 export default function PostDetail() {
   const { postId } = useParams();

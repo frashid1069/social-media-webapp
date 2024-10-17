@@ -1,6 +1,10 @@
 import React from "react";
 import "../loginStyles.css";
-
+/**
+ * This is a component for displaying the footer
+ *
+ *
+ */
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 

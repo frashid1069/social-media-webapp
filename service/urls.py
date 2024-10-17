@@ -12,7 +12,7 @@ app_name = "service"
 
 urlpatterns = [
     path("", views.index, name="index"),
-    
+    #path("get_posts", views.get_public_posts, name="get_posts")
 ]
 #path("api/authors/", views.AuthorsView.as_view(), name="get_authors")
 # ~author/$    name: author-list

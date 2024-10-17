@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',               # install rest_framework
-    'corsheaders',                  # install django-cors-headers     
+    'corsheaders',                  # install django-cors-headers 
+    'drf_spectacular',      
 ]
 
 MIDDLEWARE = [
@@ -55,6 +56,24 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 ]
+# From https://drf-spectacular.readthedocs.io/en/latest/readme.html 
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    # From https://stackoverflow.com/questions/51951641/swagger-unable-to-render-this-definition-the-provided-definition-does-not-speci by Helen 
+    'OAS_VERSION': '3.1.0',
+    'SWAGGER_UI_SETTINGS': {
+        'swagger': '2.0',
+    },
+    "swagger": "2.0",
+    'TITLE': 'Aquamarine Project API',
+    'DESCRIPTION': 'This project is a blogging/social network platform will allow the importing of other sources of information (GitHub) as well allow the distribution and sharing of posts and content. ', 
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
+}
 
 ROOT_URLCONF = 'aquamarine_server.urls'
 

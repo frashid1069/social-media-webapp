@@ -5,6 +5,8 @@ import Footer from "./components/Footer";
 import EditPost from "./components/EditPost";
 import SignUp from "./components/SignUp";
 import Stream from "./components/Stream";
+import PostCards from './components/PostCards';
+import PostDetail from "./components/PostDetail";
 
 function App() {
   return (
@@ -15,10 +17,10 @@ function App() {
             <Route path="/login" element={<Login />}></Route>
             <Route path="/signup" element={<SignUp />}></Route>
             <Route path="/stream/:authorId" element={<Stream />}></Route>
-            <Route
-              path="/stream/:authorId/:postId/edit"
-              element={<EditPost />}
-            />
+            <Route path="/posts/:postId/edit" element={<EditPost />} />
+            <Route path="/posts" element={<PostCards />} />
+            <Route path="/posts/:postId" element={<PostDetail />} />
+            
           </Routes>
         </Router>
       </div>

@@ -5,8 +5,13 @@ import Footer from "./components/Footer";
 import EditPost from "./components/EditPost";
 import SignUp from "./components/SignUp";
 import Stream from "./components/Stream";
-import PostCards from './components/PostCards';
-import PostDetail from "./components/PostDetail";
+import Profile from "./components/Profile";
+
+/**
+ * You can put path for components
+ *
+ *
+ */
 
 function App() {
   return (
@@ -17,10 +22,14 @@ function App() {
             <Route path="/login" element={<Login />}></Route>
             <Route path="/signup" element={<SignUp />}></Route>
             <Route path="/stream/:authorId" element={<Stream />}></Route>
-            <Route path="/posts/:postId/edit" element={<EditPost />} />
-            <Route path="/posts" element={<PostCards />} />
-            <Route path="/posts/:postId" element={<PostDetail />} />
-            
+            <Route
+              path="/stream/:authorId/profile"
+              element={<Profile />}
+            ></Route>
+            <Route
+              path="/stream/:authorId/:postId/edit"
+              element={<EditPost />}
+            />
           </Routes>
         </Router>
       </div>
@@ -30,3 +39,8 @@ function App() {
 }
 
 export default App;
+    
+
+            // <Route path="/posts/:postId/edit" element={<EditPost />} />
+            // <Route path="/posts" element={<PostCards />} />
+            // <Route path="/posts/:postId" element={<PostDetail />} />

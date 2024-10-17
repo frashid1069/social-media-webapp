@@ -3,10 +3,21 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../streamStyle.css";
 import PostCards from "./PostCards";
 
+/**
+ * This is a component for displaying the personal stream page by using PostCards component.
+ * Click Profile button => go to profile page
+ * Click Go to Edit Mode button => show only editable posts
+ *      Click a post => go to edit page
+ * Click Go to Stream Mode button => show all accessible posts
+ *
+ * *************** WILL ADD COMMENT FUNCTION LATER ****************
+ */
 export default function Stream() {
   const [posts, setPosts] = useState([]);
-  const id = useParams();
+  const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
+
+  const { authorId } = useParams();
 
   // get the posts list
   useEffect(() => {
@@ -15,9 +26,22 @@ export default function Stream() {
       .then((data) => setPosts(data));
   }, []);
 
+  // get the author id
+  const authorIdInt = parseInt(authorId);
+
+  // check if the post is deleted
+  const matchUndelete = (post) => {
+    return post.is_deleted === false;
+  };
+
   // check if the post is public
-  const matchesVisibility = (post) => {
+  const matchesPublic = (post) => {
     return post.visibility.toLowerCase() === "public";
+  };
+
+  // check if the post is friends-only
+  const matchesFriends = (post) => {
+    return post.visibility.toLowerCase() === "friend only";
   };
 
   // check if the post is from current user
@@ -27,11 +51,15 @@ export default function Stream() {
 
   // get the public posts and posts that belong to the current user
   const visiblePosts = posts.filter(
-    (post) => matchesVisibility(post) || matchesAuthor(post, id)
+    (post) =>
+      matchUndelete(post) &&
+      (matchesPublic(post) ||
+        matchesAuthor(post, authorIdInt) ||
+        matchesFriends(post))
   );
 
   // sort visible posts so that the most recent updated posts appear at the top
-  const sortedPosts = visiblePosts
+  const sortedAllPosts = visiblePosts
     .sort((a, b) => {
       return (
         new Date(a.scheduled_for).getTime() -
@@ -39,27 +67,49 @@ export default function Stream() {
       );
     })
     .reverse();
-  // redirect to edit page ************ NEED TO BE FIXED, UNABLE TO SEND POSTID****************
-  const stringify = JSON.stringify(id);
-  const pa = JSON.parse(stringify);
-  const authorId = pa["authorId"];
-  function goEdit(postId) {
-    navigate(`/stream/${authorId}/${postId}/edit`);
-  }
-  // get the editable posts
-  const editablePosts = posts.filter((post) => matchesAuthor(post, id));
+
+  const editablePosts = posts.filter((post) =>
+    matchesAuthor(post, authorIdInt)
+  );
+  const sortedEditablePosts = editablePosts
+    .sort((a, b) => {
+      return (
+        new Date(a.scheduled_for).getTime() -
+        new Date(b.scheduled_for).getTime()
+      );
+    })
+    .reverse();
+  // Go to the editable profile page belongs to the current user
+  const goEditableProfile = () => {
+    navigate(`/stream/${authorId}/profile`);
+  };
+
   return (
     <div className="stream-page">
       <h2 className="page-subtitle">Welcome to the stream page!</h2>
-      <a className="profile-link" href="/stream/:id/profile">
+      <button className="edit-profile-btn" onClick={goEditableProfile}>
         Profile
-      </a>
-
-      <div className="post-grid" onClick={goEdit}>
-        {sortedPosts.map((post) => (
-          <PostCards post={post} key={post.id}></PostCards>
-        ))}
-      </div>
+      </button>
+      <button
+        className="post-edit-btn"
+        onClick={() => setIsVisible(!isVisible)}
+      >
+        {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
+      </button>
+      {isVisible && (
+        <div className="post-grid">
+          {sortedAllPosts.map((post) => (
+            <PostCards post={post} key={post.id} editable={false}></PostCards>
+          ))}
+        </div>
+      )}
+      {!isVisible && (
+        <div className="post-grid">
+          {sortedEditablePosts.map((post) => (
+            <PostCards post={post} key={post.id} editable={true}></PostCards>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

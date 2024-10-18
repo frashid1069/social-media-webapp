@@ -31,6 +31,13 @@ export default function Profile() {
   const matchesAuthor = (post, id) => {
     return post.author === id;
   };
+
+  const handleEditProfile = () => {
+    navigate(`/stream/${authorId}/profile`);
+  };
+
+
+
   // get posts that belong to the current user
   const visiblePosts = posts.filter((post) => matchesAuthor(post, authorIdInt));
   // sort visible posts so that the most recent updated posts appear at the top
@@ -51,6 +58,7 @@ export default function Profile() {
       <p className="profile-bio">{author.bio}</p>
       <h4 className="profile-txt">Github URL: </h4>
       <p className="profile-git">{author.github_url}</p>
+      <button onClick={handleEditProfile}>Edit Profile</button>
       <div className="post-grid">
         {sortedPosts.map((post) => (
           <PostCards post={post} key={post.id} editable={false}></PostCards>

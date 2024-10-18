@@ -12,7 +12,11 @@ app_name = "service"
 
 urlpatterns = [
     path("", views.index, name="index"),
+<<<<<<< Updated upstream
     #path("get_posts", views.get_public_posts, name="get_posts")
+=======
+    # path("get_posts", views.get_public_posts, name="get_posts")
+>>>>>>> Stashed changes
 ]
 #path("api/authors/", views.AuthorsView.as_view(), name="get_authors")
 # ~author/$    name: author-list

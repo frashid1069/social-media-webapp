@@ -28,7 +28,7 @@ a:link{
     border: 1px solid #ccc;
     box-sizing: border-box;
 }
-.login-button, .signup-button{
+.login-button, .signup-button, .go-to-login, .go-to-signup{
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -44,6 +44,12 @@ a:link{
     opacity: 0.8;
 }
 .signup-button:hover {
+    opacity: 0.8;
+}
+.go-to-login:hover{
+    opacity: 0.8;
+} 
+.go-to-signup:hover{
     opacity: 0.8;
 }
 

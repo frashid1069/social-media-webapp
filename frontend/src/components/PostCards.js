@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import "../streamStyle_Sukh.css";
+import { useNavigate, useParams } from "react-router-dom";
+import "../streamStyle.css";
 import Comment from "./Comment";
 
 /**
@@ -13,7 +13,13 @@ import Comment from "./Comment";
 export default function PostCards({ post, editable }) {
   const [authors, setAuthors] = useState([]);
   const [comments, setComments] = useState([]);
+  const [newCommentContent, setNewCommentContent] = useState("");
+  // get the author id
+  const { authorId } = useParams();
+  const authorIdInt = parseInt(authorId);
+
   const navigate = useNavigate();
+
   // get the author list
   useEffect(() => {
     fetch("http://localhost:8000/service/author/")
@@ -51,6 +57,27 @@ export default function PostCards({ post, editable }) {
     navigate(`/stream/${post.author}/profile`);
   };
 
+  // handle submit comments
+  const submitComment = async (event) => {
+    event.preventDefault();
+    const response = await fetch(`http://localhost:8000/service/comment/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: newCommentContent,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        author: authorIdInt,
+        post: post.id,
+      }),
+    })
+      .then((responsess) => responsess.json())
+      .then((data) => console.log(data));
+    setNewCommentContent("");
+  };
+
   return (
     <div key={post.id} className="post-card" onClick={goEdit}>
       <h3 className="post-card-title">{post.title}</h3>
@@ -65,6 +92,15 @@ export default function PostCards({ post, editable }) {
           <Comment comment={comment} key={comment.id}></Comment>
         ))}
       </div>
+      <form onSubmit={submitComment}>
+        <textarea
+          placeholder="Write your comment here..."
+          value={newCommentContent}
+          onChange={(e) => setNewCommentContent(e.target.value)}
+          required
+        />
+        <button type="submit">Send</button>
+      </form>
     </div>
   );
 }

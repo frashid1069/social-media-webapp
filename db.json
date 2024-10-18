@@ -1,0 +1,87 @@
+{
+  "authors": [
+    {
+      "id": "1",
+      "username": "sukhmanjeet",
+      "display_name": "Sukhmanjeet Singh",
+      "bio": "A passionate coder and tech enthusiast, always eager to learn and explore the latest in AI and software development.",
+      "github_url": "https://github.com/sukhmanjeet",
+      "profile_image": "https://example.com/profiles/sukhmanjeet.jpg"
+    },
+    {
+      "id": "2",
+      "username": "stephdoe",
+      "display_name": "Steph Doe",
+      "bio": "Lover of code, coffee, and cats. Sharing my journey through tech and life, one post at a time.",
+      "github_url": "https://github.com/stephdoe",
+      "profile_image": "https://example.com/profiles/steph.jpg"
+    },
+    {
+      "id": "3",
+      "username": "johndev",
+      "display_name": "John Developer",
+      "bio": "Full-stack developer with a passion for open-source projects and community-driven development.",
+      "github_url": "https://github.com/johndev",
+      "profile_image": "https://example.com/profiles/johndev.jpg"
+    }
+  ],
+  "posts": [
+    {
+      "content": "# My first Post with an Image\n\nHello everyone! 👋 I'm excited to share my first post using **Markdown**. This post is about my love for cute dogs. 🐶\n\nHere’s a picture of an adorable dog I found:\n\n![Cute Dog](https://i.imgur.com/SbIP2t9.jpeg \"A Cute Dog\")\n\n## Why I Love Dogs:\n- They are loyal.\n- They are great companions.\n- They bring joy and happiness.\n\n> “A dog is the only thing on earth that loves you more than you love yourself.” – Josh Billings\n\n---\n\nThanks for reading my post! Feel free to comment if you're a dog lover too! 😊\n",
+      "title": "My First Post by Sukh",
+      "visibility": "public",
+      "updated_at": "2024-10-17T00:30:32.403Z",
+      "id": "1"
+    },
+    {
+      "id": "2",
+      "title": "Hello World this is Sukh",
+      "content": "Steph here! Excited to start sharing more content.",
+      "content_type": "text/plain",
+      "visibility": "unlisted",
+      "author_id": 1,
+      "created_at": "2024-10-14T09:22:27.934Z",
+      "updated_at": "2024-10-14T23:22:27.934Z"
+    },
+    {
+      "id": "3",
+      "title": "A Day in the Life of a Coder",
+      "content": "# Morning Routine\n\nI start my day with a cup of coffee ☕ and some code review.\n\n## Projects I'm Working On\n- React Applications\n- RESTful APIs\n- Machine Learning Models\n\n## Closing Thoughts\n\nCoding is like a puzzle, and I love solving it every day! 💻",
+      "content_type": "text/markdown",
+      "visibility": "public",
+      "author_id": 2,
+      "created_at": "2024-10-12T08:15:27.934Z",
+      "updated_at": "2024-10-13T14:45:29.934Z"
+    },
+    {
+      "id": "4",
+      "title": "My Favorite Tech Stack",
+      "content": "Hey everyone! John here, and today I wanted to share my favorite tech stack:\n\n- **Frontend**: React, Tailwind CSS\n- **Backend**: Node.js, Express\n- **Database**: PostgreSQL\n- **CI/CD**: GitHub Actions, Docker\n\nFeel free to share your stack in the comments! 😊",
+      "content_type": "text/plain",
+      "visibility": "public",
+      "author_id": 3,
+      "created_at": "2024-10-11T09:00:00.000Z",
+      "updated_at": "2024-10-11T09:30:00.000Z"
+    },
+    {
+      "id": "5",
+      "title": "My Secret Project",
+      "content": "This project is super secret, and only those with the link can see it! 🤫\n\nI'm working on a new AI tool that can write poetry. Stay tuned for updates!",
+      "content_type": "text/plain",
+      "visibility": "unlisted",
+      "author_id": 3,
+      "created_at": "2024-10-10T12:00:00.000Z",
+      "updated_at": "2024-10-12T08:30:00.000Z"
+    },
+    {
+      "id": "6",
+      "title": "Private Musings",
+      "content": "This is a private post, only visible to me.\n\nJust some thoughts on the future of coding.",
+      "content_type": "text/plain",
+      "visibility": "private",
+      "author_id": 2,
+      "created_at": "2024-10-10T10:00:00.000Z",
+      "updated_at": "2024-10-11T10:00:00.000Z"
+    }
+  ]
+}

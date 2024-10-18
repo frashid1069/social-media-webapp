@@ -35,34 +35,26 @@ const EditPost = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    try {
-      const response = await fetch(
-        `http://localhost:8000/service/post/${postId}/`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            author: authorID,
-            content_type: postContentType,
-            content: postContent, // The content is saved as Markdown
-            title: postTitle,
-            updated_at: new Date().toISOString(), // Update the timestamp
-          }),
-        }
-      )
-        .then((responsess) => responsess.json())
-        .then((data) => console.log(data));
-
-      if (response.ok) {
-        window.location.href = "/stream/4"; // Redirect after saving
-      } else {
-        alert("Failed to update post");
+    const response = await fetch(
+      `http://localhost:8000/service/post/${postId}/`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          author: authorID,
+          content_type: postContentType,
+          content: postContent, // The content is saved as Markdown
+          title: postTitle,
+          updated_at: new Date().toISOString(), // Update the timestamp
+        }),
       }
-    } catch (error) {
-      alert("Error updating post");
-    }
+    )
+      .then((responsess) => responsess.json())
+      .then((data) => console.log(data));
+
+    navigate(`/stream/${authorID}`);
   };
 
   const closeEdit = () => {

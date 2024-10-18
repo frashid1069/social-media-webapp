@@ -1,5 +1,5 @@
 """
-URL configuration for aquamarine project.
+URL configuration for aquamarine_server project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
@@ -16,8 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView 
+# From https://drf-spectacular.readthedocs.io/en/latest/readme.html#installation 
+# From https://www.youtube.com/watch?v=jc8v_DpAbEk 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("service/", include("service.urls")),
+    path('schema/', SpectacularAPIView.as_view(), name='schema'), 
+    path('swagger/', SpectacularSwaggerView.as_view(), name='swagger'), 
+    path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]

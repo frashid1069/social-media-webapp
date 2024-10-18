@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../streamStyle_Sukh.css";
+import "../streamStyle.css";
 import PostCards from "./PostCards";
 
 /**
@@ -9,8 +9,8 @@ import PostCards from "./PostCards";
  * Click Go to Edit Mode button => show only editable posts
  *      Click a post => go to edit page
  * Click Go to Stream Mode button => show all accessible posts
+ * Add comment functionality completed
  *
- * *************** WILL ADD COMMENT FUNCTION LATER ****************
  */
 export default function Stream() {
   const [posts, setPosts] = useState([]);
@@ -67,7 +67,7 @@ export default function Stream() {
       );
     })
     .reverse();
-
+  // get the posts that belong to the current user
   const editablePosts = posts.filter((post) =>
     matchesAuthor(post, authorIdInt)
   );
@@ -84,11 +84,19 @@ export default function Stream() {
     navigate(`/stream/${authorId}/profile`);
   };
 
+  // Go to the create post page for the current user
+  const goCreatePost = () => {
+    navigate(`/stream/${authorId}/createPost`);
+  };
+
   return (
     <div className="stream-page">
       <h2 className="page-subtitle">Welcome to the stream page!</h2>
       <button className="edit-profile-btn" onClick={goEditableProfile}>
         Profile
+      </button>
+      <button className="go-create-post" onClick={goCreatePost}>
+        Make a Post
       </button>
       <button
         className="post-edit-btn"

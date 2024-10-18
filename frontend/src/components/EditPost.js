@@ -91,7 +91,7 @@ const EditPost = () => {
     <div className="post-edit">
       <h2>Edit Post</h2>
       <form onSubmit={handleSubmit}>
-        <div>
+        <div className="form-div">
           <label>Title:</label>
           <input
             type="text"
@@ -100,16 +100,17 @@ const EditPost = () => {
             required
           />
         </div>
-        <div>
+        <div className="form-div">
           <label>Content Type:</label>
-          <input
-            type="text"
+          <select
             value={postContentType}
             onChange={(e) => setPostContentType(e.target.value)}
-            required
-          />
+            required>
+            <option value="text/markdown">Markdown</option>
+            <option value="image/jpeg">JPEG</option>
+        </select>
         </div>
-        <div>
+        <div className="form-div">
           <label>Content:</label>
           <textarea
             value={postContent}
@@ -117,12 +118,12 @@ const EditPost = () => {
             required
           />
         </div>
-        <button type="submit">Save Changes</button>
-        <button type="button" onClick={closeEdit}>
-          Cancel
-        </button>
+        <div className="btn-container">
+            <button className="save-btn" type="submit">Save Changes</button>
+            <button className="cancel-btn" type="button" onClick={closeEdit}>Cancel</button>
+            <button className="delete-btn" type="button" onClick={deletePost}>Delete</button>
+        </div>
       </form>
-      <button onClick={deletePost}>Delete</button>
     </div>
   );
 };

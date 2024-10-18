@@ -10,11 +10,6 @@ npm install
 npm start
 ```
 
-## Path to Login page (will add a welcome page later)
-
-```
-/login
-```
 
 # Getting Started with Create React App
 

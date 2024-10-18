@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import "../streamStyle_Sukh.css";
+import "../streamStyle.css";
 /**
  * This is a component for displaying comments for the corresponded post
  * @param comment: single comment object

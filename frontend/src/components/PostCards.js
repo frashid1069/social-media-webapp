@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked";
 import "../streamStyle.css";
 import Comment from "./Comment";
+import LikeModal from "./Likes";
 
 export default function PostCards({ post, editable }) {
   const [authors, setAuthors] = useState([]);
@@ -10,6 +11,7 @@ export default function PostCards({ post, editable }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState("");
+  const [showLikeModal, setShowLikeModal] = useState(false);
   const { authorId } = useParams();
   const authorIdInt = parseInt(authorId);
 
@@ -40,6 +42,16 @@ export default function PostCards({ post, editable }) {
         setLiked(userLiked);
       });
   }, [post.id, authorIdInt]);
+
+  // Function to open the like modal
+  const openLikeModal = () => {
+    setShowLikeModal(true);
+  };
+
+  // Function to close the like modal
+  const closeLikeModal = () => {
+    setShowLikeModal(false);
+  };
 
   // Match the corresponding author's name for the post
   const matchAuthor = (authorId) => {
@@ -137,7 +149,10 @@ export default function PostCards({ post, editable }) {
         <button className="btn-like" onClick={handleLike}>
             {liked ? "Unlike" : "Like"} ({likes.length})
         </button>
-        </div>
+        <button className="btn-show-likes" onClick={openLikeModal}>
+          Show Likes
+        </button>
+      </div>
       {/* Render the Markdown content as HTML */}
       <div
         className="post-card-content"
@@ -150,6 +165,11 @@ export default function PostCards({ post, editable }) {
         </div>
       )}
       <p className="post-card-update-date">Updated at: {new Date(post.updated_at).toLocaleString()}</p>
+      
+      {/* Show list of likes for the post */}
+      {showLikeModal && (
+        <LikeModal likes={likes} closeModal={closeLikeModal} />
+      )}
       <div className="comment-grid">
         <h5 className="comment-title">Comments:</h5>
         {matchedComments.map((comment) => (

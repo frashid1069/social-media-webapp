@@ -27,6 +27,18 @@ export default function PostCards({ post, editable }) {
       .then((data) => setComments(data));
   }, []);
 
+  // get the likes for the post
+  useEffect(() => {
+    // Fetch likes for this post and check if the current author has liked it
+    fetch(`http://localhost:8000/service/author/${authorId}/posts/${post.id}/likes`)
+      .then((response) => response.json())
+      .then((data) => {
+        setLikes(data);
+        const userLiked = data.some((like) => like.author === authorIdInt);
+        setLiked(userLiked);
+      });
+  }, [post.id, authorIdInt]);
+
   // Match the corresponding author's name for the post
   const matchAuthor = (authorId) => {
     const author = authors.find((a) => a.id === authorId);
@@ -85,12 +97,45 @@ export default function PostCards({ post, editable }) {
 
   console.log("Image URL:", imageURL);
 
+  // function for liking and un-liking a post
+  const handleLike = async () => {
+    if (liked) {
+      // Unlike the post (send DELETE request)
+      await fetch(`http://localhost:8000/service/author/${authorId}/posts/${post.id}/likes`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      setLiked(false);
+    } 
+    else {
+      // Like the post (send POST request)
+      await fetch(`http://localhost:8000/service/author/${authorId}/posts/${post.id}/likes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          author: authorIdInt,
+          post: post.id,
+        }),
+      });
+      setLiked(true);
+    }
+  }
+
   return (
     <div key={post.id} className="post-card" onClick={goEdit}>
       <h3 className="post-card-title">{post.title}</h3>
-      <button className="post-card-author" onClick={goProfile}>
-        {matchAuthor(post.author)}
-      </button>
+      <div className="btn-container">
+        <button className="post-card-author" onClick={goProfile}>
+          {matchAuthor(post.author)}
+        </button>
+        <button className="btn-like" onClick={handleLike}>
+            {liked ? "Unlike" : "Like"} ({likes.length})
+        </button>
+        </div>
       {/* Render the Markdown content as HTML */}
       <div
         className="post-card-content"

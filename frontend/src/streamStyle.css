@@ -64,3 +64,31 @@ object-fit: contain; /* Ensures the image is fully visible */
 .comment{
     border-style: dashed;
 }
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; 
+    margin-top: 10px; 
+}
+
+.btn-like, .post-card-author {
+    background-color: lightblue;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    text-align: center;
+}
+
+.btn-like:hover, .post-card-author:hover {
+    background-color: dodgerblue;
+    transform: scale(1.05);
+}
+
+.post-card-author {
+    font-weight: bold;
+}

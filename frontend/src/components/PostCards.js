@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked";
 import "../streamStyle.css";
+import "../likes.css"
 import Comment from "./Comment";
 import LikeModal from "./Likes";
 

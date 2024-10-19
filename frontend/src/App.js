@@ -6,6 +6,7 @@ import EditPost from "./components/EditPost";
 import SignUp from "./components/SignUp";
 import Stream from "./components/Stream";
 import Profile from "./components/Profile";
+import CreatePost from "./components/CreatePost";
 
 /**
  * You can put path for components
@@ -22,6 +23,8 @@ function App() {
             <Route path="/login" element={<Login />}></Route>
             <Route path="/signup" element={<SignUp />}></Route>
             <Route path="/stream/:authorId" element={<Stream />}></Route>
+            <Route path="/stream/:authorId/createPost" element={<CreatePost />} />
+
             <Route
               path="/stream/:authorId/profile"
               element={<Profile />}

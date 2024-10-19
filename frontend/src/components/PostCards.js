@@ -1,63 +1,54 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { marked } from "marked";
 import "../streamStyle.css";
 import Comment from "./Comment";
-
-/**
- * This is a component for displaying posts for the corresponded author using Comment component
- * @param post: single post object
- * @param editable: a boolean that implies whether the post is editable
- * Click author button => go to the corresponding author's profile
- */
 
 export default function PostCards({ post, editable }) {
   const [authors, setAuthors] = useState([]);
   const [comments, setComments] = useState([]);
   const [newCommentContent, setNewCommentContent] = useState("");
-  // get the author id
   const { authorId } = useParams();
   const authorIdInt = parseInt(authorId);
 
   const navigate = useNavigate();
 
-  // get the author list
+  // Fetch the list of authors
   useEffect(() => {
     fetch("http://localhost:8000/service/author/")
       .then((response) => response.json())
       .then((data) => setAuthors(data));
   }, []);
-  // get the comment list
+
+  // Fetch the list of comments
   useEffect(() => {
     fetch("http://localhost:8000/service/comment/")
       .then((response) => response.json())
       .then((data) => setComments(data));
   }, []);
-  // find the corresponding author's name for the post
+
+  // Match the corresponding author's name for the post
   const matchAuthor = (authorId) => {
-    for (const author of authors) {
-      if (author.id === authorId) {
-        return author.display_name;
-      }
-    }
+    const author = authors.find((a) => a.id === authorId);
+    return author ? author.display_name : "Unknown Author";
   };
-  // find the comments for the post
-  const commentFilter = (comment) => {
-    return comment.post === post.id;
-  };
-  const matchedComments = comments.filter((comment) => commentFilter(comment));
-  // go to edit page if
+
+  // Filter comments for the post
+  const matchedComments = comments.filter((comment) => comment.post === post.id);
+
+  // Navigate to the edit page for the post
   const goEdit = () => {
     if (editable) {
       navigate(`/stream/${post.author}/${post.id}/edit`);
     }
   };
 
-  // go to the corresponding profile
+  // Navigate to the corresponding profile page
   const goProfile = () => {
     navigate(`/stream/${post.author}/profile`);
   };
 
-  // handle submit comments
+  // Handle comment submission
   const submitComment = async (event) => {
     event.preventDefault();
     const response = await fetch(`http://localhost:8000/service/comment/`, {
@@ -72,11 +63,27 @@ export default function PostCards({ post, editable }) {
         author: authorIdInt,
         post: post.id,
       }),
-    })
-      .then((responsess) => responsess.json())
-      .then((data) => console.log(data));
-    setNewCommentContent("");
+    });
+
+    if (response.ok) {
+      setNewCommentContent("");
+      // Optionally, refresh comments list here
+    }
   };
+
+  // Convert Markdown content to HTML safely
+  const getMarkdownContent = () => {
+    return { __html: marked(post.content || "") };
+  };
+
+  // Construct a proper URL for the image content
+  const imageURL = post.image_content
+    ? post.image_content.startsWith("http")
+      ? post.image_content // If the URL is already absolute, use it as-is
+      : `http://localhost:8000${post.image_content}`
+    : null; // Handle the case where image_content is null or undefined
+
+  console.log("Image URL:", imageURL);
 
   return (
     <div key={post.id} className="post-card" onClick={goEdit}>
@@ -84,12 +91,22 @@ export default function PostCards({ post, editable }) {
       <button className="post-card-author" onClick={goProfile}>
         {matchAuthor(post.author)}
       </button>
-      <p className="post-card-content">{post.content}</p>
-      <p className="post-card-update-date">Updated at: {post.updated_at}</p>
+      {/* Render the Markdown content as HTML */}
+      <div
+        className="post-card-content"
+        dangerouslySetInnerHTML={getMarkdownContent()}
+      />
+      {/* Render the image if it's available */}
+      {imageURL && (
+        <div className="post-card-image">
+          <img src={imageURL} alt="Post" className="post-image" />
+        </div>
+      )}
+      <p className="post-card-update-date">Updated at: {new Date(post.updated_at).toLocaleString()}</p>
       <div className="comment-grid">
-        <h5 className="comment-title">Comments: </h5>
+        <h5 className="comment-title">Comments:</h5>
         {matchedComments.map((comment) => (
-          <Comment comment={comment} key={comment.id}></Comment>
+          <Comment comment={comment} key={comment.id} />
         ))}
       </div>
       <form onSubmit={submitComment}>

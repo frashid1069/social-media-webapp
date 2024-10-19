@@ -91,19 +91,24 @@ export default function Stream() {
 
   return (
     <div className="stream-page">
-      <h2 className="page-subtitle">Welcome to the stream page!</h2>
-      <button className="edit-profile-btn" onClick={goEditableProfile}>
-        Profile
-      </button>
-      <button className="go-create-post" onClick={goCreatePost}>
-        Make a Post
-      </button>
-      <button
-        className="post-edit-btn"
-        onClick={() => setIsVisible(!isVisible)}
-      >
-        {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
-      </button>
+      {/* Conditional Title */}
+      <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
+      
+      <div className="button-container">
+        <button className="edit-profile-btn" onClick={goEditableProfile}>
+          Profile
+        </button>
+        <button className="go-create-post" onClick={goCreatePost}>
+          Make a Post
+        </button>
+        <button
+          className="post-edit-btn"
+          onClick={() => setIsVisible(!isVisible)}
+        >
+          {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
+        </button>
+      </div>
+  
       {isVisible && (
         <div className="post-grid">
           {sortedAllPosts.map((post) => (
@@ -120,4 +125,5 @@ export default function Stream() {
       )}
     </div>
   );
+  
 }

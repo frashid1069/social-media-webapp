@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../editPost.css";
-/**
- * This is a component for displaying edit page for the corresponded post, the edit
- * page can update and delete a post
- *
- */
+
 const EditPost = () => {
   const { postId } = useParams(); // Extract postId from URL
   const [postContent, setPostContent] = useState("");
-  const [postContentType, setPostContentType] = useState("");
+  const [postContentType, setPostContentType] = useState("text/markdown");
   const [postTitle, setPostTitle] = useState("");
   const [authorID, setAuthorID] = useState("");
+  const [visibility, setVisibility] = useState("public");
+  const [selectedImage, setSelectedImage] = useState(null); // To handle image uploads
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPost = async () => {
       const response = await fetch(
-        `http://localhost:8000/service/post/${postId}`
+        `http://localhost:8000/service/post/${postId}/`
       );
       if (response.ok) {
         const data = await response.json();
@@ -25,6 +23,7 @@ const EditPost = () => {
         setPostTitle(data.title);
         setAuthorID(data.author);
         setPostContentType(data.content_type);
+        setVisibility(data.visibility);
       } else {
         alert("Failed to fetch post details");
       }
@@ -35,56 +34,64 @@ const EditPost = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+  
+    // Prepare form data for submission
+    const formData = new FormData();
+    formData.append("title", postTitle);
+    formData.append("content_type", postContentType);
+    formData.append("visibility", visibility);
+    formData.append("author", authorID);
+    formData.append("updated_at", new Date().toISOString());
+  
+    // Handle different content types
+    if (postContentType === "text/markdown") {
+      formData.append("content", postContent); // Save Markdown content
+    } else if (postContentType === "image/jpeg" && selectedImage) {
+      formData.append("content", ""); // Empty content for image uploads
+      formData.append("image_content", selectedImage); // Save the image file
+    }
+  
+    // Make PUT request to update the post
     const response = await fetch(
       `http://localhost:8000/service/post/${postId}/`,
       {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          author: authorID,
-          content_type: postContentType,
-          content: postContent, // The content is saved as Markdown
-          title: postTitle,
-          updated_at: new Date().toISOString(), // Update the timestamp
-        }),
+        body: formData,
       }
-    )
-      .then((responsess) => responsess.json())
-      .then((data) => console.log(data));
-
-    navigate(`/stream/${authorID}`);
+    );
+  
+    if (response.ok) {
+      alert("Post updated successfully");
+      navigate(`/stream/${authorID}`);
+    } else {
+      alert("Failed to update post");
+    }
   };
+  
 
   const closeEdit = () => {
-    window.location.href = "/posts/"; // Redirect
+    navigate(`/stream/${authorID}`);
   };
 
   // delete a post
   const deletePost = async (event) => {
     event.preventDefault();
-    const response = await fetch(
-      `http://localhost:8000/service/post/${postId}/`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          author: authorID,
-          content_type: postContentType,
-          content: postContent, // The content is saved as Markdown
-          title: postTitle,
-          is_deleted: true,
-          updated_at: new Date().toISOString(), // Update the timestamp
-        }),
-      }
-    )
-      .then((responsess) => responsess.json())
-      .then((data) => console.log(data));
+    const confirmDelete = window.confirm("Are you sure you want to delete this post?");
+    if (confirmDelete) {
+      const response = await fetch(
+        `http://localhost:8000/service/post/${postId}/`,
+        {
+          method: "DELETE",
+        }
+      );
 
-    navigate(`/stream/${authorID}`);
+      if (response.ok) {
+        alert("Post deleted successfully");
+        navigate(`/stream/${authorID}`);
+      } else {
+        alert("Failed to delete post");
+      }
+    }
   };
 
   return (
@@ -104,19 +111,43 @@ const EditPost = () => {
           <label>Content Type:</label>
           <select
             value={postContentType}
-            onChange={(e) => setPostContentType(e.target.value)}
+            onChange={(e) => {
+              setPostContentType(e.target.value);
+              setSelectedImage(null); // Reset the selected image if content type changes
+            }}
             required>
             <option value="text/markdown">Markdown</option>
             <option value="image/jpeg">JPEG</option>
-        </select>
+          </select>
+        </div>
+        <div className="form-div">
+          <label>Visibility:</label>
+          <select
+            value={visibility}
+            onChange={(e) => setVisibility(e.target.value)}
+            required
+          >
+            <option value="public">Public</option>
+            <option value="friend-only">Friend Only</option>
+            <option value="unlisted">Unlisted</option>
+          </select>
         </div>
         <div className="form-div">
           <label>Content:</label>
-          <textarea
-            value={postContent}
-            onChange={(e) => setPostContent(e.target.value)}
-            required
-          />
+          {postContentType === "text/markdown" ? (
+            <textarea
+              value={postContent}
+              onChange={(e) => setPostContent(e.target.value)}
+              required
+            />
+          ) : (
+            <input
+              type="file"
+              accept="image/jpeg"
+              onChange={(e) => setSelectedImage(e.target.files[0])}
+              required
+            />
+          )}
         </div>
         <div className="btn-container">
             <button className="save-btn" type="submit">Save Changes</button>

@@ -5,7 +5,7 @@ import PostCards from "./PostCards";
 
 /**
  * This is a component for displaying the profile page
- *
+ *  import "../streamStyle_Sukh.css";
  *
  */
 export default function Profile() {
@@ -55,7 +55,9 @@ export default function Profile() {
         {sortedPosts.map((post) => (
           <PostCards post={post} key={post.id} editable={false}></PostCards>
         ))}
+        
       </div>
+      
     </div>
   );
 }

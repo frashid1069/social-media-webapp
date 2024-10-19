@@ -72,6 +72,23 @@ class CommentView(ModelViewSet):
 class LikeView(ModelViewSet):
     queryset = models.Like.objects
     serializer_class = serializers.LikeSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        post_id = self.request.query_params.get('post_id')
+        author_id = self.request.query_params.get('author_id')
+
+        # ~post/?author_id=<pk>&post_id=<pk> (likes for a particular post made by a particular author)
+        if author_id and post_id:
+            queryset = queryset.filter(author__id=author_id, post__id=post_id)
+        # ~post/?author_id=<pk> (all likes made by a particular author)
+        elif author_id:
+            queryset = queryset.filter(author__id=author_id)
+        # ~post/?post_id=<pk> (all likes for a particular post)
+        elif post_id:
+            queryset = queryset.filter(post__id=post_id)
+
+        return queryset.order_by("created_at")
     
 class FollowView(ModelViewSet):
     queryset = models.Follow.objects
@@ -161,6 +178,29 @@ def handle_follow(request, follow_id):
         follow.save()
     # Return to ui
     return
+
+def create_like(request, author_id, post_id):
+    if request.method == "POST":
+        author = models.Author.objects.get(id=author_id)
+        post = models.Post.objects.get(id=post_id)
+
+        # Check if the like already exists
+        if models.Like.objects.filter(author=author, post=post).exists():
+            return
+        # Create the like
+        models.Like.objects.create(author=author, post=post)
+
+    # Redirect to the UI
+    return
+
+def delete_like(request, author_id, post_id):
+    if request.method == "DELETE":
+        like = models.Like.objects.filter(post=post_id, author=author_id)
+        if like.exists():
+            like.delete()
+    # Return to ui
+    return
+
 
 def get_stream_posts(request, author_id):
     following = models.Follow.filter(follower=author_id)

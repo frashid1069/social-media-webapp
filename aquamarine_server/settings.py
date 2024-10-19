@@ -154,5 +154,14 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',        # React front-end port
 ]
 
+# URL path where media files will be accessible. 
+# It defines the base URL for serving media files (e.g., images, documents, etc.) in the browser.
+# When users or your application needs to access these files, the URL will begin with '/media/'.
+# For example, an image might be accessible at http://your-domain.com/media/image_name.jpg.
 MEDIA_URL = '/media/'
+
+# The absolute path in your file system where media files are stored.
+# This specifies the location in your server where all the media files will be saved.
+# It is built by joining the project's base directory (BASE_DIR) with the 'media' folder.
+# So, in your project's root directory, there will be a folder named 'media' to store user-uploaded files.
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

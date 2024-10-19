@@ -7,6 +7,8 @@ import Comment from "./Comment";
 export default function PostCards({ post, editable }) {
   const [authors, setAuthors] = useState([]);
   const [comments, setComments] = useState([]);
+  const [likes, setLikes] = useState([]);
+  const [liked, setLiked] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState("");
   const { authorId } = useParams();
   const authorIdInt = parseInt(authorId);

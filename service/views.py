@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-from . import serializers, models
+from . import serializers, models, auth
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
@@ -14,6 +14,8 @@ class AuthorView(ModelViewSet):
     queryset = models.Author.objects
     serializer_class = serializers.AuthorSerializer
     
+    # authentication_classes = [auth.JwtQueryParamsAuthentication]
+    
 class PostView(ModelViewSet):
     queryset = models.Post.objects
     serializer_class = serializers.PostSerializer
@@ -21,14 +23,11 @@ class PostView(ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()  
         
-        #----------------------------wait for confirm----------------------------
         # assume current user is the author, return AnonymousUser if not logged in
         current_user = self.request.user
         # Only return not deleted post
         is_deleted = False
         queryset = queryset.filter(is_deleted=is_deleted)
-        #----------------------------end wait for confirm----------------------------
-        
         author_id = self.request.query_params.get('author_id')  
         visibility = self.request.query_params.get("visibility")
         title = self.request.query_params.get('title')
@@ -43,7 +42,7 @@ class PostView(ModelViewSet):
             queryset = queryset.filter(author__id=author_id)  # Filter the queryset by 'author'
         elif title:
             queryset = queryset.filter(title=title)
-#----------------------------wait for confirm----------------------------
+
         # ~post/?author_id=<pk>
         if author_id:
             queryset = queryset.filter(author__id=author_id, title=title) 
@@ -57,7 +56,6 @@ class PostView(ModelViewSet):
             # author__id__in filter the posts that belong to these author, same for visibility__in
             queryset = queryset.filter(author__id__in=followed_by_user,visibility__in=["unlisted", "friend-only"] )
             
-#----------------------------end wait for confirm----------------------------        
         return queryset.order_by("created_at")
     
     # overwrite default destroy: soft delete 

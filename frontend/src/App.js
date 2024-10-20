@@ -9,7 +9,6 @@ import Profile from "./components/Profile";
 import EditProfile from "./components/EditProfile";
 import CreatePost from "./components/CreatePost";
 import Likes from "./components/Likes";
-import EditProfile from "./components/EditProfile";
 
 /**
  * You can put path for components

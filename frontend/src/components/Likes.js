@@ -9,6 +9,7 @@ export default function LikeModal({ likes, closeModal }) {
         <button className="close-modal-btn" onClick={closeModal}>
           Close
         </button>
+        <p>Total Likes: {likes.length}</p>
         <ul>
           {likes.length > 0 ? (
             likes.map((like) => (

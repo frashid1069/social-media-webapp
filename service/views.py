@@ -299,3 +299,12 @@ def login(request):
 # def notify(request, author_id):
 #     follow_requests = models.Follow.filter(following=author_id)
 #     return
+
+def edit_profile(request, author_id):
+    author = models.Author.objects.get(id=author_id)
+    serializer = serializers.Author(author, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    # Return to ui
+    return

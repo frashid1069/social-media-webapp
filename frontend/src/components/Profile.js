@@ -57,6 +57,7 @@ export default function Profile() {
       <p className="profile-bio">{author.bio}</p>
       <h4 className="profile-txt">Github URL: </h4>
       <p className="profile-git">{author.github_url}</p>
+      <button onClick={handleEditProfile}>Edit Profile</button>
       <div className="post-grid">
         {sortedPosts.map((post) => (
           <PostCards post={post} key={post.id} editable={false}></PostCards>

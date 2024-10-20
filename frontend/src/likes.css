@@ -1,4 +1,4 @@
-like-modal {
+.like-modal {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -12,6 +12,32 @@ like-modal {
   
 .like-modal-content {
     padding: 20px;
+}
+
+.btn-like, .btn-show-likes {
+    background-color: lightblue;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    text-align: center;
+}
+
+.btn-like:hover {
+    background-color: dodgerblue;
+    transform: scale(1.05);
+}
+
+.btn-show-likes:hover {
+    background-color: #3399ff; 
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); 
+}
+
+.btn-show-likes:focus {
+    outline: 2px solid #004080; 
 }
   
 .close-modal-btn {

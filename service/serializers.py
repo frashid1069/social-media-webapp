@@ -49,7 +49,9 @@ class SignUpSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password')
         
         user = User.objects.create_user(username=username, password=password)
-
+        # User is inactive until approved by the admin
+        user.is_active = False
+        user.save()
         author = Author.objects.create(user=user, username=username, password=password, **validated_data)
         
         return author

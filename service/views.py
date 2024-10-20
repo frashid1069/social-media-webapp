@@ -23,20 +23,27 @@ class Login(APIView):
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
-        author = models.Author.objects.get(username=username,password=password)
         try:
             author = models.Author.objects.get(username=username)
+            
+            # registered author without approval
+            if not author.user.is_active:
+                return Response({'error': 'Your account is inactive. Please wait for admin approval.'}, status=status.HTTP_403_FORBIDDEN)
+            
+            # encryption
             # if not check_password(password, author.password):
             #     return Response({'error': 'Incorrect username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+            
             if author.password != password:
                 return Response({'error': 'Incorrect username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
-            token = create_token({'id': author.id, 'name': author.username}, 100000)
+            token = create_token({'id': author.user.id, 'name': author.user.username}, 100000)
             print(token)
             return Response({
                 'token': token,
                 'user': {
-                    'id': author.id,
-                    'username': author.username,
+                    'id': author.user.id,
+                    'username': author.user.username,
+                    'display_name': author.display_name,
                 }
             }, status=status.HTTP_200_OK)
 

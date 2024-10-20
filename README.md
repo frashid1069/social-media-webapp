@@ -7,21 +7,12 @@ pip3 install -r requirements.txt
 
 
 ## Django:
-### How to run the server
+### How to set up database
 ```
 python3 manage.py makemigrations
 python3 manage.py migrate
 
-python3 manage.py runserver
-```
-
-### RESTful API samples
-```
-http://localhost:8000/service/author/
-http://localhost:8000/service/author/1/   # id=1
-http://localhost:8000/service/post/?author_id=1 
-http://localhost:8000/service/post?title=My%20first%20post # title=My first post
-
+delete .py files in /migrations EXCEPT __init__.py if needed 
 ```
 
 ### How to load mock data
@@ -29,7 +20,33 @@ http://localhost:8000/service/post?title=My%20first%20post # title=My first post
 python3 manage.py loaddata mock_data.json
 ```
 
+### How to run the server
+```
+python3 manage.py runserver
+```
 
+### RESTful API samples
+```
+http://localhost:8000/api/author/
+http://localhost:8000/api/author/1/   # id=1
+http://localhost:8000/api/post/?author_id=1 
+http://localhost:8000/api/post?title=My%20first%20post # title=My first post
+
+http://localhost:8000/admin # username:rex password:000 
+http://localhost:8000/api/signup # returns a token upon successfuly signup
+http://localhost:8000/api/login # returns a token upon successfuly login 
+```
+### Other useful info: 
+
+ "username": "aa",
+            "display_name": "A A",
+            "password": "1",
+ "username": "js",
+            "display_name": "Jane Smith",
+            "password": "1",
+ "username": "aj",
+            "display_name": "Alice Jones",
+            "password": "1",
 
 
 

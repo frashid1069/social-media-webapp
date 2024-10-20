@@ -21,8 +21,8 @@ class Login(APIView):
     authentication_classes = []
     permission_classes = []
     def post(self, request):
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        username = request.data.get("username")
+        password = request.data.get("password")
         author = models.Author.objects.get(username=username,password=password)
         try:
             author = models.Author.objects.get(username=username)
@@ -46,32 +46,42 @@ class Login(APIView):
 class SignUp(APIView):
     authentication_classes = []
     permission_classes = []
-    def post(self, request):
-        username = request.POST.get("username")
-        password = request.POST.get("password")
     
-        if not username or not password:
-            return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            user = User.objects.create_user(username=username, password=password)
-            token = create_token({'id':user.id, 'username':user.username}, 100000000)
+    def post(self, request):
+        serializer = serializers.SignUpSerializer(data=request.data)
+        
+        if serializer.is_valid():
             
-            return Response({
-                'message': 'User created successfully.',
-                'token':token,
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                }
-            }, status=status.HTTP_201_CREATED)
+            try:
+                author = serializer.save()
+                token = create_token({'id': author.user.id, 'username': author.user.username}, 100000000)
+                return Response({
+                    'message': 'User created successfully.',
+                    'token': token,
+                    'user': {
+                        'id': author.user.id,
+                        'username': author.user.username,
+                        'display_name': author.display_name,
+                    }
+                }, status=status.HTTP_201_CREATED)
+                
+            except IntegrityError:
+                return Response({'error': 'A user with that username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+        # If the data is invalid, return the serializer errors
+        else:
+            return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
             
-        except IntegrityError:
-            return Response({'error': 'A user with that username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+       
+        
 
 
 class AuthorView(ModelViewSet):
+    authentication_classes = []
+    permission_classes = []
     queryset = models.Author.objects
     serializer_class = serializers.AuthorSerializer
     

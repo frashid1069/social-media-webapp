@@ -4,7 +4,7 @@ import { marked } from "marked";
 import "../streamStyle.css";
 import "../likes.css"
 import Comment from "./Comment";
-import LikeModal from "./Likes";
+import Likes from "./Likes";
 
 export default function PostCards({ post, editable }) {
   const [authors, setAuthors] = useState([]);
@@ -12,7 +12,6 @@ export default function PostCards({ post, editable }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState("");
-  const [showLikeModal, setShowLikeModal] = useState(false);
   const { authorId } = useParams();
   const authorIdInt = parseInt(authorId);
 
@@ -35,7 +34,7 @@ export default function PostCards({ post, editable }) {
   // get the likes for the post
   useEffect(() => {
     // Fetch likes for this post and check if the current author has liked it
-    fetch(`http://localhost:8000/api/author/${authorId}/posts/${post.id}/likes/`)
+    fetch(`http://localhost:8000/service/author/${authorId}/posts/${post.id}/likes/`)
       .then((response) => response.json())
       .then((data) => {
         setLikes(data);
@@ -44,11 +43,6 @@ export default function PostCards({ post, editable }) {
       });
   }, [post.id, authorIdInt]);
 
-
-  // Handle opening and closing the modal
-  const toggleLikeModal = () => {
-    setShowLikeModal(!showLikeModal);
-  };
 
   // Match the corresponding author's name for the post
   const matchAuthor = (authorId) => {
@@ -69,6 +63,11 @@ export default function PostCards({ post, editable }) {
   // Navigate to the corresponding profile page
   const goProfile = () => {
     navigate(`/stream/${post.author}/profile`);
+  };
+
+  // Navigate to the likes page
+  const goToLikesPage = () => {
+    navigate(`/stream/${post.author}/${post.id}/likes`);
   };
 
   // Handle comment submission
@@ -112,7 +111,7 @@ export default function PostCards({ post, editable }) {
   const handleLike = async () => {
     if (liked) {
       // Unlike the post (send DELETE request)
-      await fetch(`http://localhost:8000/api/author/${authorId}/posts/${post.id}/likes/`, {
+      await fetch(`http://localhost:8000/service/author/${authorId}/posts/${post.id}/likes/`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -122,7 +121,7 @@ export default function PostCards({ post, editable }) {
     } 
     else {
       // Like the post (send POST request)
-      await fetch(`http://localhost:8000/api/author/${authorId}/posts/${post.id}/likes/`, {
+      await fetch(`http://localhost:8000/service/author/${authorId}/posts/${post.id}/likes/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,7 +145,7 @@ export default function PostCards({ post, editable }) {
         <button className="btn-like" onClick={handleLike}>
             {liked ? "Unlike" : "Like"} ({likes.length})
         </button>
-        <button className="btn-show-likes" onClick={toggleLikeModal}>
+        <button className="btn-show-likes" onClick={goToLikesPage}>
           Show Likes
         </button>
       </div>

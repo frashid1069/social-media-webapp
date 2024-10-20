@@ -7,12 +7,14 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 class Author(models.Model):
+     # Link to Django's User model
+    #user = models.OneToOneField(User, on_delete=models.CASCADE) 
     id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=20, unique=True)
     display_name = models.CharField(max_length=20, unique=True)
     password = models.CharField(max_length=50, default='1')
-    bio = models.TextField()
-    github_url = models.URLField()
+    bio = models.TextField(blank=True, null=True)
+    github_url = models.URLField(blank=True, null=True)
     # From https://www.devhandbook.com/django/user-profile/
     profile_image = models.ImageField(upload_to="profile_pics", blank=True, null=True)
     created_at = models.DateTimeField(default=datetime.now)

@@ -14,7 +14,7 @@ class Author(models.Model):
     github_url = models.URLField()
     # From https://www.devhandbook.com/django/user-profile/
     profile_image = models.ImageField(upload_to="profile_pics", blank=True, null=True)
-    token = models.CharField()
+    token = models.CharField(max_length=255)
     created_at = models.DateTimeField(default=datetime.now)
     updated_at = models.DateTimeField(default=datetime.now)
     #email = models.EmailField(unique=True)

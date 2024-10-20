@@ -4,11 +4,72 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-from . import serializers, models, auth
+from rest_framework import status
+from service.utils.jwt_auth import create_token
+# from django.contrib.auth.hashers import make_password, check_password
+from . import authentication, serializers, models
+from django.contrib.auth.models import User
+from django.utils import timezone
+from django.db import IntegrityError
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
     return HttpResponse("Hello, world. You're at the service index.")
+
+
+class Login(APIView):
+    authentication_classes = []
+    permission_classes = []
+    def post(self, request):
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        author = models.Author.objects.get(username=username,password=password)
+        try:
+            author = models.Author.objects.get(username=username)
+            # if not check_password(password, author.password):
+            #     return Response({'error': 'Incorrect username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+            if author.password != password:
+                return Response({'error': 'Incorrect username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+            token = create_token({'id': author.id, 'name': author.username}, 100000)
+            print(token)
+            return Response({
+                'token': token,
+                'user': {
+                    'id': author.id,
+                    'username': author.username,
+                }
+            }, status=status.HTTP_200_OK)
+
+        except models.Author.DoesNotExist:
+            return Response({'error': 'User does not exist. Please sign up.'}, status=status.HTTP_404_NOT_FOUND)
+
+class SignUp(APIView):
+    authentication_classes = []
+    permission_classes = []
+    def post(self, request):
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+    
+        if not username or not password:
+            return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = User.objects.create_user(username=username, password=password)
+            token = create_token({'id':user.id, 'username':user.username}, 100000000)
+            
+            return Response({
+                'message': 'User created successfully.',
+                'token':token,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                }
+            }, status=status.HTTP_201_CREATED)
+            
+        except IntegrityError:
+            return Response({'error': 'A user with that username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class AuthorView(ModelViewSet):
     queryset = models.Author.objects

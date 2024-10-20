@@ -10,15 +10,9 @@ GET [local, remote]: retrieve all profiles on the node (paginated)
     page: how many pages
     size: how big is a page"""
 
-app_name = "service"
 
-urlpatterns = [
-    path("", views.index, name="index"),
-    #path("get_posts", views.get_public_posts, name="get_posts")
-]
-#path("api/authors/", views.AuthorsView.as_view(), name="get_authors")
-# ~author/$    name: author-list
-# ~author/{pk}/$   name: author-detail
+
+
 router = routers.DefaultRouter()
 router.register('author', views.AuthorView)
 router.register('post', views.PostView)
@@ -27,5 +21,10 @@ router.register('like', views.LikeView)
 router.register('follow', views.FollowView)
 router.register('inbox', views.InboxView)
 
+urlpatterns = [
+    path("", views.index, name="index"),
+    path("login",views.Login.as_view(), name="login"),
+    path("signup",views.SignUp.as_view(), name="signup")
+]
 
 urlpatterns += router.urls

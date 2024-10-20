@@ -162,10 +162,6 @@ export default function PostCards({ post, editable }) {
       )}
       <p className="post-card-update-date">Updated at: {new Date(post.updated_at).toLocaleString()}</p>
       
-      {/* Show list of likes for the post */}
-      {showLikeModal && (
-        <LikeModal likes={likes} closeModal={toggleLikeModal} />
-      )}
       <div className="comment-grid">
         <h5 className="comment-title">Comments:</h5>
         {matchedComments.map((comment) => (

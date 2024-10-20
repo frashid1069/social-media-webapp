@@ -31,6 +31,12 @@ export default function Profile() {
   const matchesAuthor = (post, id) => {
     return post.author === id;
   };
+
+  // navigate to the edit profile page
+  const handleEditProfile = () => {
+    navigate(`/stream/${authorId}/editProfile`);
+  };
+
   // get posts that belong to the current user
   const visiblePosts = posts.filter((post) => matchesAuthor(post, authorIdInt));
   // sort visible posts so that the most recent updated posts appear at the top

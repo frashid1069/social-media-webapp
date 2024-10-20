@@ -12,6 +12,7 @@ export default function Profile() {
   const [author, setAuthor] = useState([]);
   const [posts, setPosts] = useState([]);
   const { authorId } = useParams();
+  const navigate = useNavigate();
   // get the author info
   useEffect(() => {
     fetch(`http://localhost:8000/service/author/${authorId}`)

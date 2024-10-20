@@ -44,14 +44,10 @@ export default function PostCards({ post, editable }) {
       });
   }, [post.id, authorIdInt]);
 
-  // Function to open the like modal
-  const openLikeModal = () => {
-    setShowLikeModal(true);
-  };
 
-  // Function to close the like modal
-  const closeLikeModal = () => {
-    setShowLikeModal(false);
+  // Handle opening and closing the modal
+  const toggleLikeModal = () => {
+    setShowLikeModal(!showLikeModal);
   };
 
   // Match the corresponding author's name for the post
@@ -150,7 +146,7 @@ export default function PostCards({ post, editable }) {
         <button className="btn-like" onClick={handleLike}>
             {liked ? "Unlike" : "Like"} ({likes.length})
         </button>
-        <button className="btn-show-likes" onClick={openLikeModal}>
+        <button className="btn-show-likes" onClick={toggleLikeModal}>
           Show Likes
         </button>
       </div>
@@ -169,7 +165,7 @@ export default function PostCards({ post, editable }) {
       
       {/* Show list of likes for the post */}
       {showLikeModal && (
-        <LikeModal likes={likes} closeModal={closeLikeModal} />
+        <LikeModal likes={likes} closeModal={toggleLikeModal} />
       )}
       <div className="comment-grid">
         <h5 className="comment-title">Comments:</h5>

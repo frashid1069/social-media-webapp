@@ -24,7 +24,7 @@ from django.conf.urls.static import static
 # From https://www.youtube.com/watch?v=jc8v_DpAbEk 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("service/", include("service.urls")),
+    path("api/", include("service.urls")),
     path('schema/', SpectacularAPIView.as_view(), name='schema'), 
     path('swagger/', SpectacularSwaggerView.as_view(), name='swagger'), 
     path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),

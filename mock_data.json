@@ -3,7 +3,7 @@
         "model": "service.author",
         "pk": 1,
         "fields": {
-            "username": "john_doe",
+            "username": "aa",
             "display_name": "John Doe",
             "password": "1",
             "bio": "Software developer with 10 years of experience.",
@@ -17,8 +17,8 @@
         "model": "service.author",
         "pk": 2,
         "fields": {
-            "username": "jane_smith",
-            "display_name": "Jane Smith",
+            "username": "bb",
+            "display_name": "Jay Chou",
             "password": "12",
             "bio": "Data scientist who loves working with big data.",
             "github_url": "https://github.com/janesmith",
@@ -31,8 +31,8 @@
         "model": "service.author",
         "pk": 3,
         "fields": {
-            "username": "alice_jones",
-            "display_name": "Alice Jones",
+            "username": "cc",
+            "display_name": "Alice",
             "password": "123",
             "bio": "Python enthusiast and blogger.",
             "github_url": "https://github.com/alicejones",

@@ -1,10 +1,73 @@
 [
     {
+        "model": "auth.user",
+        "pk": 4,
+        "fields": {
+            "username": "rex",
+            "first_name": "Rex",
+            "last_name": "",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$cAP6On8ROXD8BaDqJFmh4i$MRNDXuVxtki/aTxPc0zIdf39/fAmfp6Uuw/vT1E8VSs=", 
+            "is_superuser": true,
+            "is_staff": true,
+            "is_active": true, 
+            "date_joined": "2024-10-20 22:52:00Z"
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 1,
+        "fields": {
+            "username": "aa",
+            "first_name": "A",
+            "last_name": "A",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$cAP6On8ROXD8BaDqJFmh4i$MRNDXuVxtki/aTxPc0zIdf39/fAmfp6Uuw/vT1E8VSs=", 
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true, 
+            "date_joined": "2024-10-14T12:00:00Z"
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 2,
+        "fields": {
+            "username": "bb",
+            "first_name": "B",
+            "last_name": "B",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$cAP6On8ROXD8BaDqJFmh4i$MRNDXuVxtki/aTxPc0zIdf39/fAmfp6Uuw/vT1E8VSs=", 
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true, 
+            "date_joined": "2024-10-14T12:00:00Z"
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 3,
+        "fields": {
+            "username": "cc",
+            "first_name": "C",
+            "last_name": "C",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$cAP6On8ROXD8BaDqJFmh4i$MRNDXuVxtki/aTxPc0zIdf39/fAmfp6Uuw/vT1E8VSs=", 
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true, 
+            "date_joined": "2024-10-14T12:00:00Z"
+        }
+    },
+    
+    
+    {
         "model": "service.author",
         "pk": 1,
         "fields": {
-            "username": "john_doe",
-            "display_name": "John Doe",
+            "user": 1,
+            "username": "aa",
+            "display_name": "A A",
             "password": "1",
             "bio": "Software developer with 10 years of experience.",
             "github_url": "https://github.com/johndoe",
@@ -17,9 +80,10 @@
         "model": "service.author",
         "pk": 2,
         "fields": {
-            "username": "jane_smith",
+            "user": 2,
+            "username": "js",
             "display_name": "Jane Smith",
-            "password": "12",
+            "password": "1",
             "bio": "Data scientist who loves working with big data.",
             "github_url": "https://github.com/janesmith",
             "profile_image": null,
@@ -31,9 +95,10 @@
         "model": "service.author",
         "pk": 3,
         "fields": {
-            "username": "alice_jones",
+            "user": 3,
+            "username": "aj",
             "display_name": "Alice Jones",
-            "password": "123",
+            "password": "1",
             "bio": "Python enthusiast and blogger.",
             "github_url": "https://github.com/alicejones",
             "profile_image": null,

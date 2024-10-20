@@ -15,7 +15,7 @@ const EditPost = () => {
   useEffect(() => {
     const fetchPost = async () => {
       const response = await fetch(
-        `http://localhost:8000/service/post/${postId}/`
+        `http://localhost:8000/api/post/${postId}/`
       );
       if (response.ok) {
         const data = await response.json();
@@ -53,7 +53,7 @@ const EditPost = () => {
   
     // Make PUT request to update the post
     const response = await fetch(
-      `http://localhost:8000/service/post/${postId}/`,
+      `http://localhost:8000/api/post/${postId}/`,
       {
         method: "PUT",
         body: formData,
@@ -79,7 +79,7 @@ const EditPost = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this post?");
     if (confirmDelete) {
       const response = await fetch(
-        `http://localhost:8000/service/post/${postId}/`,
+        `http://localhost:8000/api/post/${postId}/`,
         {
           method: "DELETE",
         }

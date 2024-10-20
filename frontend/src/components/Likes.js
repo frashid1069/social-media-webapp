@@ -10,7 +10,7 @@ export default function Likes() {
 
   useEffect(() => {
     // Fetch likes
-    fetch(`http://localhost:8000/service/author/${authorId}/posts/${post.id}/likes/`)
+    fetch(`http://localhost:8000/api/author/${authorId}/posts/${postId}/likes/`)
       .then((response) => response.json())
       .then((data) => {
         setLikes(data);

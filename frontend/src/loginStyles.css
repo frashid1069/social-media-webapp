@@ -64,3 +64,23 @@ a:link{
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.9rem;
 }
+/* Assuming you have a general button style */
+button {
+    padding: 10px 15px;
+    background-color: #007bff; /* Choose a suitable color */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #0056b3; /* Darken color slightly on hover */
+  }
+  
+  /* Add a specific style for your Cancel button if needed */
+  .cancel-btn {
+    margin-left: 10px; /* Add margin for separation */
+  }
+  

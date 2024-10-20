@@ -6,7 +6,22 @@
     width: 100px;
     height: 100px;
 }
-
+.post-card-image img {
+    max-width: 100%; /* Adjusts the image size to fit within the container */
+    height: auto; /* Keeps the aspect ratio intact */
+    display: block; /* Removes any inline behavior */
+    margin: 0 auto; /* Centers the image if needed */
+    object-fit: contain; /* Ensures the entire image is shown */
+  }
+  
+.post-card img {
+max-width: 100%; /* Makes sure the image does not exceed the container width */
+height: auto; /* Keeps the image's aspect ratio intact */
+display: block; /* Ensures the image is treated as a block element */
+margin: 0 auto; /* Centers the image horizontally */
+object-fit: contain; /* Ensures the image is fully visible */
+}
+  
 .post-grid{
     display: grid;
     grid-template-columns: repeat(auto-fill, 250px);
@@ -48,4 +63,32 @@
 
 .comment{
     border-style: dashed;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; 
+    margin-top: 10px; 
+}
+
+.post-card-author {
+    background-color: lightblue;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    text-align: center;
+}
+
+.post-card-author:hover {
+    background-color: dodgerblue;
+    transform: scale(1.05);
+}
+
+.post-card-author {
+    font-weight: bold;
 }

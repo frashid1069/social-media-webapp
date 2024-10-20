@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',               # install rest_framework
-    'corsheaders',                  # install django-cors-headers     
+    'corsheaders',                  # install django-cors-headers 
+    'drf_spectacular',      
 ]
 
 MIDDLEWARE = [
@@ -55,6 +57,30 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 ]
+# From https://drf-spectacular.readthedocs.io/en/latest/readme.html 
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'service.authentication.JwtQueryParamsAuthentication',  # authentication
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+SPECTACULAR_SETTINGS = {
+    # From https://stackoverflow.com/questions/51951641/swagger-unable-to-render-this-definition-the-provided-definition-does-not-speci by Helen 
+    'OAS_VERSION': '3.1.0',
+    'SWAGGER_UI_SETTINGS': {
+        'swagger': '2.0',
+    },
+    "swagger": "2.0",
+    'TITLE': 'Aquamarine Project API',
+    'DESCRIPTION': 'This project is a blogging/social network platform will allow the importing of other sources of information (GitHub) as well allow the distribution and sharing of posts and content. ', 
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
+}
 
 ROOT_URLCONF = 'aquamarine_server.urls'
 
@@ -133,3 +159,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',        # React front-end port
 ]
+
+# URL path where media files will be accessible. 
+# It defines the base URL for serving media files (e.g., images, documents, etc.) in the browser.
+# When users or your application needs to access these files, the URL will begin with '/media/'.
+# For example, an image might be accessible at http://your-domain.com/media/image_name.jpg.
+MEDIA_URL = '/media/'
+
+# The absolute path in your file system where media files are stored.
+# This specifies the location in your server where all the media files will be saved.
+# It is built by joining the project's base directory (BASE_DIR) with the 'media' folder.
+# So, in your project's root directory, there will be a folder named 'media' to store user-uploaded files.
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

@@ -1,5 +1,9 @@
 from django.db import models
 from datetime import datetime
+from django.utils.text import slugify
+import os
+from django.contrib.auth.models import User
+
 # Create your models here.
 
 class Author(models.Model):
@@ -11,13 +15,19 @@ class Author(models.Model):
     github_url = models.URLField()
     # From https://www.devhandbook.com/django/user-profile/
     profile_image = models.ImageField(upload_to="profile_pics", blank=True, null=True)
-    
     created_at = models.DateTimeField(default=datetime.now)
     updated_at = models.DateTimeField(default=datetime.now)
     #email = models.EmailField(unique=True)
     
     def __str__(self):
         return self.username
+    
+def upload_post_image(instance, filename):
+    # Create a slugified version of the title to use in the filename
+    base, ext = os.path.splitext(filename)
+    slugified_title = slugify(instance.title)  # Converts title to a URL-friendly format
+    new_filename = f"{slugified_title}{ext}"
+    return os.path.join("post_pics", new_filename)
 
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='posts')

@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-from . import serializers, models
+from . import serializers, models, auth
 from .models import Author
 from .serializers import AuthorSerializer
 from rest_framework import status
@@ -17,6 +17,8 @@ class AuthorView(ModelViewSet):
     queryset = models.Author.objects
     serializer_class = serializers.AuthorSerializer
     
+    # authentication_classes = [auth.JwtQueryParamsAuthentication]
+    
 class PostView(ModelViewSet):
     queryset = models.Post.objects
     serializer_class = serializers.PostSerializer
@@ -24,14 +26,11 @@ class PostView(ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()  
         
-        #----------------------------wait for confirm----------------------------
         # assume current user is the author, return AnonymousUser if not logged in
         current_user = self.request.user
         # Only return not deleted post
         is_deleted = False
         queryset = queryset.filter(is_deleted=is_deleted)
-        #----------------------------end wait for confirm----------------------------
-        
         author_id = self.request.query_params.get('author_id')  
         visibility = self.request.query_params.get("visibility")
         title = self.request.query_params.get('title')
@@ -46,7 +45,7 @@ class PostView(ModelViewSet):
             queryset = queryset.filter(author__id=author_id)  # Filter the queryset by 'author'
         elif title:
             queryset = queryset.filter(title=title)
-#----------------------------wait for confirm----------------------------
+
         # ~post/?author_id=<pk>
         if author_id:
             queryset = queryset.filter(author__id=author_id, title=title) 
@@ -60,7 +59,6 @@ class PostView(ModelViewSet):
             # author__id__in filter the posts that belong to these author, same for visibility__in
             queryset = queryset.filter(author__id__in=followed_by_user,visibility__in=["unlisted", "friend-only"] )
             
-#----------------------------end wait for confirm----------------------------        
         return queryset.order_by("created_at")
     
     # overwrite default destroy: soft delete 
@@ -75,6 +73,23 @@ class CommentView(ModelViewSet):
 class LikeView(ModelViewSet):
     queryset = models.Like.objects
     serializer_class = serializers.LikeSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        post_id = self.request.query_params.get('post_id')
+        author_id = self.request.query_params.get('author_id')
+
+        # ~post/?author_id=<pk>&post_id=<pk> (likes for a particular post made by a particular author)
+        if author_id and post_id:
+            queryset = queryset.filter(author__id=author_id, post__id=post_id)
+        # ~post/?author_id=<pk> (all likes made by a particular author)
+        elif author_id:
+            queryset = queryset.filter(author__id=author_id)
+        # ~post/?post_id=<pk> (all likes for a particular post)
+        elif post_id:
+            queryset = queryset.filter(post__id=post_id)
+
+        return queryset.order_by("created_at")
     
 class FollowView(ModelViewSet):
     queryset = models.Follow.objects
@@ -164,6 +179,29 @@ def handle_follow(request, follow_id):
         follow.save()
     # Return to ui
     return
+
+def create_like(request, author_id, post_id):
+    if request.method == "POST":
+        author = models.Author.objects.get(id=author_id)
+        post = models.Post.objects.get(id=post_id)
+
+        # Check if the like already exists
+        if models.Like.objects.filter(author=author, post=post).exists():
+            return
+        # Create the like
+        models.Like.objects.create(author=author, post=post)
+
+    # Redirect to the UI
+    return
+
+def delete_like(request, author_id, post_id):
+    if request.method == "DELETE":
+        like = models.Like.objects.filter(post=post_id, author=author_id)
+        if like.exists():
+            like.delete()
+    # Return to ui
+    return
+
 
 def get_stream_posts(request, author_id):
     following = models.Follow.filter(follower=author_id)

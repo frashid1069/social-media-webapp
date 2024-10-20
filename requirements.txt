@@ -13,6 +13,7 @@ jsonschema-specifications==2024.10.1
 packaging==24.1
 pillow==10.4.0
 psycopg2-binary==2.9.9
+PyJWT==2.9.0
 PyYAML==6.0.2
 referencing==0.35.1
 rpds-py==0.20.0

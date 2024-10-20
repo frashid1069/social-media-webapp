@@ -6,7 +6,9 @@ import EditPost from "./components/EditPost";
 import SignUp from "./components/SignUp";
 import Stream from "./components/Stream";
 import Profile from "./components/Profile";
+import EditProfile from "./components/EditProfile";
 import CreatePost from "./components/CreatePost";
+import Likes from "./components/Likes";
 import EditProfile from "./components/EditProfile";
 
 /**

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../streamStyle.css";
-
+const apiUrl = process.env.REACT_APP_API_URL
 
 
 function EditProfile() {
@@ -18,9 +18,10 @@ function EditProfile() {
 
   const navigate = useNavigate();
 
+
   useEffect(() => {
     // Fetch the current profile data and set it to formData
-    fetch(`http://localhost:8000/service/author/${authorId}/`)
+    fetch(`${apiUrl}author/${authorId}/`)
       .then(response => response.json())
       .then(data => setFormData(data))
       .catch(error => console.error('Error fetching profile data:', error));
@@ -53,7 +54,7 @@ function EditProfile() {
     
     formDataToSend.append('updated_at', new Date().toISOString());
   
-    fetch(`http://localhost:8000/service/author/${authorId}/`, {
+    fetch(`${apiUrl}author/${authorId}/`, {
       method: 'PUT',
       body: formDataToSend,
     })

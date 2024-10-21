@@ -336,6 +336,7 @@ import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked"; // Import the Markdown library
 import "../loginStyles.css";
+const apiUrl = process.env.REACT_APP_API_URL
 
 export default function CreatePost() {
   const [postContent, setPostContent] = useState(""); // For Markdown content
@@ -365,7 +366,7 @@ export default function CreatePost() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/service/post/", {
+      const response = await fetch(`${apiUrl}post/`, {
         method: "POST",
         body: formData,
       });

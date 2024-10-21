@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../editPost.css";
-
+const apiUrl = process.env.REACT_APP_API_URL
 const EditPost = () => {
   const { postId } = useParams(); // Extract postId from URL
   const [postContent, setPostContent] = useState("");
@@ -12,10 +12,11 @@ const EditPost = () => {
   const [selectedImage, setSelectedImage] = useState(null); // To handle image uploads
   const navigate = useNavigate();
 
+
   useEffect(() => {
     const fetchPost = async () => {
       const response = await fetch(
-        `http://localhost:8000/service/post/${postId}/`
+        `${apiUrl}post/${postId}/`
       );
       if (response.ok) {
         const data = await response.json();
@@ -53,7 +54,7 @@ const EditPost = () => {
   
     // Make PUT request to update the post
     const response = await fetch(
-      `http://localhost:8000/service/post/${postId}/`,
+      `${apiUrl}post/${postId}/`,
       {
         method: "PUT",
         body: formData,

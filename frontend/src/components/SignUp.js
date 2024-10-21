@@ -54,9 +54,10 @@ export default function SignUp() {
   // }
 
   const handleSubmit = async (event) => {
+    const apiUrl = process.env.REACT_APP_API_URL + 'author/';
     event.preventDefault();
     try {
-      const response = await fetch("http://localhost:8000/service/author/", {
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

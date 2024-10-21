@@ -5,6 +5,7 @@ import "../streamStyle.css";
 import "../likes.css"
 import Comment from "./Comment";
 import Likes from "./Likes";
+const apiUrl = process.env.REACT_APP_API_URL
 
 export default function PostCards({ post, editable }) {
   const [authors, setAuthors] = useState([]);
@@ -19,14 +20,14 @@ export default function PostCards({ post, editable }) {
 
   // Fetch the list of authors
   useEffect(() => {
-    fetch("http://localhost:8000/service/author/")
+    fetch(`${apiUrl}author/`)
       .then((response) => response.json())
       .then((data) => setAuthors(data));
   }, []);
 
   // Fetch the list of comments
   useEffect(() => {
-    fetch("http://localhost:8000/service/comment/")
+    fetch(`${apiUrl}comment/`)
       .then((response) => response.json())
       .then((data) => setComments(data));
   }, []);
@@ -34,7 +35,7 @@ export default function PostCards({ post, editable }) {
   // get the likes for the post
   useEffect(() => {
     // Fetch likes for this post and check if the current author has liked it
-    fetch(`http://localhost:8000/service/author/${authorId}/posts/${post.id}/likes/`)
+    fetch(`${apiUrl}author/${authorId}/posts/${post.id}/likes/`)
       .then((response) => response.json())
       .then((data) => {
         setLikes(data);
@@ -73,7 +74,7 @@ export default function PostCards({ post, editable }) {
   // Handle comment submission
   const submitComment = async (event) => {
     event.preventDefault();
-    const response = await fetch(`http://localhost:8000/service/comment/`, {
+    const response = await fetch(`${apiUrl}comment/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -111,7 +112,7 @@ export default function PostCards({ post, editable }) {
   const handleLike = async () => {
     if (liked) {
       // Unlike the post (send DELETE request)
-      await fetch(`http://localhost:8000/service/author/${authorId}/posts/${post.id}/likes/`, {
+      await fetch(`${apiUrl}author/${authorId}/posts/${post.id}/likes/`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -121,7 +122,7 @@ export default function PostCards({ post, editable }) {
     } 
     else {
       // Like the post (send POST request)
-      await fetch(`http://localhost:8000/service/author/${authorId}/posts/${post.id}/likes/`, {
+      await fetch(`$${apiUrl}author/${authorId}/posts/${post.id}/likes/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

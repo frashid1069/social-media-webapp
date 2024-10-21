@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../loginStyles.css";
+const apiUrl = process.env.REACT_APP_API_URL
 /**
  * This is a component for displaying the login page
  * after inputing correct username and password and clicking
@@ -14,7 +15,7 @@ export default function Login() {
 
   // get the author list
   useEffect(() => {
-    fetch("http://localhost:8000/service/author/")
+    fetch(`${apiUrl}author/`)
       .then((response) => response.json())
       .then((data) => setAuthors(data));
   }, []);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import "../streamStyle.css";
+const apiUrl = process.env.REACT_APP_API_URL
 /**
  * This is a component for displaying comments for the corresponded post
  * @param comment: single comment object
@@ -9,9 +10,10 @@ import "../streamStyle.css";
 export default function Comment({ comment }) {
   const [authors, setAuthors] = useState([]);
   const navigate = useNavigate();
+
   // get the author list
   useEffect(() => {
-    fetch("http://localhost:8000/service/author/")
+    fetch(`${apiUrl}author/`)
       .then((response) => response.json())
       .then((data) => setAuthors(data));
   }, []);

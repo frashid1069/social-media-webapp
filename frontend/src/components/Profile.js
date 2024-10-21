@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import "../streamStyle.css";
 import PostCards from "./PostCards";
 
+const apiUrl = process.env.REACT_APP_API_URL
+
 /**
  * This is a component for displaying the profile page
  *  import "../streamStyle_Sukh.css";
@@ -13,15 +15,16 @@ export default function Profile() {
   const [posts, setPosts] = useState([]);
   const { authorId } = useParams();
   const navigate = useNavigate();
+
   // get the author info
   useEffect(() => {
-    fetch(`http://localhost:8000/service/author/${authorId}`)
+    fetch(`${apiUrl}author/${authorId}`)
       .then((response) => response.json())
       .then((data) => setAuthor(data));
   }, [authorId]);
   // get the posts list
   useEffect(() => {
-    fetch("http://localhost:8000/service/post/")
+    fetch(`${apiUrl}post/`)
       .then((response) => response.json())
       .then((data) => setPosts(data));
   }, []);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../likes.css";
+const apiUrl = process.env.REACT_APP_API_URL
 
 export default function Likes() {
   const { authorId, postId } = useParams();
@@ -10,7 +11,7 @@ export default function Likes() {
 
   useEffect(() => {
     // Fetch likes
-    fetch(`http://localhost:8000/service/author/${authorId}/posts/${postId}/likes/`)
+    fetch(`${apiUrl}author/${authorId}/posts/${postId}/likes/`)
       .then((response) => response.json())
       .then((data) => {
         setLikes(data);

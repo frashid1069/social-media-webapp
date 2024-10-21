@@ -13,6 +13,7 @@ import PostCards from "./PostCards";
  *
  */
 export default function Stream() {
+  const apiUrl = process.env.REACT_APP_API_URL + 'post/';
   const [posts, setPosts] = useState([]);
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function Stream() {
 
   // get the posts list
   useEffect(() => {
-    fetch("http://localhost:8000/service/post/")
+    fetch(apiUrl)
       .then((response) => response.json())
       .then((data) => setPosts(data));
   }, []);

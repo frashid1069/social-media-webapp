@@ -25,6 +25,7 @@ class Author(models.Model):
         return str(self.id)
     
 def upload_post_image(instance, filename):
+    # - sukh 
     # This function is used to define the file path for uploading an image for a post.
     # It renames the file using a slugified version of the post's title and places it in the "post_pics/" directory.
 

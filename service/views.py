@@ -36,7 +36,7 @@ class Login(APIView):
             
             if author.password != password:
                 return Response({'error': 'Incorrect username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
-            token = create_token({'id': author.user.id, 'name': author.user.username}, 100000)
+            token = create_token({'id': author.user.id, 'username': author.user.username}, 100000)
             print(token)
             return Response({
                 'token': token,
@@ -95,6 +95,8 @@ class AuthorView(ModelViewSet):
     # authentication_classes = [auth.JwtQueryParamsAuthentication]
     
 class PostView(ModelViewSet):
+    #authentication_classes = [authentication.JwtQueryParamsAuthentication]
+    authentication_classes = []
     queryset = models.Post.objects
     serializer_class = serializers.PostSerializer
     # overwrite the default get_queryset
@@ -110,31 +112,42 @@ class PostView(ModelViewSet):
         visibility = self.request.query_params.get("visibility")
         title = self.request.query_params.get('title')
         following_list = self.request.query_params.get("following_list")
-        # Gets a list of all public posts made by the author
+
+        # # Gets a list of all public posts made by the author
+        # if author_id and visibility:
+        #     queryset = queryset.filter(id=author_id, visibility="public").order_by("created_at")
+        # # List of all posts made by people that the user follows 
+        # elif following_list:
+        #     queryset = queryset.filter(id=following_list).order_by("created_at")
+        # elif author_id:
+        #     queryset = queryset.filter(author__id=author_id)  # Filter the queryset by 'author'
+        # elif title:
+        #     queryset = queryset.filter(title=title)
+
+        # # ~post/?author_id=<pk>
+        # if author_id:
+        #     queryset = queryset.filter(author__id=author_id) 
+        #~post/?author_id=<pk>&visibility=public
         if author_id and visibility:
-            queryset = queryset.filter(id=author_id, visibility="public").order_by("created_at")
-        # List of all posts made by people that the user follows 
-        elif following_list:
-            queryset = queryset.filter(id=following_list).order_by("created_at")
-        elif author_id:
-            queryset = queryset.filter(author__id=author_id)  # Filter the queryset by 'author'
+            queryset = queryset.filter(visibility="public", author__id=author_id)
+        # ~post/?author_id=<pk>&title=<str%str> 
         elif title:
             queryset = queryset.filter(title=title)
-
-        # ~post/?author_id=<pk>
-        if author_id:
-            queryset = queryset.filter(author__id=author_id, title=title) 
-        # ~post/?author_id=<pk>&title=<str%str> 
-        if title:
-            queryset = queryset.filter(title=title)
-        # ~post/?following_list=<True/False>
-        if following_list:
-            followed_by_user = models.Author.objects.filter(followers__follower=current_user)
-            # followed_by_user is a list of author id who author followed
+        # ~post/?following_list=<anything>
+        elif following_list:
+            if self.authentication_classes:
+                current_author = models.Author.objects.get(user=current_user)
+            else:
+                current_author = models.Author.objects.get(id=author_id)
+            print(current_author)
+            followed_by_user = models.Author.objects.filter(followers__follower=current_author)
+            print(followed_by_user)
+            # followed_by_user is a list of author id who current user followed
             # author__id__in filter the posts that belong to these author, same for visibility__in
-            queryset = queryset.filter(author__id__in=followed_by_user,visibility__in=["unlisted", "friend-only"] )
+            #queryset = queryset.filter(author__id__in=followed_by_user,visibility__in=["unlisted", "friend-only", "public"] )
+            queryset = queryset.filter(author__id__in=followed_by_user)
             
-        return queryset.order_by("created_at")
+        return queryset.order_by("updated_at")
     
     # overwrite default destroy: soft delete 
     def perform_destroy(self, instance):

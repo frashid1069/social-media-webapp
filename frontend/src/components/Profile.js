@@ -35,6 +35,9 @@ export default function Profile() {
   const matchesAuthor = (post, id) => {
     return post.author === id;
   };
+  const matchesPublic = (post) => {
+    return post.visibility.toLowerCase() === "public";
+  };
 
   // navigate to the edit profile page
   const handleEditProfile = () => {
@@ -47,7 +50,9 @@ export default function Profile() {
   };
   
   // get posts that belong to the current user
-  const visiblePosts = posts.filter((post) => matchesAuthor(post, authorIdInt));
+  const visiblePosts = posts.filter(
+    (post) => matchesAuthor(post, authorIdInt) && matchesPublic(post)
+  );
   // sort visible posts so that the most recent updated posts appear at the top
   const sortedPosts = visiblePosts
     .sort((a, b) => {

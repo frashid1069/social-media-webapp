@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Author, Post, Comment, Like, Follow, Inbox
-
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 # class AuthorSerializer(serializers.Serializer):
 #     id = serializers.AutoField()
@@ -21,6 +22,39 @@ from .models import Author, Post, Comment, Like, Follow, Inbox
         
 #     def update(self, instance, validated_data):
 #         return super().update(instance, validated_data)
+
+class SignUpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Author
+        fields = ['username', 'password', 'display_name', 'bio', 'github_url', 'profile_image']
+        
+    def validate_username(self, value):
+        """Ensure the username is unique in the User model."""
+        if not value.strip():
+            raise serializers.ValidationError("Username is required.")
+        
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("A user with that username already exists.")
+        return value
+    
+    def validate_password(self, value):
+        """TODO: Ensure the password meets the requirements."""
+        if not value.strip():
+            raise serializers.ValidationError("Password is required.")
+        return value
+    
+    def create(self, validated_data):
+        """Create a user first, then create author, author object return as data."""
+        username = validated_data.pop('username')
+        password = validated_data.pop('password')
+        
+        user = User.objects.create_user(username=username, password=password)
+        # User is inactive until approved by the admin
+        user.is_active = False
+        user.save()
+        author = Author.objects.create(user=user, username=username, password=password, **validated_data)
+        
+        return author
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:

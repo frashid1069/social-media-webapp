@@ -1,0 +1,86 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+a:link{
+    text-decoration: none;
+    width: 7%;
+}
+
+/* Login Styles */
+.login-image{
+    border-radius: 50%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5%;
+    width: 100px;
+    height: 100px;
+}
+.username, .password, .display_name, .bio, .github_url{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    width: 20%;
+    padding: 12px 20px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+.login-button, .signup-button, .go-to-login, .go-to-signup{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 2%;
+    background-color: #04AA6D;
+    color: white;
+    padding: 14px 20px;
+    border: none;
+    cursor: pointer;
+    width: 7%;
+}
+.login-button:hover {
+    opacity: 0.8;
+}
+.signup-button:hover {
+    opacity: 0.8;
+}
+.go-to-login:hover{
+    opacity: 0.8;
+} 
+.go-to-signup:hover{
+    opacity: 0.8;
+}
+
+/* Footer Styles */
+.footer {
+    margin-top: 30%;
+    background-color: #2c2c2c;
+    padding: 1rem;
+    text-align: center;
+}
+.footer-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+/* Assuming you have a general button style */
+button {
+    padding: 10px 15px;
+    background-color: #007bff; /* Choose a suitable color */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #0056b3; /* Darken color slightly on hover */
+  }
+  
+  /* Add a specific style for your Cancel button if needed */
+  .cancel-btn {
+    margin-left: 10px; /* Add margin for separation */
+  }
+  

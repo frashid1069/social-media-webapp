@@ -9,6 +9,7 @@ import Profile from "./components/Profile";
 import EditProfile from "./components/EditProfile";
 import CreatePost from "./components/CreatePost";
 import Likes from "./components/Likes";
+import Welcome from "./components/Welcome";
 
 /**
  * You can put path for components
@@ -22,11 +23,18 @@ function App() {
       <div className="login">
         <Router basename="/">
           <Routes>
+            <Route path="/" element={<Welcome />}></Route>
             <Route path="/login" element={<Login />}></Route>
             <Route path="/signup" element={<SignUp />}></Route>
             <Route path="/stream/:authorId" element={<Stream />}></Route>
-            <Route path="/stream/:authorId/createPost" element={<CreatePost />} />
-            <Route path="/stream/:authorId/editProfile" element={<EditProfile />}></Route>
+            <Route
+              path="/stream/:authorId/createPost"
+              element={<CreatePost />}
+            />
+            <Route
+              path="/stream/:authorId/editProfile"
+              element={<EditProfile />}
+            ></Route>
 
             <Route
               path="/stream/:authorId/profile"
@@ -45,8 +53,7 @@ function App() {
 }
 
 export default App;
-    
 
-            // <Route path="/posts/:postId/edit" element={<EditPost />} />
-            // <Route path="/posts" element={<PostCards />} />
-            // <Route path="/posts/:postId" element={<PostDetail />} />
+// <Route path="/posts/:postId/edit" element={<EditPost />} />
+// <Route path="/posts" element={<PostCards />} />
+// <Route path="/posts/:postId" element={<PostDetail />} />

@@ -40,7 +40,12 @@ export default function Profile() {
   const handleEditProfile = () => {
     navigate(`/stream/${authorId}/editProfile`);
   };
-
+  
+  // go back to stream page
+  const goBackStream = () => {
+    navigate(`/stream/${authorId}`);
+  };
+  
   // get posts that belong to the current user
   const visiblePosts = posts.filter((post) => matchesAuthor(post, authorIdInt));
   // sort visible posts so that the most recent updated posts appear at the top
@@ -55,6 +60,9 @@ export default function Profile() {
   return (
     <div className="profile-page">
       <h2 className="page-subtitle">Welcome to the Profile page!</h2>
+      <button className="profile-goBackBtn" onClick={goBackStream}>
+        Back To Stream
+      </button>
       <h4 className="profile-txt">Name: </h4>
       <p className="profile-name">{author.display_name}</p>
       <h4 className="profile-txt">Bio: </h4>

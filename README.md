@@ -28,25 +28,34 @@ python3 manage.py runserver
 ### RESTful API samples
 ```
 http://localhost:8000/api/author/
-http://localhost:8000/api/author/1/   # id=1
+http://localhost:8000/api/post/?author_id=<pk>&following_list=1   return posts of authors followed by <pk>
+
+
+
 http://localhost:8000/api/post/?author_id=1 
-http://localhost:8000/api/post?title=My%20first%20post # title=My first post
+[UNAVAILABLE] http://localhost:8000/api/author/1/   # id=1
+[UNAVAILABLE] http://localhost:8000/api/post?title=My%20first%20post # title=My first post
 
 http://localhost:8000/admin # username:rex password:000 
 http://localhost:8000/api/signup # returns a token upon successfuly signup
 http://localhost:8000/api/login # returns a token upon successfuly login 
 ```
 ### Other useful info: 
+| id  | username | display_name | user |
+| --- | -------- | ------------ | ---- |
+| 1   | aa       | A A          | 1    |
+| 2   | js       | Jane Smith   | 2    |
+| 3   | aj       | Alice Jones  | 3    |
 
- "username": "aa",
-            "display_name": "A A",
-            "password": "1",
- "username": "js",
-            "display_name": "Jane Smith",
-            "password": "1",
- "username": "aj",
-            "display_name": "Alice Jones",
-            "password": "1",
+all has 1 public post
+1,3 has 1 unlisted and 1 friend-only posts 
+
+1 follows 2,3
+2 follows 3
+3 follows 1
+
+1,3 are friends
+
 
 
 

@@ -325,6 +325,10 @@ def login(request):
 #     follow_requests = models.Follow.filter(following=author_id)
 #     return
 
+
+'''
+The edit_profile function allows the user to edit their profile. The user must be logged in to edit their profile.
+'''
 def edit_profile(request, author_id):
     author = models.Author.objects.get(id=author_id)
     serializer = serializers.Author(author, data=request.data, partial=True)

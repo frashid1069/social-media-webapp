@@ -321,21 +321,32 @@ class LikeView(ModelViewSet):
         responses={200: serializers.LikeSerializer(many=True), 400: "Bad Request"},
     )
     def get_queryset(self):
+        # Get the base queryset from the parent class
         queryset = super().get_queryset()
+        # Extract query parameters from the request
         post_id = self.request.query_params.get('post_id')
         author_id = self.request.query_params.get('author_id')
 
+        # If both 'author_id' and 'post_id' are provided in the request query parameters:
+        # Filter the queryset to return likes where both the author ID and post ID match
+        # i.e., likes made by a specific author on a specific post.
         # ~post/?author_id=<pk>&post_id=<pk> (likes for a particular post made by a particular author)
         if author_id and post_id:
             queryset = queryset.filter(author__id=author_id, post__id=post_id)
+
+        # If only 'author_id' is provided in the query parameters:
+        # Filter the queryset to return all likes made by that specific author.
         # ~post/?author_id=<pk> (all likes made by a particular author)
         elif author_id:
             queryset = queryset.filter(author__id=author_id)
+        
+        # If only 'post_id' is provided in the query parameters:
+        # Filter the queryset to return all likes for the specified post.
         # ~post/?post_id=<pk> (all likes for a particular post)
         elif post_id:
             queryset = queryset.filter(post__id=post_id)
 
-        return queryset.order_by("created_at")
+        return queryset.order_by("created_at") # return the filtered queryset
     
     @extend_schema(
         summary="Create a new like",
@@ -426,11 +437,14 @@ def delete_post(request, post_id):
 #     return
 
 def edit_post(request, post_id):
+    # Retrieve the post object that matches the given post_id from the database
     post = models.Post.objects.get(id=post_id)
+
+    # Check if the data provided in the request is valid according to the serializer's validation rules.
     serializer = serializers.Post(post, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data)
+        return Response(serializer.data) # # Return the updated post data as a JSON response.
     # Return to ui
     return 
 
@@ -454,6 +468,7 @@ def handle_follow(request, follow_id):
 
 def create_like(request, author_id, post_id):
     if request.method == "POST":
+        # Retrieve the author and post objects based on the provided author_id and post_id
         author = models.Author.objects.get(id=author_id)
         post = models.Post.objects.get(id=post_id)
 
@@ -469,6 +484,8 @@ def create_like(request, author_id, post_id):
 def delete_like(request, author_id, post_id):
     if request.method == "DELETE":
         like = models.Like.objects.filter(post=post_id, author=author_id)
+
+        # If the like exists, delete it
         if like.exists():
             like.delete()
     # Return to ui

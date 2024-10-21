@@ -41,6 +41,7 @@ http://localhost:8000/api/signup # returns a token upon successfuly signup
 http://localhost:8000/api/login # returns a token upon successfuly login 
 ```
 ### Other useful info: 
+default password 1
 | id  | username | display_name | user |
 | --- | -------- | ------------ | ---- |
 | 1   | aa       | A A          | 1    |

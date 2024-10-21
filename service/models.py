@@ -25,10 +25,24 @@ class Author(models.Model):
         return str(self.id)
     
 def upload_post_image(instance, filename):
-    # Create a slugified version of the title to use in the filename
+    # This function is used to define the file path for uploading an image for a post.
+    # It renames the file using a slugified version of the post's title and places it in the "post_pics/" directory.
+
+    # Split the original filename into the base (name) and extension (file type).
+    # Example: If the filename is "image.jpg", base = "image" and ext = ".jpg"
     base, ext = os.path.splitext(filename)
-    slugified_title = slugify(instance.title)  # Converts title to a URL-friendly format
+
+    # Slugify the title of the post.
+    # This means converting the post title (instance.title) into a URL-friendly format.
+    # Example: If the post title is "My First Post!", slugify(instance.title) will return "my-first-post".
+    slugified_title = slugify(instance.title)  # slugify is useful for making readable, URL-safe filenames.
+
+    # Create the new filename by combining the slugified title and the original file extension.
+    # Example: If slugified_title = "my-first-post" and ext = ".jpg", new_filename will be "my-first-post.jpg".
     new_filename = f"{slugified_title}{ext}"
+
+    # Return the full path where the file will be stored. The file will be placed inside the "post_pics/" directory.
+    # os.path.join("post_pics", new_filename) will create a path like "post_pics/my-first-post.jpg".
     return os.path.join("post_pics", new_filename)
 
 class Post(models.Model):

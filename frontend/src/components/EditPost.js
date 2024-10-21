@@ -1,3 +1,11 @@
+/**
+ * Acknowledgment of Assistance from ChatGPT:
+For this project, I (sukh) sought assistance from OpenAI's ChatGPT to 
+help clarify and explain the user story related to CommonMark and 
+image links in posts. Specifically, ChatGPT provided a detailed explanation 
+of how to approach the user story thay meets the requirements of the user story. No code was directly copied from ChatGPT, 
+and I fully understand all the code and its functionality.
+ */
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../editPost.css";
@@ -80,7 +88,7 @@ const EditPost = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this post?");
     if (confirmDelete) {
       const response = await fetch(
-        `http://localhost:8000/service/post/${postId}/`,
+        `${apiUrl}post/${postId}/`,
         {
           method: "DELETE",
         }

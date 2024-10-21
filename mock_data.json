@@ -124,8 +124,36 @@
         "model": "service.post",
         "pk": 2,
         "fields": {
+            "author": 1,
+            "title": "author1-unlisted",
+            "content": "This is my first post!",
+            "content_type": "text/markdown",
+            "image_content": null,
+            "created_at": "2024-10-14T12:30:00Z",
+            "updated_at": "2024-10-14T12:30:00Z",
+            "visibility": "unlisted"
+        }
+    },
+    {
+        "model": "service.post",
+        "pk": 3,
+        "fields": {
+            "author": 1,
+            "title": "author1-friend-only",
+            "content": "This is my first post!",
+            "content_type": "text/markdown",
+            "image_content": null,
+            "created_at": "2024-10-14T12:30:00Z",
+            "updated_at": "2024-10-14T12:30:00Z",
+            "visibility": "friend-only"
+        }
+    },
+    {
+        "model": "service.post",
+        "pk": 4,
+        "fields": {
             "author": 2,
-            "title": "title2",
+            "title": "author2-public",
             "content": "Sharing my experiences in the world of data science.",
             "content_type": "text/markdown",
             "image_content": null,
@@ -136,16 +164,44 @@
     },
     {
         "model": "service.post",
-        "pk": 3,
+        "pk": 5,
         "fields": {
             "author": 3,
-            "title": "Python Tips and Tricks",
+            "title": "author3-public",
             "content": "Here are some cool Python tips.",
             "content_type": "text/markdown",
             "image_content": null,
             "created_at": "2024-10-14T12:50:00Z",
             "updated_at": "2024-10-14T12:50:00Z",
             "visibility": "public"
+        }
+    },
+    {
+        "model": "service.post",
+        "pk": 6,
+        "fields": {
+            "author": 3,
+            "title": "author3-friend-only",
+            "content": "This is my first post!",
+            "content_type": "text/markdown",
+            "image_content": null,
+            "created_at": "2024-10-14T12:30:00Z",
+            "updated_at": "2024-10-14T12:30:00Z",
+            "visibility": "friend-only"
+        }
+    },
+    {
+        "model": "service.post",
+        "pk": 7,
+        "fields": {
+            "author": 3,
+            "title": "author3-unlisted",
+            "content": "This is my first post!",
+            "content_type": "text/markdown",
+            "image_content": null,
+            "created_at": "2024-10-14T12:30:00Z",
+            "updated_at": "2024-10-14T12:30:00Z",
+            "visibility": "unlisted"
         }
     },
     {
@@ -222,6 +278,16 @@
         "model": "service.follow",
         "pk": 2,
         "fields": {
+            "follower": 1,
+            "followed": 3,
+            "pending": "no",
+            "created_at": "2024-10-14T14:00:00Z"
+        }
+    },
+    {
+        "model": "service.follow",
+        "pk": 3,
+        "fields": {
             "follower": 2,
             "followed": 3,
             "pending": "no",
@@ -230,7 +296,7 @@
     },
     {
         "model": "service.follow",
-        "pk": 3,
+        "pk": 4,
         "fields": {
             "follower": 3,
             "followed": 1,

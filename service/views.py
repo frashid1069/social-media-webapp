@@ -11,6 +11,7 @@ from . import authentication, serializers, models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import IntegrityError
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
@@ -87,14 +88,75 @@ class AuthorView(ModelViewSet):
     queryset = models.Author.objects
     serializer_class = serializers.AuthorSerializer
     
-    # authentication_classes = [auth.JwtQueryParamsAuthentication]
+    @extend_schema(
+        summary="Retrieve a list of authors",
+        description="Fetches a list of all registered authors.",
+        responses={200: serializers.AuthorSerializer(many=True)},
+        parameters=[
+            OpenApiParameter(name="limit", description="Limit the number of authors", type=int, required=False),
+            OpenApiParameter(name="offset", description="Offset for pagination", type=int, required=False),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    @extend_schema(
+        summary="Retrieve a single author",
+        description="Fetch details of a specific author by ID.",
+        responses={200: serializers.AuthorSerializer, 404: "Not Found"},
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+    @extend_schema(
+        summary="Create a new author",
+        description="Register a new author with the required details.",
+        request=serializers.AuthorSerializer,
+        responses={201: serializers.AuthorSerializer, 400: "Bad Request"},
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+    
+    @extend_schema(
+        summary="Update an author",
+        description="Update details of an existing author.",
+        request=serializers.AuthorSerializer,
+        responses={200: serializers.AuthorSerializer, 400: "Bad Request", 404: "Not Found"},
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+    
+    @extend_schema(
+        summary="Delete an author",
+        description="Soft-delete or permanently delete an author by ID.",
+        responses={204: None, 404: "Not Found"},
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
     
 class PostView(ModelViewSet):
     #authentication_classes = [authentication.JwtQueryParamsAuthentication]
     authentication_classes = []
     queryset = models.Post.objects
     serializer_class = serializers.PostSerializer
-    # overwrite the default get_queryset
+    
+    
+    @extend_schema(
+        summary="Retrieve a list of posts",
+        description="""
+        Retrieve a list of posts, with optional filters. 
+        - If `author_id` and `visibility` are provided, only public posts of the author will be returned.
+        - If `title` is provided, posts matching the title will be returned.
+        - If `following_list` is provided, posts from authors that the user follows will be returned.
+        """,
+        parameters=[
+            OpenApiParameter(name="author_id", description="Filter posts by the author's ID", required=False, type=OpenApiTypes.INT),
+            OpenApiParameter(name="visibility", description="Filter posts by visibility (public, friend-only, unlisted)", required=False, type=OpenApiTypes.STR),
+            OpenApiParameter(name="title", description="Filter posts by title", required=False, type=OpenApiTypes.STR),
+            OpenApiParameter(name="following_list", description="Return posts from authors that the user follows", required=False, type=OpenApiTypes.BOOL),
+        ],
+        responses={200: serializers.PostSerializer(many=True), 400: "Bad Request"},
+    )
     def get_queryset(self):
         queryset = super().get_queryset()  
         
@@ -144,19 +206,120 @@ class PostView(ModelViewSet):
             
         return queryset.order_by("updated_at")
     
-    # overwrite default destroy: soft delete 
+    # overwrite default destroy: soft delete
+    @extend_schema(
+        summary="Soft delete a post",
+        description="Mark a post as deleted without removing it from the database.",
+        responses={204: None, 404: "Not Found"},
+    )
     def perform_destroy(self, instance):
         instance.is_deleted = True
         instance.save()
 
+
+    @extend_schema(
+        summary="Create a new post",
+        description="Create a new post with title, content, and optional image.",
+        request=serializers.PostSerializer,
+        responses={201: serializers.PostSerializer, 400: "Bad Request"},
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+    
+    @extend_schema(
+        summary="Retrieve a single post",
+        description="Fetch the details of a post by its ID.",
+        responses={200: serializers.PostSerializer, 404: "Not Found"},
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+    @extend_schema(
+        summary="Update an existing post",
+        description="Update the title, content, or image of an existing post.",
+        request=serializers.PostSerializer,
+        responses={200: serializers.PostSerializer, 400: "Bad Request", 404: "Not Found"},
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+    
 class CommentView(ModelViewSet):
     queryset = models.Comment.objects
     serializer_class = serializers.CommentSerializer
+    
+    @extend_schema(
+        summary="Retrieve a list of comments",
+        description="""
+        Retrieve a list of comments, with optional filtering. 
+        - If `post_id` is provided, only comments for that post will be returned.
+        """,
+        parameters=[
+            OpenApiParameter(name="post_id", description="Filter comments by the post's ID", required=False, type=OpenApiTypes.INT),
+        ],
+        responses={200: serializers.CommentSerializer(many=True), 400: "Bad Request"},
+    )
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        post_id = self.request.query_params.get('post_id')
+
+        # If post_id is provided, filter comments by the post ID
+        if post_id:
+            queryset = queryset.filter(post_id=post_id)
+        
+        return queryset.order_by("created_at")
+
+    @extend_schema(
+        summary="Create a new comment",
+        description="Create a new comment for a post.",
+        request=serializers.CommentSerializer,
+        responses={201: serializers.CommentSerializer, 400: "Bad Request"},
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Retrieve a single comment",
+        description="Fetch the details of a specific comment by its ID.",
+        responses={200: serializers.CommentSerializer, 404: "Not Found"},
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Update an existing comment",
+        description="Update the content of an existing comment.",
+        request=serializers.CommentSerializer,
+        responses={200: serializers.CommentSerializer, 400: "Bad Request", 404: "Not Found"},
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Delete a comment",
+        description="Delete a comment by its ID.",
+        responses={204: None, 404: "Not Found"},
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
     
 class LikeView(ModelViewSet):
     queryset = models.Like.objects
     serializer_class = serializers.LikeSerializer
 
+    @extend_schema(
+        summary="Retrieve a list of likes",
+        description="""
+        Retrieve a list of likes, with optional filtering.
+        - If `author_id` and `post_id` are provided, returns likes for a particular post made by the specified author.
+        - If `author_id` is provided, returns all likes made by that author.
+        - If `post_id` is provided, returns all likes for the specified post.
+        """,
+        parameters=[
+            OpenApiParameter(name="author_id", description="Filter likes by the author's ID", required=False, type=OpenApiTypes.INT),
+            OpenApiParameter(name="post_id", description="Filter likes by the post's ID", required=False, type=OpenApiTypes.INT),
+        ],
+        responses={200: serializers.LikeSerializer(many=True), 400: "Bad Request"},
+    )
     def get_queryset(self):
         queryset = super().get_queryset()
         post_id = self.request.query_params.get('post_id')
@@ -173,6 +336,32 @@ class LikeView(ModelViewSet):
             queryset = queryset.filter(post__id=post_id)
 
         return queryset.order_by("created_at")
+    
+    @extend_schema(
+        summary="Create a new like",
+        description="Create a new like for a post by an author.",
+        request=serializers.LikeSerializer,
+        responses={201: serializers.LikeSerializer, 400: "Bad Request"},
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+    
+    @extend_schema(
+        summary="Retrieve a single like",
+        description="Fetch the details of a like by its ID.",
+        responses={200: serializers.LikeSerializer, 404: "Not Found"},
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+    @extend_schema(
+        summary="Delete a like",
+        description="Delete a like by its ID.",
+        responses={204: None, 404: "Not Found"},
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
     
 class FollowView(ModelViewSet):
     queryset = models.Follow.objects

@@ -80,7 +80,7 @@ const EditPost = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this post?");
     if (confirmDelete) {
       const response = await fetch(
-        `http://localhost:8000/service/post/${postId}/`,
+        `${apiUrl}post/${postId}/`,
         {
           method: "DELETE",
         }

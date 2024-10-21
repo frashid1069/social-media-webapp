@@ -5,6 +5,8 @@ const apiUrl = process.env.REACT_APP_API_URL
 
 export default function Likes() {
   const { authorId, postId } = useParams();
+
+  // Initialize state variables
   const [likes, setLikes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [authors, setAuthors] = useState([]);
@@ -19,7 +21,7 @@ export default function Likes() {
         setLoading(false); // Turn off loading
       })
       .catch((error) => console.error("Error fetching likes:", error));
-  }, [postId]);
+  }, [postId]); // Dependency array ensures this runs when postId changes
 
   useEffect(() => {
     // Fetch authors for name matching
@@ -27,7 +29,7 @@ export default function Likes() {
       .then((response) => response.json())
       .then((data) => setAuthors(data))
       .catch((error) => console.error("Error fetching authors:", error));
-  }, []);
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   // Match the author's display name by their ID
   const matchAuthor = (authorId) => {
@@ -35,6 +37,7 @@ export default function Likes() {
     return author ? author.display_name : "Unknown Author";
   };
 
+  // Function to handle the "Back" button click
   const handleBackClick = () => {
     navigate(-1); // Take the user back to the previous page (/stream/${post.author}/${post.id} or /author/${authorId}/posts/${post.id}/
   };
@@ -46,12 +49,14 @@ export default function Likes() {
           Back
         </button>
         <h2>Likes</h2>
+        {/* Display a loading message while likes data is being fetched */}
         {loading ? (
           <p>Loading likes...</p>
         ) : (
-          <>
+          <>{/* Show the total number of likes once the data has loaded */}
             <p>Total Likes: {likes.length}</p>
             <ul>
+              {/* If there are likes, display each like with information */}
               {likes.length > 0 ? (
                 likes.map((like) => (
                   <li key={like.id}>
@@ -60,6 +65,7 @@ export default function Likes() {
                   </li>
                 ))
               ) : (
+                // If no likes are found
                 <p>No likes found for this post.</p>
               )}
             </ul>

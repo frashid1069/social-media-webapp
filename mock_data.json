@@ -1,0 +1,340 @@
+[
+    {
+        "model": "auth.user",
+        "pk": 4,
+        "fields": {
+            "username": "rex",
+            "first_name": "Rex",
+            "last_name": "",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$cAP6On8ROXD8BaDqJFmh4i$MRNDXuVxtki/aTxPc0zIdf39/fAmfp6Uuw/vT1E8VSs=", 
+            "is_superuser": true,
+            "is_staff": true,
+            "is_active": true, 
+            "date_joined": "2024-10-20 22:52:00Z"
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 1,
+        "fields": {
+            "username": "aa",
+            "first_name": "A",
+            "last_name": "A",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$cAP6On8ROXD8BaDqJFmh4i$MRNDXuVxtki/aTxPc0zIdf39/fAmfp6Uuw/vT1E8VSs=", 
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true, 
+            "date_joined": "2024-10-14T12:00:00Z"
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 2,
+        "fields": {
+            "username": "bb",
+            "first_name": "B",
+            "last_name": "B",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$cAP6On8ROXD8BaDqJFmh4i$MRNDXuVxtki/aTxPc0zIdf39/fAmfp6Uuw/vT1E8VSs=", 
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true, 
+            "date_joined": "2024-10-14T12:00:00Z"
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 3,
+        "fields": {
+            "username": "cc",
+            "first_name": "C",
+            "last_name": "C",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$cAP6On8ROXD8BaDqJFmh4i$MRNDXuVxtki/aTxPc0zIdf39/fAmfp6Uuw/vT1E8VSs=", 
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true, 
+            "date_joined": "2024-10-14T12:00:00Z"
+        }
+    },
+    
+    
+    {
+        "model": "service.author",
+        "pk": 1,
+        "fields": {
+            "user": 1,
+            "username": "aa",
+            "display_name": "A A",
+            "password": "1",
+            "bio": "Software developer with 10 years of experience.",
+            "github_url": "https://github.com/johndoe",
+            "profile_image": null,
+            "created_at": "2024-10-14T12:00:00Z",
+            "updated_at": "2024-10-14T12:00:00Z"
+        }
+    },
+    {
+        "model": "service.author",
+        "pk": 2,
+        "fields": {
+            "user": 2,
+            "username": "js",
+            "display_name": "Jane Smith",
+            "password": "1",
+            "bio": "Data scientist who loves working with big data.",
+            "github_url": "https://github.com/janesmith",
+            "profile_image": null,
+            "created_at": "2024-10-14T12:10:00Z",
+            "updated_at": "2024-10-14T12:10:00Z"
+        }
+    },
+    {
+        "model": "service.author",
+        "pk": 3,
+        "fields": {
+            "user": 3,
+            "username": "aj",
+            "display_name": "Alice Jones",
+            "password": "1",
+            "bio": "Python enthusiast and blogger.",
+            "github_url": "https://github.com/alicejones",
+            "profile_image": null,
+            "created_at": "2024-10-14T12:20:00Z",
+            "updated_at": "2024-10-14T12:20:00Z"
+        }
+    },
+    {
+        "model": "service.post",
+        "pk": 1,
+        "fields": {
+            "author": 1,
+            "title": "My first post",
+            "content": "This is my first post!",
+            "content_type": "text/markdown",
+            "image_content": null,
+            "created_at": "2024-10-14T12:30:00Z",
+            "updated_at": "2024-10-14T12:30:00Z",
+            "visibility": "public"
+        }
+    },
+    {
+        "model": "service.post",
+        "pk": 2,
+        "fields": {
+            "author": 1,
+            "title": "author1-unlisted",
+            "content": "This is my first post!",
+            "content_type": "text/markdown",
+            "image_content": null,
+            "created_at": "2024-10-14T12:30:00Z",
+            "updated_at": "2024-10-14T12:30:00Z",
+            "visibility": "unlisted"
+        }
+    },
+    {
+        "model": "service.post",
+        "pk": 3,
+        "fields": {
+            "author": 1,
+            "title": "author1-friend-only",
+            "content": "This is my first post!",
+            "content_type": "text/markdown",
+            "image_content": null,
+            "created_at": "2024-10-14T12:30:00Z",
+            "updated_at": "2024-10-14T12:30:00Z",
+            "visibility": "friend-only"
+        }
+    },
+    {
+        "model": "service.post",
+        "pk": 4,
+        "fields": {
+            "author": 2,
+            "title": "author2-public",
+            "content": "Sharing my experiences in the world of data science.",
+            "content_type": "text/markdown",
+            "image_content": null,
+            "created_at": "2024-10-14T12:40:00Z",
+            "updated_at": "2024-10-14T12:40:00Z",
+            "visibility": "public"
+        }
+    },
+    {
+        "model": "service.post",
+        "pk": 5,
+        "fields": {
+            "author": 3,
+            "title": "author3-public",
+            "content": "Here are some cool Python tips.",
+            "content_type": "text/markdown",
+            "image_content": null,
+            "created_at": "2024-10-14T12:50:00Z",
+            "updated_at": "2024-10-14T12:50:00Z",
+            "visibility": "public"
+        }
+    },
+    {
+        "model": "service.post",
+        "pk": 6,
+        "fields": {
+            "author": 3,
+            "title": "author3-friend-only",
+            "content": "This is my first post!",
+            "content_type": "text/markdown",
+            "image_content": null,
+            "created_at": "2024-10-14T12:30:00Z",
+            "updated_at": "2024-10-14T12:30:00Z",
+            "visibility": "friend-only"
+        }
+    },
+    {
+        "model": "service.post",
+        "pk": 7,
+        "fields": {
+            "author": 3,
+            "title": "author3-unlisted",
+            "content": "This is my first post!",
+            "content_type": "text/markdown",
+            "image_content": null,
+            "created_at": "2024-10-14T12:30:00Z",
+            "updated_at": "2024-10-14T12:30:00Z",
+            "visibility": "unlisted"
+        }
+    },
+    {
+        "model": "service.comment",
+        "pk": 1,
+        "fields": {
+            "content": "Great post, John!",
+            "author": 2,
+            "post": 1,
+            "created_at": "2024-10-14T13:00:00Z",
+            "updated_at": "2024-10-14T13:00:00Z"
+        }
+    },
+    {
+        "model": "service.comment",
+        "pk": 2,
+        "fields": {
+            "content": "Very helpful, thanks Jane.",
+            "author": 3,
+            "post": 2,
+            "created_at": "2024-10-14T13:10:00Z",
+            "updated_at": "2024-10-14T13:10:00Z"
+        }
+    },
+    {
+        "model": "service.comment",
+        "pk": 3,
+        "fields": {
+            "content": "Awesome tips, Alice!",
+            "author": 1,
+            "post": 3,
+            "created_at": "2024-10-14T13:20:00Z",
+            "updated_at": "2024-10-14T13:20:00Z"
+        }
+    },
+    {
+        "model": "service.like",
+        "pk": 1,
+        "fields": {
+            "author": 1,
+            "post": 2,
+            "created_at": "2024-10-14T13:30:00Z"
+        }
+    },
+    {
+        "model": "service.like",
+        "pk": 2,
+        "fields": {
+            "author": 2,
+            "post": 3,
+            "created_at": "2024-10-14T13:40:00Z"
+        }
+    },
+    {
+        "model": "service.like",
+        "pk": 3,
+        "fields": {
+            "author": 3,
+            "post": 1,
+            "created_at": "2024-10-14T13:50:00Z"
+        }
+    },
+    {
+        "model": "service.follow",
+        "pk": 1,
+        "fields": {
+            "follower": 1,
+            "followed": 2,
+            "pending": "no",
+            "created_at": "2024-10-14T14:00:00Z"
+        }
+    },
+    {
+        "model": "service.follow",
+        "pk": 2,
+        "fields": {
+            "follower": 1,
+            "followed": 3,
+            "pending": "no",
+            "created_at": "2024-10-14T14:00:00Z"
+        }
+    },
+    {
+        "model": "service.follow",
+        "pk": 3,
+        "fields": {
+            "follower": 2,
+            "followed": 3,
+            "pending": "no",
+            "created_at": "2024-10-14T14:10:00Z"
+        }
+    },
+    {
+        "model": "service.follow",
+        "pk": 4,
+        "fields": {
+            "follower": 3,
+            "followed": 1,
+            "pending": "no",
+            "created_at": "2024-10-14T14:20:00Z"
+        }
+    },
+    {
+        "model": "service.inbox",
+        "pk": 1,
+        "fields": {
+            "author": 1,
+            "post": 2,
+            "comment": 2,
+            "like": 1,
+            "created_at": "2024-10-14T14:30:00Z"
+        }
+    },
+    {
+        "model": "service.inbox",
+        "pk": 2,
+        "fields": {
+            "author": 2,
+            "post": 3,
+            "comment": 3,
+            "like": 2,
+            "created_at": "2024-10-14T14:40:00Z"
+        }
+    },
+    {
+        "model": "service.inbox",
+        "pk": 3,
+        "fields": {
+            "author": 3,
+            "post": 1,
+            "comment": 1,
+            "like": 3,
+            "created_at": "2024-10-14T14:50:00Z"
+        }
+    }
+]

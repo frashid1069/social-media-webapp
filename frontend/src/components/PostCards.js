@@ -4,7 +4,6 @@ import { marked } from "marked";
 import "../streamStyle.css";
 import "../likes.css"
 import Comment from "./Comment";
-import Likes from "./Likes";
 const apiUrl = process.env.REACT_APP_API_URL
 
 export default function PostCards({ post, editable }) {
@@ -32,16 +31,23 @@ export default function PostCards({ post, editable }) {
       .then((data) => setComments(data));
   }, []);
 
-  // get the likes for the post
-  useEffect(() => {
-    // Fetch likes for this post and check if the current author has liked it
-    fetch(`${apiUrl}author/${authorId}/posts/${post.id}/likes/`)
+  // Function to fetch likes for the post
+  const fetchLikes = () => {
+    fetch(`${apiUrl}like/`)
       .then((response) => response.json())
       .then((data) => {
-        setLikes(data);
-        const userLiked = data.some((like) => like.author === authorIdInt);
+        const postLikes = data.filter((like) => like.post === post.id);
+        setLikes(postLikes);
+
+        // Check if the current author has already liked this post
+        const userLiked = postLikes.some((like) => like.author === authorIdInt);
         setLiked(userLiked);
-      });
+      })
+  };
+
+  // Fetch likes when the component mounts or when post ID or author ID changes
+  useEffect(() => {
+    fetchLikes();
   }, [post.id, authorIdInt]);
 
 
@@ -111,18 +117,25 @@ export default function PostCards({ post, editable }) {
   // function for liking and un-liking a post
   const handleLike = async () => {
     if (liked) {
-      // Unlike the post (send DELETE request)
-      await fetch(`${apiUrl}author/${authorId}/posts/${post.id}/likes/`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      setLiked(false);
+      // Find the like object for this author and post to delete
+      const likeToDelete = likes.find((like) => like.author === authorIdInt && like.post === post.id);
+    
+      if (likeToDelete) {
+        // Send DELETE request to delete the specific like
+        await fetch(`${apiUrl}like/${likeToDelete.id}/`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        setLiked(false);
+        // Refresh likes to update count
+        fetchLikes();
+      }
     } 
     else {
       // Like the post (send POST request)
-      await fetch(`$${apiUrl}author/${authorId}/posts/${post.id}/likes/`, {
+      const response = await fetch(`${apiUrl}like/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -132,7 +145,12 @@ export default function PostCards({ post, editable }) {
           post: post.id,
         }),
       });
-      setLiked(true);
+
+      if (response.ok) {
+        setLiked(true);
+        // Refresh likes to update count
+        fetchLikes();
+      }
     }
   }
 

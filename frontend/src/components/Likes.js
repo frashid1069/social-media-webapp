@@ -7,18 +7,33 @@ export default function Likes() {
   const { authorId, postId } = useParams();
   const [likes, setLikes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [authors, setAuthors] = useState([]);
   const navigate = useNavigate(); // For navigation
 
   useEffect(() => {
-    // Fetch likes
-    fetch(`${apiUrl}author/${authorId}/posts/${postId}/likes/`)
+    // Fetch likes for the specific post
+    fetch(`${apiUrl}like/?post=${postId}`)
       .then((response) => response.json())
       .then((data) => {
-        setLikes(data);
-        setLoading(false);
+        setLikes(data); // Set filtered likes based on postId
+        setLoading(false); // Turn off loading
       })
       .catch((error) => console.error("Error fetching likes:", error));
-  }, [authorId, postId]);
+  }, [postId]);
+
+  useEffect(() => {
+    // Fetch authors for name matching
+    fetch(`${apiUrl}author/`)
+      .then((response) => response.json())
+      .then((data) => setAuthors(data))
+      .catch((error) => console.error("Error fetching authors:", error));
+  }, []);
+
+  // Match the author's display name by their ID
+  const matchAuthor = (authorId) => {
+    const author = authors.find((a) => a.id === authorId);
+    return author ? author.display_name : "Unknown Author";
+  };
 
   const handleBackClick = () => {
     navigate(-1); // Take the user back to the previous page (/stream/${post.author}/${post.id} or /author/${authorId}/posts/${post.id}/
@@ -40,7 +55,7 @@ export default function Likes() {
               {likes.length > 0 ? (
                 likes.map((like) => (
                   <li key={like.id}>
-                    <p>Liked by: {like.author}</p>
+                    <p>Liked by: {matchAuthor(like.author)}</p>
                     <p>Date: {new Date(like.created_at).toLocaleString()}</p>
                   </li>
                 ))

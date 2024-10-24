@@ -26,10 +26,14 @@ export default function PostCards({ post, editable }) {
 
   // Fetch the list of comments
   useEffect(() => {
+    fetchComments();
+  }, []);
+
+  const fetchComments = () => {
     fetch(`${apiUrl}comment/`)
       .then((response) => response.json())
       .then((data) => setComments(data));
-  }, []);
+  }
 
   // Function to fetch likes for the post
   const fetchLikes = () => {
@@ -97,6 +101,7 @@ export default function PostCards({ post, editable }) {
     if (response.ok) {
       setNewCommentContent("");
       // Optionally, refresh comments list here
+      fetchComments();
     }
   };
 

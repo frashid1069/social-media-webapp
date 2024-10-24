@@ -116,24 +116,24 @@ export default function PostCards({ post, editable }) {
 
   // function for liking and un-liking a post
   const handleLike = async () => {
-    if (liked) {
-      // Find the like object for this author and post to delete
-      const likeToDelete = likes.find((like) => like.author === authorIdInt && like.post === post.id);
+    // if (liked) {
+    //   // Find the like object for this author and post to delete
+    //   const likeToDelete = likes.find((like) => like.author === authorIdInt && like.post === post.id);
     
-      if (likeToDelete) {
-        // Send DELETE request to delete the specific like
-        await fetch(`${apiUrl}like/${likeToDelete.id}/`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        setLiked(false);
-        // Refresh likes to update count
-        fetchLikes();
-      }
-    } 
-    else {
+    //   if (likeToDelete) {
+    //     // Send DELETE request to delete the specific like
+    //     await fetch(`${apiUrl}like/${likeToDelete.id}/`, {
+    //       method: "DELETE",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //       },
+    //     });
+    //     setLiked(false);
+    //     // Refresh likes to update count
+    //     fetchLikes();
+    //   }
+    // } 
+    if (!liked){
       // Like the post (send POST request)
       const response = await fetch(`${apiUrl}like/`, {
         method: "POST",
@@ -162,7 +162,7 @@ export default function PostCards({ post, editable }) {
           {matchAuthor(post.author)}
         </button>
         <button className="btn-like" onClick={handleLike}>
-            {liked ? "Unlike" : "Like"} ({likes.length})
+            {liked ? "Liked" : "Like"} ({likes.length})
         </button>
         <button className="btn-show-likes" onClick={goToLikesPage}>
           Show Likes

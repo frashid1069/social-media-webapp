@@ -83,4 +83,11 @@ button {
   .cancel-btn {
     margin-left: 10px; /* Add margin for separation */
   }
-  
+/* https://stackoverflow.com/questions/72068063/is-it-possible-to-custom-the-image-size-of-dangerouslysetinnerhtml-in-react from Dolphin */
+.preview img {
+    max-width: 500px;
+    max-height: 300px;
+}
+.markdown-preview {
+    margin-bottom: 250px;
+}

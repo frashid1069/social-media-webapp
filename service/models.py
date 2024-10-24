@@ -49,8 +49,7 @@ def upload_post_image(instance, filename):
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='posts')
     title = models.CharField(max_length=255)
-    
-    content = models.TextField()
+    content = models.TextField(blank=True, null=True) 
     content_type = models.CharField(max_length=50, choices=[('text/markdown', 'Markdown'), ('image/jpeg', 'JPEG')])
     # From https://stackoverflow.com/questions/58144230/how-to-set-image-field-as-optional by govind
     image_content = models.ImageField(upload_to="post_pics", blank=True, null=True)

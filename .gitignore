@@ -2,8 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-/profile_pics
-/post_pics
+/media
 # C extensions
 *.so
 

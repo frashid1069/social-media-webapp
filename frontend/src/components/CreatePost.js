@@ -85,13 +85,12 @@ export default function CreatePost() {
           placeholder="Write your post content in Markdown..."
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
-          required
         />
         {/* Markdown Preview */}
         <div className="markdown-preview">
           <h3>Preview</h3>
-          <div
-            dangerouslySetInnerHTML={getMarkdownPreview()} // Render the Markdown content as HTML
+          <div className="preview"
+            dangerouslySetInnerHTML={getMarkdownPreview()} // Render the Markdown content as HTML 
           ></div>
         </div>
         <div>

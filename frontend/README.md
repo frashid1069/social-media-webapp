@@ -1,5 +1,5 @@
 ## Frontend dependency install
-
+Make sure you are in the frontend branch 
 ```
 npm install
 ```

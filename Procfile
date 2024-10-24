@@ -1,0 +1,1 @@
+web: gunicorn aquamarine_server.wsgi

@@ -37,8 +37,8 @@ http://localhost:8000/api/post/?author_id=1
 [UNAVAILABLE] http://localhost:8000/api/post?title=My%20first%20post # title=My first post
 
 http://localhost:8000/admin # username:rex password:1 
-http://localhost:8000/api/signup # returns a token upon successfuly signup
-http://localhost:8000/api/login # returns a token upon successfuly login 
+http://localhost:8000/api/signup/ # returns a token upon successfuly signup
+http://localhost:8000/api/login/ # returns a token upon successfuly login 
 ```
 ### Other useful info: 
 default password 1

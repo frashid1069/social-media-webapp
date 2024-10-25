@@ -21,7 +21,7 @@ function App() {
   return (
     <div className="App">
       <div className="login">
-        <Router basename="/">
+        <Router basename="/home">
           <Routes>
             <Route path="/" element={<Welcome />}></Route>
             <Route path="/login" element={<Login />}></Route>

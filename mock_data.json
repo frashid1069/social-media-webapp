@@ -62,7 +62,7 @@
     
     
     {
-        "model": "service.author",
+        "model": "author.author",
         "pk": 1,
         "fields": {
             "user": 1,
@@ -77,7 +77,7 @@
         }
     },
     {
-        "model": "service.author",
+        "model": "author.author",
         "pk": 2,
         "fields": {
             "user": 2,
@@ -92,7 +92,7 @@
         }
     },
     {
-        "model": "service.author",
+        "model": "author.author",
         "pk": 3,
         "fields": {
             "user": 3,
@@ -107,7 +107,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 1,
         "fields": {
             "author": 1,
@@ -121,7 +121,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 2,
         "fields": {
             "author": 1,
@@ -135,7 +135,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 3,
         "fields": {
             "author": 1,
@@ -149,7 +149,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 4,
         "fields": {
             "author": 2,
@@ -163,7 +163,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 5,
         "fields": {
             "author": 3,
@@ -177,7 +177,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 6,
         "fields": {
             "author": 3,
@@ -191,7 +191,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 7,
         "fields": {
             "author": 3,
@@ -205,7 +205,7 @@
         }
     },
     {
-        "model": "service.comment",
+        "model": "comment.comment",
         "pk": 1,
         "fields": {
             "content": "Great post, John!",
@@ -216,7 +216,7 @@
         }
     },
     {
-        "model": "service.comment",
+        "model": "comment.comment",
         "pk": 2,
         "fields": {
             "content": "Very helpful, thanks Jane.",
@@ -227,7 +227,7 @@
         }
     },
     {
-        "model": "service.comment",
+        "model": "comment.comment",
         "pk": 3,
         "fields": {
             "content": "Awesome tips, Alice!",

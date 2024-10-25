@@ -15,3 +15,5 @@ python3 -m pip install -r requirements.txt
  pip install django-cors-headers
 
  pip install pyjwt
+
+ -R ./frontend/build/ aquamarine_server/static/

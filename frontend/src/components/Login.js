@@ -17,7 +17,10 @@ export default function Login() {
   useEffect(() => {
     fetch(`${apiUrl}author/`)
       .then((response) => response.json())
-      .then((data) => setAuthors(data));
+      .then((data) => {
+        console.log(data);
+        setAuthors(data);
+      });
   }, []);
 
   const handleUsernameChange = (e) => {

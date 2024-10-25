@@ -34,6 +34,9 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'service',                      # install app service
+    'author',                      # install app service
+    'post',                      # install app service
+    'comment',                      # install app service
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -168,7 +171,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',        # React front-end port
+    'http://127.0.0.1:8000',        # React front-end port
+    'http://localhost:3000',
 ]
 
 # URL path where media files will be accessible. 
@@ -182,3 +186,27 @@ MEDIA_URL = '/media/'
 # It is built by joining the project's base directory (BASE_DIR) with the 'media' folder.
 # So, in your project's root directory, there will be a folder named 'media' to store user-uploaded files.
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# include manifest.json and index.html
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend/build/static'),
+    os.path.join(BASE_DIR, 'frontend/build/'),
+]
+
+# change the default templates folder directory
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'frontend/build')],  # This points to the build folder of React
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import "../streamStyle.css";
 import PostCards from "./PostCards";
-
+import { cusFetch } from './Login';
 const apiUrl = process.env.REACT_APP_API_URL
 
 /**
@@ -18,13 +18,13 @@ export default function Profile() {
 
   // get the author info
   useEffect(() => {
-    fetch(`${apiUrl}author/${authorId}`)
+    cusFetch(`${apiUrl}author/${authorId}`)
       .then((response) => response.json())
       .then((data) => setAuthor(data));
   }, [authorId]);
   // get the posts list
   useEffect(() => {
-    fetch(`${apiUrl}post/`)
+    cusFetch(`${apiUrl}post/`)
       .then((response) => response.json())
       .then((data) => setPosts(data));
   }, []);

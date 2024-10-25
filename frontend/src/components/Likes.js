@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../likes.css";
+import { cusFetch } from './Login';
 const apiUrl = process.env.REACT_APP_API_URL
 
 export default function Likes() {
@@ -13,22 +14,22 @@ export default function Likes() {
   const navigate = useNavigate(); // For navigation
 
   useEffect(() => {
-    // Fetch likes for the specific post
-    fetch(`${apiUrl}like/?post=${postId}`)
+    // cusFetch likes for the specific post
+    cusFetch(`${apiUrl}like/?post=${postId}`)
       .then((response) => response.json())
       .then((data) => {
         setLikes(data); // Set filtered likes based on postId
         setLoading(false); // Turn off loading
       })
-      .catch((error) => console.error("Error fetching likes:", error));
+      .catch((error) => console.error("Error cusFetching likes:", error));
   }, [postId]); // Dependency array ensures this runs when postId changes
 
   useEffect(() => {
-    // Fetch authors for name matching
-    fetch(`${apiUrl}author/`)
+    // cusFetch authors for name matching
+    cusFetch(`${apiUrl}author/`)
       .then((response) => response.json())
       .then((data) => setAuthors(data))
-      .catch((error) => console.error("Error fetching authors:", error));
+      .catch((error) => console.error("Error cusFetching authors:", error));
   }, []); // Empty dependency array ensures this runs only once on mount
 
   // Match the author's display name by their ID
@@ -49,7 +50,7 @@ export default function Likes() {
           Back
         </button>
         <h2>Likes</h2>
-        {/* Display a loading message while likes data is being fetched */}
+        {/* Display a loading message while likes data is being cusFetched */}
         {loading ? (
           <p>Loading likes...</p>
         ) : (

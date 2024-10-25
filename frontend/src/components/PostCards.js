@@ -4,6 +4,7 @@ import { marked } from "marked";
 import "../streamStyle.css";
 import "../likes.css"
 import Comment from "./Comment";
+import { cusFetch } from './Login';
 const apiUrl = process.env.REACT_APP_API_URL
 
 export default function PostCards({ post, editable }) {
@@ -17,27 +18,27 @@ export default function PostCards({ post, editable }) {
 
   const navigate = useNavigate();
 
-  // Fetch the list of authors
+  // cusFetch the list of authors
   useEffect(() => {
-    fetch(`${apiUrl}author/`)
+    cusFetch(`${apiUrl}author/`)
       .then((response) => response.json())
       .then((data) => setAuthors(data));
   }, []);
 
-  // Fetch the list of comments
+  // cusFetch the list of comments
   useEffect(() => {
-    fetchComments();
+    cusFetchComments();
   }, []);
 
-  const fetchComments = () => {
-    fetch(`${apiUrl}comment/`)
+  const cusFetchComments = () => {
+    cusFetch(`${apiUrl}comment/`)
       .then((response) => response.json())
       .then((data) => setComments(data));
   }
 
-  // Function to fetch likes for the post
-  const fetchLikes = () => {
-    fetch(`${apiUrl}like/`)
+  // Function to cusFetch likes for the post
+  const cusFetchLikes = () => {
+    cusFetch(`${apiUrl}like/`)
       .then((response) => response.json())
       .then((data) => {
         const postLikes = data.filter((like) => like.post === post.id);
@@ -49,9 +50,9 @@ export default function PostCards({ post, editable }) {
       })
   };
 
-  // Fetch likes when the component mounts or when post ID or author ID changes
+  // cusFetch likes when the component mounts or when post ID or author ID changes
   useEffect(() => {
-    fetchLikes();
+    cusFetchLikes();
   }, [post.id, authorIdInt]);
 
 
@@ -84,7 +85,7 @@ export default function PostCards({ post, editable }) {
   // Handle comment submission
   const submitComment = async (event) => {
     event.preventDefault();
-    const response = await fetch(`${apiUrl}comment/`, {
+    const response = await cusFetch(`${apiUrl}comment/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -101,7 +102,7 @@ export default function PostCards({ post, editable }) {
     if (response.ok) {
       setNewCommentContent("");
       // Optionally, refresh comments list here
-      fetchComments();
+      cusFetchComments();
     }
   };
 
@@ -127,7 +128,7 @@ export default function PostCards({ post, editable }) {
     
     //   if (likeToDelete) {
     //     // Send DELETE request to delete the specific like
-    //     await fetch(`${apiUrl}like/${likeToDelete.id}/`, {
+    //     await cusFetch(`${apiUrl}like/${likeToDelete.id}/`, {
     //       method: "DELETE",
     //       headers: {
     //         "Content-Type": "application/json",
@@ -135,12 +136,12 @@ export default function PostCards({ post, editable }) {
     //     });
     //     setLiked(false);
     //     // Refresh likes to update count
-    //     fetchLikes();
+    //     cusFetchLikes();
     //   }
     // } 
     if (!liked){
       // Like the post (send POST request)
-      const response = await fetch(`${apiUrl}like/`, {
+      const response = await cusFetch(`${apiUrl}like/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -154,7 +155,7 @@ export default function PostCards({ post, editable }) {
       if (response.ok) {
         setLiked(true);
         // Refresh likes to update count
-        fetchLikes();
+        cusFetchLikes();
       }
     }
   }

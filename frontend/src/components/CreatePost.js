@@ -10,6 +10,7 @@ import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked"; // Import the Markdown library
 import "../loginStyles.css";
+import { cusFetch } from './Login';
 const apiUrl = process.env.REACT_APP_API_URL
 
 export default function CreatePost() {
@@ -33,6 +34,7 @@ export default function CreatePost() {
     formData.append("author", parseInt(authorId));
     formData.append("created_at", new Date().toISOString());
     formData.append("updated_at", new Date().toISOString());
+    
 
     // Append the image file if an image is selected
     if (selectedImage) {
@@ -40,7 +42,7 @@ export default function CreatePost() {
     }
 
     try {
-      const response = await fetch(`${apiUrl}post/`, {
+      const response = await cusFetch(`${apiUrl}post/`, {
         method: "POST",
         body: formData,
       });

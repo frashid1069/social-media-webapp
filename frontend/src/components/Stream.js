@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../streamStyle.css";
 import PostCards from "./PostCards";
 
+
 /**
  * This is a component for displaying the personal stream page by using PostCards component.
  * Click Profile button => go to profile page
@@ -17,12 +18,20 @@ export default function Stream() {
   const [posts, setPosts] = useState([]);
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
-
+  const token = localStorage.getItem('token');  
   const { authorId } = useParams();
-
+  console.log(token);
   // get the posts list
   useEffect(() => {
-    fetch(apiUrl)
+    fetch(apiUrl,
+      {
+        method: "GET",
+        headers: {
+          "token": `${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    )
       .then((response) => response.json())
       .then((data) => setPosts(data));
   }, []);

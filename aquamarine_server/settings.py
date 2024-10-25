@@ -63,12 +63,12 @@ MIDDLEWARE = [
 # From https://drf-spectacular.readthedocs.io/en/latest/readme.html 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    # 'DEFAULT_AUTHENTICATION_CLASSES': [
-    #     'service.authentication.JwtQueryParamsAuthentication',  # authentication
-    # ],
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'service.authentication.JwtQueryParamsAuthentication',  # authentication
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }
 
 SPECTACULAR_SETTINGS = {
@@ -173,6 +173,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',        # React front-end port
     'http://localhost:3000',
+]
+
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "token",
 ]
 
 # URL path where media files will be accessible. 

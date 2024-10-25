@@ -2,12 +2,13 @@ from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 from . import models, serializers
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
+from rest_framework.exceptions import PermissionDenied
 
 
 # Create your views here.
 class AuthorView(ModelViewSet):
-    authentication_classes = []
-    permission_classes = []
+    # authentication_classes = []
+    # permission_classes = []
     queryset = models.Author.objects
     serializer_class = serializers.AuthorSerializer
     
@@ -47,6 +48,9 @@ class AuthorView(ModelViewSet):
         responses={200: serializers.AuthorSerializer, 400: "Bad Request", 404: "Not Found"},
     )
     def update(self, request, *args, **kwargs):
+        author = self.get_object()
+        if author.user != request.user:
+            raise PermissionDenied("You do not have permission to edit this profile.")
         return super().update(request, *args, **kwargs)
     
     @extend_schema(
@@ -55,4 +59,8 @@ class AuthorView(ModelViewSet):
         responses={204: None, 404: "Not Found"},
     )
     def destroy(self, request, *args, **kwargs):
+        author = self.get_object()
+        if author.user != request.user:
+            print(author.user, request.user)
+            raise PermissionDenied("You do not have permission to delete this profile.")
         return super().destroy(request, *args, **kwargs)

@@ -10,7 +10,6 @@ class Author(models.Model):
     id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=20, unique=True)
     display_name = models.CharField(max_length=20, unique=True)
-    password = models.CharField(max_length=50, default='1')
     bio = models.TextField(blank=True, null=True)
     github_url = models.URLField(blank=True, null=True)
     # From https://www.devhandbook.com/django/user-profile/

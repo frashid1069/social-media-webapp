@@ -7,7 +7,7 @@ from post.models import Post
 
 class PostView(ModelViewSet):
     #authentication_classes = [authentication.JwtQueryParamsAuthentication]
-    authentication_classes = []
+    #authentication_classes = []
     queryset = Post.objects
     serializer_class = PostSerializer
     

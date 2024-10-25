@@ -7,9 +7,6 @@ from comment.models import Comment
 
 # Create your models here.
 
-
-
-
 class Like(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='likes')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')

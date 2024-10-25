@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from service.utils.jwt_auth import create_token
-# from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import make_password, check_password
 from . import authentication, serializers, models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -33,12 +33,9 @@ class Login(APIView):
             if not author.user.is_active:
                 return Response({'error': 'Your account is inactive. Please wait for admin approval.'}, status=status.HTTP_403_FORBIDDEN)
             
-            # encryption
-            # if not check_password(password, author.password):
-            #     return Response({'error': 'Incorrect username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+            if not check_password(password, author.user.password):
+                 return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
             
-            if author.password != password:
-                return Response({'error': 'Incorrect username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
             token = create_token({'id': author.user.id, 'username': author.user.username}, 100000)
             print(token)
             return Response({
@@ -61,7 +58,6 @@ class SignUp(APIView):
         serializer = serializers.SignUpSerializer(data=request.data)
         
         if serializer.is_valid():
-            
             try:
                 author = serializer.save()
                 token = create_token({'id': author.user.id, 'username': author.user.username}, 100000000)
@@ -77,8 +73,7 @@ class SignUp(APIView):
                 
             except IntegrityError:
                 return Response({'error': 'A user with that username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     
         # If the data is invalid, return the serializer errors
         else:

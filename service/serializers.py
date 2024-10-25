@@ -3,30 +3,14 @@ from .models import Author, Post, Comment, Like, Follow, Inbox
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
-# class AuthorSerializer(serializers.Serializer):
-#     id = serializers.AutoField()
-#     username = serializers.CharField()
-
-#     display_name = serializers.CharField()
-#     bio = serializers.TextField()
-#     github_url = serializers.URLField()
-#     profile_image = serializers.ImageField()
-
-#     created_at = serializers.DateTimeField()
-#     updated_at = serializers.DateTimeField()
-    
-    
-#     def create(self, validated_data):
-#         author_instance = Author.objects.create(**validated_data) 
-#         return author_instance
-        
-#     def update(self, instance, validated_data):
-#         return super().update(instance, validated_data)
 
 class SignUpSerializer(serializers.ModelSerializer):
+    display_name = serializers.CharField(max_length=20, write_only=True)
+    bio = serializers.CharField(allow_blank=True, allow_null=True, required=False, write_only=True)
+    github_url = serializers.URLField(allow_blank=True, allow_null=True, required=False, write_only=True)
     class Meta:
-        model = Author
-        fields = ['username', 'password', 'display_name', 'bio', 'github_url', 'profile_image']
+        model = User
+        fields = ['username', 'password', 'display_name', 'bio', 'github_url']
         
     def validate_username(self, value):
         """Ensure the username is unique in the User model."""
@@ -52,7 +36,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         # User is inactive until approved by the admin
         user.is_active = False
         user.save()
-        author = Author.objects.create(user=user, username=username, password=password, **validated_data)
+        author = Author.objects.create(user=user, username=username, **validated_data)
         
         return author
 

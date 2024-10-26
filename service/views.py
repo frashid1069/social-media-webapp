@@ -154,7 +154,7 @@ class LikeView(ModelViewSet):
     
 class FollowView(ModelViewSet):
     queryset = models.Follow.objects
-    serializer_class = serializers.LikeSerializer
+    serializer_class = serializers.FollowSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -163,6 +163,7 @@ class FollowView(ModelViewSet):
         # Query is a list of all follow requests that are pending, used for notifying user of them 
         if author_id and pending:
             queryset = queryset.filter(followed=author_id, pending=pending)
+        return queryset
     
 class InboxView(ModelViewSet):
     queryset = models.Inbox.objects

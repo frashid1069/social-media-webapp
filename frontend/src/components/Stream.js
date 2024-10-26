@@ -14,16 +14,17 @@ import PostCards from "./PostCards";
  *
  */
 export default function Stream() {
-  const apiUrl = process.env.REACT_APP_API_URL + 'post/';
+  const apiUrl = process.env.REACT_APP_API_URL;
   const [posts, setPosts] = useState([]);
+  const [follows, setFollows] = useState([]);
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');  
+  const token = localStorage.getItem('token');
   const { authorId } = useParams();
   console.log(token);
   // get the posts list
   useEffect(() => {
-    fetch(apiUrl,
+    fetch(apiUrl+'post/',
       {
         method: "GET",
         headers: {
@@ -34,6 +35,21 @@ export default function Stream() {
     )
       .then((response) => response.json())
       .then((data) => setPosts(data));
+  }, []);
+
+  // get the follows list
+  useEffect(() => {
+    fetch(apiUrl+'follow/',
+      {
+        method: "GET",
+        headers: {
+          "token": `${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => setFollows(data));
   }, []);
 
   // get the author id
@@ -58,7 +74,13 @@ export default function Stream() {
   const matchesAuthor = (post, id) => {
     return post.author === id;
   };
-
+  const matchId = (follow) => {
+    return follow.followed.toString() === localStorage.getItem("logged_in_id");
+  };
+  const matchPending = (follow) => {
+    return follow.pending === "yes";
+  };
+  const pendingFollows = follows.filter((follow) => matchId(follow) && matchPending(follow));
   // get the public posts and posts that belong to the current user
   const visiblePosts = posts.filter(
     (post) =>
@@ -103,7 +125,7 @@ export default function Stream() {
     <div className="stream-page">
       {/* Conditional Title */}
       <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
-      
+
       <div className="button-container">
         <button className="edit-profile-btn" onClick={goEditableProfile}>
           Profile
@@ -117,8 +139,19 @@ export default function Stream() {
         >
           {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
         </button>
+        <select
+          className="dropdown"
+          id="follow-notifications"
+        >
+          <option>{pendingFollows.length} pending follow requests</option>
+          <option>
+            {pendingFollows.map((follow) => (
+              <option>{follow.followed}</option>
+            ))}
+          </option>
+        </select>
       </div>
-  
+
       {isVisible && (
         <div className="post-grid">
           {sortedAllPosts.map((post) => (
@@ -135,5 +168,5 @@ export default function Stream() {
       )}
     </div>
   );
-  
+
 }

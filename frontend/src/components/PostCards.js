@@ -180,29 +180,55 @@ export default function PostCards({ post, editable, isRepost, repostedBy}) {
       }
     }
   }
-  const handleShare = async () => {
-    if (post.can_share) {
-        try {
-            const response = await cusFetch(`${apiUrl}post/${post.id}/share/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "token": `${localStorage.getItem('token')}`
-                },
-            });
+//   const handleShare = async () => {
+//     // Check if the post is shareable
+//     if (post.can_share) {
+//         try {
+//             // Attempt to send a POST request to the backend share endpoint for the specific post
+//             const response = await cusFetch(`${apiUrl}post/${post.id}/share/`, {
+//                 method: "POST", // Specifies that this is a POST request, typically used to create or modify resources on the server
+//                 headers: {
+//                     "Content-Type": "application/json", // Informs the server that the request body format will be JSON
+//                     "token": `${localStorage.getItem('token')}` // Retrieves the user’s token from local storage and sends it for authentication
+//                 },
+//             });
 
-            if (response.ok) {
-                console.log("Post shared successfully");
-                alert("Post shared successfully!");
-            } else {
-                console.error("Failed to share post", response);
-                alert("Failed to share post.");
-            }
-        } catch (error) {
-            console.error("Error sharing post:", error);
-        }
+//             // Check if the request was successful (status code 200-299)
+//             if (response.ok) {
+//                 console.log("Post shared successfully"); // Log success message to console
+//                 alert("Post shared successfully!"); // Alert user that the post was shared successfully
+//             } else {
+//                 console.error("Failed to share post", response); // Log error message with response details
+//                 alert("Failed to share post."); // Notify the user of the failure to share
+//             }
+//         } catch (error) {
+//             // If an error occurs during the fetch request (e.g., network issues), catch and log the error
+//             console.error("Error sharing post:", error); // Log specific error message to console for debugging
+//         }
+//     }
+// };
+// Function for handling the share action based on post visibility
+const handleShare = async () => {
+  if (post.visibility === "public") {
+    try {
+      const response = await cusFetch(`${apiUrl}post/${post.id}/share/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          token: `${localStorage.getItem("token")}`,
+        },
+      });
+      if (response.ok) {
+        alert("Post shared successfully!");
+      } else {
+        alert("Failed to share post.");
+      }
+    } catch (error) {
+      console.error("Error sharing post:", error);
     }
+  }
 };
+
 
 
 
@@ -249,6 +275,7 @@ export default function PostCards({ post, editable, isRepost, repostedBy}) {
   };
 
 
+
   return (
     <div key={post.id} className="post-card" onClick={goEdit}>
       <h3 className="post-card-title">{post.title}</h3>
@@ -262,7 +289,7 @@ export default function PostCards({ post, editable, isRepost, repostedBy}) {
         <button className="btn-show-likes" onClick={goToLikesPage}>
           Show Likes
         </button>
-        {post.can_share && (
+        {post.visibility === "public" && (
           <button className="btn-share" onClick={handleShare}>
             Share
           </button>

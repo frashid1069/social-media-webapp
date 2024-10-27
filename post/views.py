@@ -7,6 +7,8 @@ from post.models import Post
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework import permissions
+from rest_framework.authentication import get_authorization_header
 
 # Create your views here.
 
@@ -15,6 +17,8 @@ class PostView(ModelViewSet):
     #authentication_classes = []
     queryset = Post.objects
     serializer_class = PostSerializer
+    permission_classes = [permissions.AllowAny]  # Allows public access for reading
+
     
     
     @extend_schema(
@@ -102,13 +106,35 @@ class PostView(ModelViewSet):
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
     
-    @extend_schema(
-        summary="Retrieve a single post",
-        description="Fetch the details of a post by its ID.",
-        responses={200:  PostSerializer, 404: "Not Found"},
-    )
     def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+        """
+        Allows retrieval of public and unlisted posts without requiring a token.
+        Friend-only posts require authentication and proper permissions.
+        """
+        post = self.get_object()
+
+        # Allow access to public and unlisted posts without a token
+        if post.visibility in ['public', 'unlisted']:
+            serializer = self.get_serializer(post)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # Require authentication for friend-only posts
+        elif post.visibility == 'friend-only':
+            token = get_authorization_header(request).split()
+            if not token or token[0].lower() != b'token':
+                return Response({"detail": "Invalid token"}, status=status.HTTP_403_FORBIDDEN)
+            
+            # Here, you would verify if the requester has the friend relationship, based on your app’s logic
+            # For example:
+            # if not request.user.is_friend_with(post.author):
+            #     return Response({"detail": "You do not have permission to view this post."}, status=status.HTTP_403_FORBIDDEN)
+            
+            serializer = self.get_serializer(post)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # Return 404 if post is not found or other unexpected cases
+        return Response({"detail": "Post not found or access not allowed."}, status=status.HTTP_404_NOT_FOUND)
+
     
     @extend_schema(
         summary="Update an existing post",
@@ -119,28 +145,58 @@ class PostView(ModelViewSet):
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
     
+    # @action(detail=True, methods=['post'])
+    # def share(self, request, pk=None):
+    #     """
+    #     Shares a public post. Creates a copy of the post attributed to the user sharing it.
+    #     """
+    #     try:
+    #         original_post = self.get_object()  # Retrieve the original post by its primary key (pk) provided in the URL
+
+    #         # Only allow sharing of public posts
+    #         if original_post.visibility != 'public':
+    #             # If the post is not public, respond with a 403 Forbidden status and a descriptive message
+    #             return Response({"detail": "Only public posts can be shared."}, status=status.HTTP_403_FORBIDDEN)
+
+    #         # Create a new post that represents the shared post
+    #         shared_post = Post.objects.create(
+    #             author=request.user.author,  # The user sharing the post becomes the author of the new shared post
+    #             title=f"Shared: {original_post.title}",  # Prefix "Shared: " to the original post title
+    #             content=original_post.content,  # Copy content from the original post
+    #             content_type=original_post.content_type,  # Keep the same content type (e.g., text, image)
+    #             image_content=original_post.image_content,  # Copy the image content if available
+    #             visibility="public",  # The shared post is set to public visibility by default
+    #         )
+
+    #         # Serialize the newly created shared post to prepare it for the response
+    #         serializer = self.get_serializer(shared_post)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)  # Send back the shared post data with a 201 Created status
+
+    #     except Post.DoesNotExist:
+    #         # If the original post does not exist, return a 404 Not Found response with a descriptive message
+    #         return Response({"detail": "Original post not found."}, status=status.HTTP_404_NOT_FOUND)
+
     @action(detail=True, methods=['post'])
     def share(self, request, pk=None):
         """
-        Shares a public post. Creates a copy of the post attributed to the user sharing it.
+        Share a post if its visibility is 'public'.
         """
         try:
             original_post = self.get_object()
 
-            # Only allow sharing of public posts
+            # Restrict sharing to public posts only
             if original_post.visibility != 'public':
                 return Response({"detail": "Only public posts can be shared."}, status=status.HTTP_403_FORBIDDEN)
 
-            # Create a new post for the share
+            # Proceed with sharing for public posts
             shared_post = Post.objects.create(
-                author=request.user.author,  # Set to the current user
+                author=request.user.author,
                 title=f"Shared: {original_post.title}",
                 content=original_post.content,
                 content_type=original_post.content_type,
                 image_content=original_post.image_content,
-                visibility="public",  # Shared posts are public
+                visibility="public",  # Shared posts are public by default
             )
-
             serializer = self.get_serializer(shared_post)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 

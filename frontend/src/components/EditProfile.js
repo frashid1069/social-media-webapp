@@ -20,6 +20,8 @@ function EditProfile() {
     profile_image: null,
   });
 
+  const token = localStorage.getItem('token');  
+
   // Gets the authorId from the URL
   const { authorId } = useParams();
 
@@ -33,10 +35,15 @@ function EditProfile() {
   */
   useEffect(() => {
     // Fetch the current profile data and set it to formData
-    fetch(`${apiUrl}author/${authorId}/`)
-      .then(response => response.json())
-      .then(data => setFormData(data))
-      .catch(error => console.error('Error fetching profile data:', error));
+    fetch(`${apiUrl}author/${authorId}/`, {
+      method: 'GET',
+      headers: {
+        "token": `${token}`,
+        "Content-Type": "application/json"
+      }
+    })
+    .then((response) => response.json())
+    .then((data) => setFormData(data));
   }, [authorId]);
 
   /*
@@ -82,6 +89,9 @@ function EditProfile() {
   
     fetch(`${apiUrl}author/${authorId}/`, {
       method: 'PUT',
+      headers: {
+        "token": `${token}`,
+      },
       body: formDataToSend,
     })
       .then(response => response.json())

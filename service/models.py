@@ -2,7 +2,7 @@ from django.db import models
 from datetime import datetime
 from django.contrib.auth.models import User
 from author.models import Author
-from post.models import Post
+from post.models import Post, Repost
 from comment.models import Comment
 
 # Create your models here.
@@ -49,3 +49,5 @@ class Inbox(models.Model):
 
     def __str__(self):
         return f"Inbox for {self.author}"
+    
+    

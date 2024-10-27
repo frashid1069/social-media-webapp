@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { marked } from "marked";
+import { marked, use } from "marked";
 import "../streamStyle.css";
 import "../likes.css"
 import Comment from "./Comment";
 import { cusFetch } from './Login';
 const apiUrl = process.env.REACT_APP_API_URL
 
-export default function PostCards({ post, editable }) {
+export default function PostCards({ post, editable, isRepost, repostedBy}) {
   const [authors, setAuthors] = useState([]);
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState([]);
@@ -15,6 +15,27 @@ export default function PostCards({ post, editable }) {
   const [newCommentContent, setNewCommentContent] = useState("");
   const { authorId } = useParams();
   const authorIdInt = parseInt(authorId);
+  const [hasReposted, setHasReposted] = useState(false);
+  const token = localStorage.getItem('token'); 
+  const [reposted_by, setRepostedBy] = useState("");
+
+  // use repostedBy to get username of the person who reposted the post
+  useEffect(() => {
+    if(isRepost){
+      fetch(`${apiUrl}author/${repostedBy}/`, {
+        method: "GET",
+        headers:{
+          "token": `${token}`,
+          "Content-Type": "application/json",
+        }
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        setRepostedBy(data.display_name);
+      })
+    }
+  });
 
   const navigate = useNavigate();
 
@@ -160,6 +181,49 @@ export default function PostCards({ post, editable }) {
     }
   }
 
+  useEffect(() => {
+    const fetchReposts = async () => {
+      const response = await fetch(`${apiUrl}repost/?post=${post.id}&reposted_by=${authorIdInt}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "token": `${token}`,
+        }
+      });
+      const data = await response.json();
+      if(data.length > 0){
+        setHasReposted(true);
+      }
+    };
+      fetchReposts();
+  }, [post.id, authorIdInt, token]);
+
+
+
+  const handleRepost = async () => {
+    const response = await cusFetch(`${apiUrl}repost/`, {
+      method: "POST",
+      headers: {
+        "token": `${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reposted_by: authorIdInt,
+        post: post.id,
+      }),
+    });
+
+    if(response.ok){
+      if(hasReposted){
+        setHasReposted(false);
+      } else {
+        setHasReposted(true);
+      }
+    }
+
+  };
+
+
   return (
     <div key={post.id} className="post-card" onClick={goEdit}>
       <h3 className="post-card-title">{post.title}</h3>
@@ -173,6 +237,16 @@ export default function PostCards({ post, editable }) {
         <button className="btn-show-likes" onClick={goToLikesPage}>
           Show Likes
         </button>
+        {!isRepost && (
+          <button className="btn-repost" onClick={handleRepost}>
+            {hasReposted ? "Unrepost" : "Repost"}
+          </button>
+        )}
+        {isRepost && !hasReposted && (
+          <button className="btn-repost" onClick={handleRepost}>
+            {hasReposted ? "Unrepost" : "Repost"}
+          </button>
+        )}
       </div>
       {/* Render the Markdown content as HTML */}
       <div
@@ -202,6 +276,7 @@ export default function PostCards({ post, editable }) {
         />
         <button type="submit">Send</button>
       </form>
+      {isRepost && <p><strong>Reposted by {reposted_by}</strong></p>}
     </div>
   );
 }

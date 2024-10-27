@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../streamStyle.css";
 import PostCards from "./PostCards";
+// import { use } from "marked";
 
 
 /**
@@ -15,11 +16,20 @@ import PostCards from "./PostCards";
  */
 export default function Stream() {
   const apiUrl = process.env.REACT_APP_API_URL + 'post/';
+  const apiUrl2 = process.env.REACT_APP_API_URL;
   const [posts, setPosts] = useState([]);
+  const [reposts, setReposts] = useState([]);
+  const [posts2, setPosts2] = useState([]);
+  const [posts3, setPosts3] = useState([]);
+
+
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');  
   const { authorId } = useParams();
+
+  const [repostedAuthors, setRepostedAuthors] = useState({});
+
   console.log(token);
   // get the posts list
   useEffect(() => {
@@ -33,8 +43,65 @@ export default function Stream() {
       }
     )
       .then((response) => response.json())
-      .then((data) => setPosts(data));
-  }, []);
+      .then((data) => setPosts3(data));
+  }, [apiUrl, token]);
+
+
+  // Fetch reposts
+  useEffect(() => {
+    fetch(`${apiUrl2}repost/`, {
+      method: "GET",
+      headers: {
+        "token": `${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setReposts(data);
+      });
+  }, [apiUrl2, token]);
+
+  useEffect(() => {
+    if (reposts.length > 0) {
+      const postid = reposts.map((repost) => repost.post);
+      console.log("posid: " + postid);
+      console.log(`${apiUrl2}post/?ids=${postid.join(',')}`);
+      fetch(`${apiUrl2}post/?ids=${postid.join(',')}`, {
+        method: "GET",
+        headers: {
+          "token": `${token}`,
+          "Content-Type": "application/json",
+      }
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const repostedPosts = data
+            .filter(post => postid.includes(post.id))
+            .map(post => {
+              const repost = reposts.find(r => r.post === post.id);
+              return {
+                ...post,
+                isRepost: true,
+                repostedBy: repost.reposted_by
+              };
+            });
+          setPosts2(repostedPosts);
+      });
+  }
+  }, [reposts, apiUrl2, token]);
+
+  
+  // combine the original posts and reposted posts
+  useEffect(() => {
+    const combinedPosts = [
+      ...posts3.map(post => ({ ...post, isRepost: false })), // Add isRepost property to original posts
+      ...posts2
+    ];
+    setPosts(combinedPosts);
+  }, [posts3, posts2]);
+
+
 
   // get the author id
   const authorIdInt = parseInt(authorId);
@@ -78,8 +145,8 @@ export default function Stream() {
     })
     .reverse();
   // get the posts that belong to the current user
-  const editablePosts = posts.filter((post) =>
-    matchesAuthor(post, authorIdInt)
+  const editablePosts = posts.filter(
+    (post) => matchesAuthor(post, authorIdInt) && !post.isRepost
   );
   const sortedEditablePosts = editablePosts
     .sort((a, b) => {
@@ -122,14 +189,14 @@ export default function Stream() {
       {isVisible && (
         <div className="post-grid">
           {sortedAllPosts.map((post) => (
-            <PostCards post={post} key={post.id} editable={false}></PostCards>
+            <PostCards post={post} key={post.id} editable={false} isRepost={post.isRepost} repostedBy={post.repostedBy}></PostCards>
           ))}
         </div>
       )}
       {!isVisible && (
         <div className="post-grid">
           {sortedEditablePosts.map((post) => (
-            <PostCards post={post} key={post.id} editable={true}></PostCards>
+            <PostCards post={post} key={post.id} editable={true} isRepost={post.isRepost} repostedBy={post.repostedBy}></PostCards>
           ))}
         </div>
       )}

@@ -14,6 +14,7 @@ from django.db import IntegrityError
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from author.models import Author
 from post.models import Post
+from service.models import Follow
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
@@ -244,6 +245,18 @@ def handle_follow(request, follow_id):
         follow.save()
     # Return to ui
     return
+
+def unfollow_author(request, author_id):
+    current_user_author = request.user.author  # Retrieve the current user's Author instance
+    author_to_unfollow = Author.objects.get(id=author_id)
+    
+    # Check if the Follow relationship exists
+    follow_instance = Follow.objects.filter(follower=current_user_author, followed=author_to_unfollow).first()
+    if follow_instance:
+        follow_instance.delete()  # Remove the Follow relationship
+        return
+    return
+
 
 def create_like(request, author_id, post_id):
     if request.method == "POST":

@@ -262,20 +262,9 @@ export default function PostCards({ post, editable, isRepost, repostedBy}) {
         <button className="btn-show-likes" onClick={goToLikesPage}>
           Show Likes
         </button>
-<<<<<<< HEAD
-        {!isRepost && (
-          <button className="btn-repost" onClick={handleRepost}>
-            {hasReposted ? "Unrepost" : "Repost"}
-          </button>
-        )}
-        {isRepost && !hasReposted && (
-          <button className="btn-repost" onClick={handleRepost}>
-            {hasReposted ? "Unrepost" : "Repost"}
-=======
         {post.can_share && (
           <button className="btn-share" onClick={handleShare}>
             Share
->>>>>>> 67114780eddd9c10fb5f664410c78dbcc5ac05c4
           </button>
         )}
       </div>

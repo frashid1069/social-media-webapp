@@ -15,8 +15,7 @@ import PostCards from "./PostCards";
  *
  */
 export default function Stream() {
-  const apiUrl = process.env.REACT_APP_API_URL + 'post/';
-  const apiUrl2 = process.env.REACT_APP_API_URL;
+  const apiUrl = process.env.REACT_APP_API_URL;
   const [posts, setPosts] = useState([]);
   const [reposts, setReposts] = useState([]);
   const [posts2, setPosts2] = useState([]);
@@ -33,7 +32,7 @@ export default function Stream() {
   console.log(token);
   // get the posts list
   useEffect(() => {
-    fetch(apiUrl,
+    fetch(apiUrl + 'post/',
       {
         method: "GET",
         headers: {
@@ -49,7 +48,7 @@ export default function Stream() {
 
   // Fetch reposts
   useEffect(() => {
-    fetch(`${apiUrl2}repost/`, {
+    fetch(`${apiUrl}repost/`, {
       method: "GET",
       headers: {
         "token": `${token}`,
@@ -60,14 +59,14 @@ export default function Stream() {
       .then((data) => {
         setReposts(data);
       });
-  }, [apiUrl2, token]);
+  }, [apiUrl, token]);
 
   useEffect(() => {
     if (reposts.length > 0) {
       const postid = reposts.map((repost) => repost.post);
       console.log("posid: " + postid);
-      console.log(`${apiUrl2}post/?ids=${postid.join(',')}`);
-      fetch(`${apiUrl2}post/?ids=${postid.join(',')}`, {
+      console.log(`${apiUrl}post/?ids=${postid.join(',')}`);
+      fetch(`${apiUrl}post/?ids=${postid.join(',')}`, {
         method: "GET",
         headers: {
           "token": `${token}`,
@@ -89,7 +88,7 @@ export default function Stream() {
           setPosts2(repostedPosts);
       });
   }
-  }, [reposts, apiUrl2, token]);
+  }, [reposts, apiUrl, token]);
 
   
   // combine the original posts and reposted posts

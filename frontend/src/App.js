@@ -10,6 +10,7 @@ import EditProfile from "./components/EditProfile";
 import CreatePost from "./components/CreatePost";
 import Likes from "./components/Likes";
 import Welcome from "./components/Welcome";
+import PostDetail from "./components/PostDetail"; 
 
 /**
  * You can put path for components
@@ -44,6 +45,7 @@ function App() {
               path="/stream/:authorId/:postId/edit"
               element={<EditPost />}
             />
+            <Route path="/post/:postId" element={<PostDetail />} />
           </Routes>
         </Router>
       </div>

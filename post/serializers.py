@@ -5,7 +5,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ["id", "author", "title", "content", "content_type", "image_content", "created_at", "updated_at", "visibility", "is_deleted", "can_share"]
+        fields = "__all__"
 
     def get_can_share(self, obj):
         # Only public posts are shareable

@@ -45,7 +45,8 @@ export default function Stream() {
   // get the follows list
   useEffect(() => {
     fetch(apiUrl+'follow/',
-      { method: "GET",
+      {
+        method: "GET",
         headers: {
           "token": `${token}`,
           "Content-Type": "application/json",
@@ -76,12 +77,12 @@ export default function Stream() {
       const postid = reposts.map((repost) => repost.post);
       console.log("posid: " + postid);
       console.log(`${apiUrl}post/?ids=${postid.join(',')}`);
-    fetch(`${apiUrl}post/?ids=${postid.join(',')}`, {
-      method: "GET",
-      headers: {
-        "token": `${token}`,
-        "Content-Type": "application/json",
-      },
+      fetch(`${apiUrl}post/?ids=${postid.join(',')}`, {
+        method: "GET",
+        headers: {
+          "token": `${token}`,
+          "Content-Type": "application/json",
+      }
     })
       .then((response) => response.json())
       .then((data) => {
@@ -100,8 +101,7 @@ export default function Stream() {
   }
   }, [reposts, apiUrl, token]);
 
-  
-  // combine the original posts and reposted posts
+
   useEffect(() => {
     const combinedPosts = [
       ...posts3.map(post => ({ ...post, isRepost: false })), // Add isRepost property to original posts
@@ -109,6 +109,8 @@ export default function Stream() {
     ];
     setPosts(combinedPosts);
   }, [posts3, posts2]);
+
+  
 
 
 

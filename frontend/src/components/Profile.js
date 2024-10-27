@@ -14,6 +14,7 @@ const apiUrl = process.env.REACT_APP_API_URL
 export default function Profile() {
   const [author, setAuthor] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [isFollowing, setIsFollowing] = useState(false);
   const { authorId } = useParams();
   const navigate = useNavigate();
   // https://stackoverflow.com/questions/63193114/how-do-i-call-a-function-automatically-when-page-loads-up-in-react-js-in-2020
@@ -35,6 +36,21 @@ export default function Profile() {
   }, []);
   // get the author id as an int
   const authorIdInt = parseInt(authorId);
+
+  useEffect(() => {
+    checkFollowingStatus();
+  }, [authorId]);
+
+  // Check if the logged-in user is following the profile author
+  const checkFollowingStatus = async () => {
+    const loggedIn = localStorage.getItem("logged_in_id");
+    const response = await cusFetch(`${apiUrl}authors/${loggedIn}/following/${authorId}/`);
+    if (response.ok) {
+      const data = await response.json();
+      setIsFollowing(data.isFollowing);
+    }
+  };
+
 
   // check if the post is from current user
   const matchesAuthor = (post, id) => {
@@ -78,6 +94,27 @@ export default function Profile() {
       alert("hello");
     }
   };
+
+  // Unfollow functionality
+  const handleUnfollow = async (event) => {
+    event.preventDefault();
+    const loggedIn = localStorage.getItem("logged_in_id");
+    const response = await cusFetch(`${apiUrl}unfollow/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        follower: loggedIn,
+        followed: authorId,
+      }),
+    });
+    if (response.ok) {
+      alert("You have unfollowed this author.");
+      setIsFollowing(false); // Update following status
+    }
+  };
+
   // get posts that belong to the current user
   const visiblePosts = posts.filter(
     (post) => matchesAuthor(post, authorIdInt) && matchesPublic(post)
@@ -109,7 +146,11 @@ export default function Profile() {
       <h4 className="profile-txt">Github URL: </h4>
       <p className="profile-git">{author.github_url}</p>
       <button onClick={handleEditProfile}>Edit Profile</button>
-      <button id="followButton" onClick={handleFollow} >Follow</button>
+      {isFollowing ? (
+        <button id="unfollowButton" onClick={handleUnfollow}>Unfollow</button>
+      ) : (
+        <button id="followButton" onClick={handleFollow}>Follow</button>
+      )}
       <div className="post-grid">
         {sortedPosts.map((post) => (
           <PostCards post={post} key={post.id} editable={false}></PostCards>

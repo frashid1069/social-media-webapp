@@ -79,6 +79,7 @@ export default function Login() {
         const token = data.token;
 
         localStorage.setItem("token", token);
+        localStorage.setItem("logged_in_id", data.user.id);
         navigate(`/stream/${data.user.id}`);
       } else {
         const data = await response.json();

@@ -180,6 +180,31 @@ export default function PostCards({ post, editable, isRepost, repostedBy}) {
       }
     }
   }
+  const handleShare = async () => {
+    if (post.can_share) {
+        try {
+            const response = await cusFetch(`${apiUrl}post/${post.id}/share/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "token": `${localStorage.getItem('token')}`
+                },
+            });
+
+            if (response.ok) {
+                console.log("Post shared successfully");
+                alert("Post shared successfully!");
+            } else {
+                console.error("Failed to share post", response);
+                alert("Failed to share post.");
+            }
+        } catch (error) {
+            console.error("Error sharing post:", error);
+        }
+    }
+};
+
+
 
   useEffect(() => {
     const fetchReposts = async () => {
@@ -237,6 +262,7 @@ export default function PostCards({ post, editable, isRepost, repostedBy}) {
         <button className="btn-show-likes" onClick={goToLikesPage}>
           Show Likes
         </button>
+<<<<<<< HEAD
         {!isRepost && (
           <button className="btn-repost" onClick={handleRepost}>
             {hasReposted ? "Unrepost" : "Repost"}
@@ -245,6 +271,11 @@ export default function PostCards({ post, editable, isRepost, repostedBy}) {
         {isRepost && !hasReposted && (
           <button className="btn-repost" onClick={handleRepost}>
             {hasReposted ? "Unrepost" : "Repost"}
+=======
+        {post.can_share && (
+          <button className="btn-share" onClick={handleShare}>
+            Share
+>>>>>>> 67114780eddd9c10fb5f664410c78dbcc5ac05c4
           </button>
         )}
       </div>

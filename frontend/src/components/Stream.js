@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../streamStyle.css";
 import PostCards from "./PostCards";
-// import { use } from "marked";
 
 
 /**
@@ -27,7 +26,6 @@ export default function Stream() {
   const token = localStorage.getItem('token');  
   const { authorId } = useParams();
 
-  const [repostedAuthors, setRepostedAuthors] = useState({});
 
   console.log(token);
   // get the posts list

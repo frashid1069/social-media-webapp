@@ -22,9 +22,14 @@ export default function Stream() {
   const token = localStorage.getItem('token');
   const { authorId } = useParams();
   console.log(token);
+  const [reposts, setReposts] = useState([]);
+  const [posts2, setPosts2] = useState([]);
+  const [posts3, setPosts3] = useState([]);
+
+  
   // get the posts list
   useEffect(() => {
-    fetch(apiUrl+'post/',
+    fetch(apiUrl + 'post/',
       {
         method: "GET",
         headers: {
@@ -34,14 +39,13 @@ export default function Stream() {
       }
     )
       .then((response) => response.json())
-      .then((data) => setPosts(data));
-  }, []);
+      .then((data) => setPosts3(data));
+  }, [apiUrl, token]);
 
   // get the follows list
   useEffect(() => {
     fetch(apiUrl+'follow/',
-      {
-        method: "GET",
+      { method: "GET",
         headers: {
           "token": `${token}`,
           "Content-Type": "application/json",
@@ -51,6 +55,62 @@ export default function Stream() {
       .then((response) => response.json())
       .then((data) => setFollows(data));
   }, []);
+
+  // Fetch reposts
+  useEffect(() => {
+    fetch(`${apiUrl}repost/`, {
+      method: "GET",
+      headers: {
+        "token": `${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setReposts(data);
+      });
+  }, [apiUrl, token]);
+
+  useEffect(() => {
+    if (reposts.length > 0) {
+      const postid = reposts.map((repost) => repost.post);
+      console.log("posid: " + postid);
+      console.log(`${apiUrl}post/?ids=${postid.join(',')}`);
+    fetch(`${apiUrl}post/?ids=${postid.join(',')}`, {
+      method: "GET",
+      headers: {
+        "token": `${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const repostedPosts = data
+            .filter(post => postid.includes(post.id))
+            .map(post => {
+              const repost = reposts.find(r => r.post === post.id);
+              return {
+                ...post,
+                isRepost: true,
+                repostedBy: repost.reposted_by
+              };
+            });
+          setPosts2(repostedPosts);
+      });
+  }
+  }, [reposts, apiUrl, token]);
+
+  
+  // combine the original posts and reposted posts
+  useEffect(() => {
+    const combinedPosts = [
+      ...posts3.map(post => ({ ...post, isRepost: false })), // Add isRepost property to original posts
+      ...posts2
+    ];
+    setPosts(combinedPosts);
+  }, [posts3, posts2]);
+
+
 
   // get the author id
   const authorIdInt = parseInt(authorId);
@@ -101,8 +161,8 @@ export default function Stream() {
     })
     .reverse();
   // get the posts that belong to the current user
-  const editablePosts = posts.filter((post) =>
-    matchesAuthor(post, authorIdInt)
+  const editablePosts = posts.filter(
+    (post) => matchesAuthor(post, authorIdInt) && !post.isRepost
   );
   const sortedEditablePosts = editablePosts
     .sort((a, b) => {
@@ -126,7 +186,7 @@ export default function Stream() {
     <div className="stream-page">
       {/* Conditional Title */}
       <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
-
+      
       <div className="button-container">
         <button className="edit-profile-btn" onClick={goEditableProfile}>
           Profile
@@ -161,6 +221,8 @@ export default function Stream() {
               key={post.id} 
               editable={false} 
               canShare={post.can_share} // ADDED CAN_SHARE PROP
+              isRepost={post.isRepost}
+              repostedBy={post.repostedBy}
             />
           ))}
         </div>
@@ -173,6 +235,8 @@ export default function Stream() {
               key={post.id} 
               editable={true} 
               canShare={post.can_share} // ADDED CAN_SHARE PROP
+              isRepost={post.isRepost}
+              repostedBy={post.repostedBy}
             />
           ))}
         </div>

@@ -1,8 +1,7 @@
 from rest_framework import serializers
-from .models import Post
+from .models import Post, Repost
 
 class PostSerializer(serializers.ModelSerializer):
-    can_share = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -11,3 +10,12 @@ class PostSerializer(serializers.ModelSerializer):
     def get_can_share(self, obj):
         # Only public posts are shareable
         return obj.visibility == 'public'
+        fields = "__all__"
+        
+
+class RepostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Repost
+        fields = "__all__"
+        
+   

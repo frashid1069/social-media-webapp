@@ -81,6 +81,7 @@ export default function Stream() {
     return follow.pending === "yes";
   };
   const pendingFollows = follows.filter((follow) => matchId(follow) && matchPending(follow));
+
   // get the public posts and posts that belong to the current user
   const visiblePosts = posts.filter(
     (post) =>
@@ -146,7 +147,7 @@ export default function Stream() {
           <option>{pendingFollows.length} pending follow requests</option>
           <option>
             {pendingFollows.map((follow) => (
-              <option>{follow.followed}</option>
+              <option key={follow.id}>{follow.followed}</option>
             ))}
           </option>
         </select>
@@ -155,18 +156,27 @@ export default function Stream() {
       {isVisible && (
         <div className="post-grid">
           {sortedAllPosts.map((post) => (
-            <PostCards post={post} key={post.id} editable={false}></PostCards>
+            <PostCards 
+              post={post} 
+              key={post.id} 
+              editable={false} 
+              canShare={post.can_share} // ADDED CAN_SHARE PROP
+            />
           ))}
         </div>
       )}
       {!isVisible && (
         <div className="post-grid">
           {sortedEditablePosts.map((post) => (
-            <PostCards post={post} key={post.id} editable={true}></PostCards>
+            <PostCards 
+              post={post} 
+              key={post.id} 
+              editable={true} 
+              canShare={post.can_share} // ADDED CAN_SHARE PROP
+            />
           ))}
         </div>
       )}
     </div>
   );
-
 }

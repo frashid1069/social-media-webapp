@@ -3,6 +3,10 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from post.serializers import PostSerializer
 from rest_framework.viewsets import ModelViewSet
 from post.models import Post
+from rest_framework.decorators import action
+from rest_framework import status
+from rest_framework.response import Response
+
 # Create your views here.
 
 class PostView(ModelViewSet):
@@ -114,3 +118,30 @@ class PostView(ModelViewSet):
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
     
+    @action(detail=True, methods=['post'])
+    def share(self, request, pk=None):
+        """
+        Shares a public post. Creates a copy of the post attributed to the user sharing it.
+        """
+        try:
+            original_post = self.get_object()
+
+            # Only allow sharing of public posts
+            if original_post.visibility != 'public':
+                return Response({"detail": "Only public posts can be shared."}, status=status.HTTP_403_FORBIDDEN)
+
+            # Create a new post for the share
+            shared_post = Post.objects.create(
+                author=request.user.author,  # Set to the current user
+                title=f"Shared: {original_post.title}",
+                content=original_post.content,
+                content_type=original_post.content_type,
+                image_content=original_post.image_content,
+                visibility="public",  # Shared posts are public
+            )
+
+            serializer = self.get_serializer(shared_post)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except Post.DoesNotExist:
+            return Response({"detail": "Original post not found."}, status=status.HTTP_404_NOT_FOUND)

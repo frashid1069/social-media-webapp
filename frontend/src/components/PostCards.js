@@ -159,6 +159,31 @@ export default function PostCards({ post, editable }) {
       }
     }
   }
+  const handleShare = async () => {
+    if (post.can_share) {
+        try {
+            const response = await cusFetch(`${apiUrl}post/${post.id}/share/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "token": `${localStorage.getItem('token')}`
+                },
+            });
+
+            if (response.ok) {
+                console.log("Post shared successfully");
+                alert("Post shared successfully!");
+            } else {
+                console.error("Failed to share post", response);
+                alert("Failed to share post.");
+            }
+        } catch (error) {
+            console.error("Error sharing post:", error);
+        }
+    }
+};
+
+
 
   return (
     <div key={post.id} className="post-card" onClick={goEdit}>
@@ -173,6 +198,11 @@ export default function PostCards({ post, editable }) {
         <button className="btn-show-likes" onClick={goToLikesPage}>
           Show Likes
         </button>
+        {post.can_share && (
+          <button className="btn-share" onClick={handleShare}>
+            Share
+          </button>
+        )}
       </div>
       {/* Render the Markdown content as HTML */}
       <div

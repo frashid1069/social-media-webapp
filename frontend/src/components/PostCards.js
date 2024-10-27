@@ -262,16 +262,8 @@ export default function PostCards({ post, editable, isRepost, repostedBy}) {
         <button className="btn-show-likes" onClick={goToLikesPage}>
           Show Likes
         </button>
-        {!isRepost && (
-          <button className="btn-repost" onClick={handleRepost}>
-            {hasReposted ? "Unrepost" : "Repost"}
-          </button>
-        )}
-        {isRepost && !hasReposted && (
-          <button className="btn-repost" onClick={handleRepost}>
-            {hasReposted ? "Unrepost" : "Repost"}
-          </button>
-        )}
+        {!isRepost && (<button className="btn-repost" onClick={handleRepost}>{hasReposted ? "Unrepost" : "Repost"}</button>)}
+        {isRepost && !hasReposted && (<button className="btn-repost" onClick={handleRepost}> {hasReposted ? "Unrepost" : "Repost"}</button>)}
       </div>
       {/* Render the Markdown content as HTML */}
       <div

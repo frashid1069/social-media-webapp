@@ -42,25 +42,27 @@ export default function CreatePost() {
     formData.append("content_type", "text/markdown"); // Setting default type to Markdown
     formData.append("visibility", visibility);
     formData.append("author", parseInt(authorId));
-    formData.append("created_at", new Date().toISOString());
-    formData.append("updated_at", new Date().toISOString());
+    // formData.append("created_at", new Date().toISOString());
+    // formData.append("updated_at", new Date().toISOString());
     
 
     // Append the image file if an image is selected
     if (selectedImage) {
       formData.append("image_content", selectedImage);
     }
-
     try {
       const response = await cusFetch(`${apiUrl}post/`, {
         method: "POST",
-        body: formData,
+        // Frokm https://stackoverflow.com/questions/41431322/how-to-convert-formdata-html5-object-to-json by hakatashi 
+        body: JSON.stringify(Object.fromEntries(formData))
       });
 
       if (response.ok) {
         navigate(`/stream/${authorId}`);
-      } else {
-        alert("Failed to create a post");
+      }
+      else{
+        const error = await response.json();
+        alert(JSON.stringify(error));
       }
     } catch (error) {
       console.error("Error creating post:", error);

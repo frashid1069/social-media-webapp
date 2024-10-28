@@ -3,7 +3,7 @@ from author.models import Author
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from post.serializers import PostSerializer, RepostSerializer
 from rest_framework.viewsets import ModelViewSet
-
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from post.models import Post, Repost
@@ -108,35 +108,34 @@ class PostView(ModelViewSet):
         return super().create(request, *args, **kwargs)
     
     def retrieve(self, request, *args, **kwargs):
-        """
-        Allows retrieval of public and unlisted posts without requiring a token.
-        Friend-only posts require authentication and proper permissions.
-        """
         post = self.get_object()
+        current_user = request.user
 
-        # Allow access to public and unlisted posts without a token
+        # Allow access for public or unlisted posts
         if post.visibility in ['public', 'unlisted']:
             serializer = self.get_serializer(post)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        # Require authentication for friend-only posts
+        # Restrict friend-only posts to friends
         elif post.visibility == 'friend-only':
-            token = get_authorization_header(request).split()
-            if not token or token[0].lower() != b'token':
-                return Response({"detail": "Invalid token"}, status=status.HTTP_403_FORBIDDEN)
-            
-            # Here, you would verify if the requester has the friend relationship, based on your app’s logic
-            # For example:
-            # if not request.user.is_friend_with(post.author):
-            #     return Response({"detail": "You do not have permission to view this post."}, status=status.HTTP_403_FORBIDDEN)
-            
-            serializer = self.get_serializer(post)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Retrieve the current author's profile based on the current user
+            try:
+                author = Author.objects.get(user=current_user)
+            except Author.DoesNotExist:
+                return Response({"detail": "Author not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Return 404 if post is not found or other unexpected cases
+            post_author = post.author
+
+            # Check if the current user and the post author are mutual followers (friends)
+            if author.is_friend_with(post_author):
+                serializer = self.get_serializer(post)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"detail": "You do not have permission to view this post."}, status=status.HTTP_403_FORBIDDEN)
+
+        # If none of the conditions are met, return 404
         return Response({"detail": "Post not found or access not allowed."}, status=status.HTTP_404_NOT_FOUND)
 
-    
     @extend_schema(
         summary="Update an existing post",
         description="Update the title, content, or image of an existing post.",
@@ -246,21 +245,52 @@ class RepostView(ModelViewSet):
             serializer = self.get_serializer(repost)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     original_post_id = self.request.query_params.get('post')
+    #     reposted_by_id = self.request.query_params.get('reposted_by')
+        
+    #     if original_post_id:
+    #         queryset = queryset.filter(post=original_post_id)
+        
+    #     if reposted_by_id:
+    #         queryset = queryset.filter(reposted_by=reposted_by_id)
+            
+    #     return queryset.order_by("created_at")
+    
     def get_queryset(self):
         queryset = super().get_queryset()
-        original_post_id = self.request.query_params.get('post')
-        reposted_by_id = self.request.query_params.get('reposted_by')
+        current_user = self.request.user
+
+        # Filter for not deleted posts
+        queryset = queryset.filter(is_deleted=False)
         
-        if original_post_id:
-            queryset = queryset.filter(post=original_post_id)
-        
-        if reposted_by_id:
-            queryset = queryset.filter(reposted_by=reposted_by_id)
+        author_id = self.request.query_params.get('author_id')
+        visibility = self.request.query_params.get("visibility")
+        title = self.request.query_params.get('title')
+        following_list = self.request.query_params.get("following_list")
+
+        if author_id and visibility:
+            queryset = queryset.filter(visibility="public", author__id=author_id)
+        elif title:
+            queryset = queryset.filter(title=title)
+        elif following_list:
+            current_author = Author.objects.get(user=current_user)
+            followed_by_user = Author.objects.filter(followers__follower=current_author)
+            queryset = queryset.filter(author__id__in=followed_by_user)
+
+        # Include 'friend-only' posts if the viewer is a friend of the author
+        if current_user.is_authenticated:
+            current_author = Author.objects.get(user=current_user)
+            friend_ids = Author.objects.filter(followers__follower=current_author, following__followed=current_author, following__pending="no").values_list('id', flat=True)
+            queryset = queryset.filter(visibility__in=["public", "unlisted"]).union(
+                queryset.filter(visibility="friend-only", author__id__in=friend_ids)
+            )
+
+        return queryset.order_by("updated_at")
+
             
-        return queryset.order_by("created_at")
-    
         
-    
     
 
 

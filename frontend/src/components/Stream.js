@@ -144,13 +144,22 @@ export default function Stream() {
   };
   const pendingFollows = follows.filter((follow) => matchId(follow) && matchPending(follow));
 
-  // get the public posts and posts that belong to the current user
+  // // get the public posts and posts that belong to the current user
+  // const visiblePosts = posts.filter(
+  //   (post) =>
+  //     matchUndelete(post) &&
+  //     (matchesPublic(post) ||
+  //       matchesAuthor(post, authorIdInt) ||
+  //       matchesFriends(post))
+  // );
+
+  // Filter posts to include public, friend-only (for friends), and posts belonging to the current user
   const visiblePosts = posts.filter(
     (post) =>
       matchUndelete(post) &&
       (matchesPublic(post) ||
         matchesAuthor(post, authorIdInt) ||
-        matchesFriends(post))
+        (matchesFriends(post) && follows.some(follow => follow.follower === authorIdInt && follow.followed === post.author)))
   );
 
   // sort visible posts so that the most recent updated posts appear at the top

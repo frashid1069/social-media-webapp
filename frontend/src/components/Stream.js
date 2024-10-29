@@ -3,7 +3,6 @@
 // import "../streamStyle.css";
 // import PostCards from "./PostCards";
 
-
 // /**
 //  * This is a component for displaying the personal stream page by using PostCards component.
 //  * Click Profile button => go to profile page
@@ -26,7 +25,6 @@
 //   const [posts2, setPosts2] = useState([]);
 //   const [posts3, setPosts3] = useState([]);
 
-  
 //   // // get the posts list
 //   useEffect(() => {
 //     fetch(apiUrl + 'post/',
@@ -38,7 +36,7 @@
 //         },
 //       }
 //     )
-    
+
 //       .then((response) => response.json())
 //       .then((data) => setPosts3(data));
 //   }, [apiUrl, token]);
@@ -54,7 +52,6 @@
 //   //     .then((response) => response.json())
 //   //     .then((data) => setPosts3(data));
 //   // }, [apiUrl, token]);
-
 
 //   // get the follows list
 //   useEffect(() => {
@@ -115,7 +112,6 @@
 //   }
 //   }, [reposts, apiUrl, token]);
 
-
 //   useEffect(() => {
 //     const combinedPosts = [
 //       ...posts3.map(post => ({ ...post, isRepost: false })), // Add isRepost property to original posts
@@ -123,10 +119,6 @@
 //     ];
 //     setPosts(combinedPosts);
 //   }, [posts3, posts2]);
-
-  
-
-
 
 //   // get the author id
 //   const authorIdInt = parseInt(authorId);
@@ -211,7 +203,7 @@
 //     <div className="stream-page">
 //       {/* Conditional Title */}
 //       <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
-      
+
 //       <div className="button-container">
 //         <button className="edit-profile-btn" onClick={goEditableProfile}>
 //           Profile
@@ -241,10 +233,10 @@
 //       {isVisible && (
 //         <div className="post-grid">
 //           {sortedAllPosts.map((post) => (
-//             <PostCards 
-//               post={post} 
-//               key={post.id} 
-//               editable={false} 
+//             <PostCards
+//               post={post}
+//               key={post.id}
+//               editable={false}
 //               canShare={post.can_share} // ADDED CAN_SHARE PROP
 //               isRepost={post.isRepost}
 //               repostedBy={post.repostedBy}
@@ -255,10 +247,10 @@
 //       {!isVisible && (
 //         <div className="post-grid">
 //           {sortedEditablePosts.map((post) => (
-//             <PostCards 
-//               post={post} 
-//               key={post.id} 
-//               editable={true} 
+//             <PostCards
+//               post={post}
+//               key={post.id}
+//               editable={true}
 //               canShare={post.can_share} // ADDED CAN_SHARE PROP
 //               isRepost={post.isRepost}
 //               repostedBy={post.repostedBy}
@@ -269,9 +261,6 @@
 //     </div>
 //   );
 // }
-
-
-
 
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -284,15 +273,15 @@ export default function Stream() {
   const [follows, setFollows] = useState([]);
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const { authorId } = useParams();
-  
+
   // Fetch the list of posts
   useEffect(() => {
-    fetch(apiUrl + 'post/', {
+    fetch(apiUrl + "post/", {
       method: "GET",
       headers: {
-        "token": `${token}`,
+        token: `${token}`,
         "Content-Type": "application/json",
       },
     })
@@ -300,12 +289,23 @@ export default function Stream() {
       .then((data) => setPosts(data)); // Directly set posts without visibility filtering
   }, [apiUrl, token]);
 
+  const matchesAuthor = (post, id) => {
+    return post.author === id;
+  };
+
+  const authorIdInt = parseInt(authorId);
+
+  const editablePosts = posts.filter(
+    (post) => matchesAuthor(post, authorIdInt) && !post.isRepost
+  );
+
   // Filter posts to exclude deleted ones
   const visiblePosts = posts.filter((post) => post.is_deleted === false);
 
   // Sort posts to display the most recent at the top
-  const sortedAllPosts = visiblePosts
-    .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+  const sortedAllPosts = visiblePosts.sort(
+    (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
+  );
 
   // Navigate to profile
   const goEditableProfile = () => {
@@ -319,8 +319,10 @@ export default function Stream() {
 
   return (
     <div className="stream-page">
-      <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
-      
+      <h2 className="page-subtitle">
+        {isVisible ? "Welcome to the Stream Page!" : "Edit Page"}
+      </h2>
+
       <div className="button-container">
         <button className="edit-profile-btn" onClick={goEditableProfile}>
           Profile
@@ -339,11 +341,25 @@ export default function Stream() {
       {isVisible && (
         <div className="post-grid">
           {sortedAllPosts.map((post) => (
-            <PostCards 
-              post={post} 
-              key={post.id} 
-              editable={false} 
+            <PostCards
+              post={post}
+              key={post.id}
+              editable={false}
               canShare={post.can_share}
+              isRepost={post.isRepost}
+              repostedBy={post.repostedBy}
+            />
+          ))}
+        </div>
+      )}
+      {!isVisible && (
+        <div className="post-grid">
+          {editablePosts.map((post) => (
+            <PostCards
+              post={post}
+              key={post.id}
+              editable={true}
+              canShare={post.can_share} // ADDED CAN_SHARE PROP
               isRepost={post.isRepost}
               repostedBy={post.repostedBy}
             />

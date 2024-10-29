@@ -115,10 +115,18 @@ export default function Profile() {
     }
   };
 
-  // get posts that belong to the current user
+  // // get posts that belong to the current user
+  // const visiblePosts = posts.filter(
+  //   (post) => matchesAuthor(post, authorIdInt) && matchesPublic(post)
+  // );
+
+  // Get all posts authored by the profile owner (authorIdInt) without filtering by visibility
   const visiblePosts = posts.filter(
-    (post) => matchesAuthor(post, authorIdInt) && matchesPublic(post)
+      (post) => matchesAuthor(post, authorIdInt)  // Show all posts by the profile owner
   );
+
+
+
   // sort visible posts so that the most recent updated posts appear at the top
   const sortedPosts = visiblePosts
     .sort((a, b) => {

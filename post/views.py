@@ -258,18 +258,54 @@ class RepostView(ModelViewSet):
             
     #     return queryset.order_by("created_at")
     
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     current_user = self.request.user
+
+    #     # Filter for not deleted posts
+    #     queryset = queryset.filter(is_deleted=False)
+        
+    #     author_id = self.request.query_params.get('author_id')
+    #     visibility = self.request.query_params.get("visibility")
+    #     title = self.request.query_params.get('title')
+    #     following_list = self.request.query_params.get("following_list")
+
+    #     if author_id and visibility:
+    #         queryset = queryset.filter(visibility="public", author__id=author_id)
+    #     elif title:
+    #         queryset = queryset.filter(title=title)
+    #     elif following_list:
+    #         current_author = Author.objects.get(user=current_user)
+    #         followed_by_user = Author.objects.filter(followers__follower=current_author)
+    #         queryset = queryset.filter(author__id__in=followed_by_user)
+
+    #     # Include 'friend-only' posts if the viewer is a friend of the author
+    #     if current_user.is_authenticated:
+    #         current_author = Author.objects.get(user=current_user)
+    #         friend_ids = Author.objects.filter(followers__follower=current_author, following__followed=current_author, following__pending="no").values_list('id', flat=True)
+    #         queryset = queryset.filter(visibility__in=["public", "unlisted"]).union(
+    #             queryset.filter(visibility="friend-only", author__id__in=friend_ids)
+    #         )
+
+    #     return queryset.order_by("updated_at")
+
+        
+
+            
     def get_queryset(self):
         queryset = super().get_queryset()
         current_user = self.request.user
 
-        # Filter for not deleted posts
+        # Only include non-deleted posts
         queryset = queryset.filter(is_deleted=False)
-        
+
+        # Fetch query parameters
         author_id = self.request.query_params.get('author_id')
         visibility = self.request.query_params.get("visibility")
         title = self.request.query_params.get('title')
         following_list = self.request.query_params.get("following_list")
 
+        # Filter for posts by specific author and visibility
         if author_id and visibility:
             queryset = queryset.filter(visibility="public", author__id=author_id)
         elif title:
@@ -279,20 +315,18 @@ class RepostView(ModelViewSet):
             followed_by_user = Author.objects.filter(followers__follower=current_author)
             queryset = queryset.filter(author__id__in=followed_by_user)
 
-        # Include 'friend-only' posts if the viewer is a friend of the author
+        # Additional filtering for friend-only posts visible to mutual friends
         if current_user.is_authenticated:
             current_author = Author.objects.get(user=current_user)
-            friend_ids = Author.objects.filter(followers__follower=current_author, following__followed=current_author, following__pending="no").values_list('id', flat=True)
+            friend_ids = Author.objects.filter(
+                followers__follower=current_author,
+                following__followed=current_author,
+                following__pending="no"
+            ).values_list('id', flat=True)
+
+            # Filter for public, unlisted, and friend-only posts from friends
             queryset = queryset.filter(visibility__in=["public", "unlisted"]).union(
                 queryset.filter(visibility="friend-only", author__id__in=friend_ids)
             )
 
         return queryset.order_by("updated_at")
-
-            
-        
-    
-
-
-
-        

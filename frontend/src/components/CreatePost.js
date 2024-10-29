@@ -31,10 +31,10 @@ export default function CreatePost() {
       document.getElementById("post-content").hidden = false;
     }
   }
-
+  
   const createPost = async (event) => {
     event.preventDefault();
-
+  
     // Create FormData to include file (if any)
     const formData = new FormData();
     formData.append("title", postTitle);
@@ -42,25 +42,24 @@ export default function CreatePost() {
     formData.append("content_type", "text/markdown"); // Setting default type to Markdown
     formData.append("visibility", visibility);
     formData.append("author", parseInt(authorId));
-    // formData.append("created_at", new Date().toISOString());
-    // formData.append("updated_at", new Date().toISOString());
-    
-
+  
     // Append the image file if an image is selected
     if (selectedImage) {
       formData.append("image_content", selectedImage);
     }
+  
     try {
-      const response = await cusFetch(`${apiUrl}post/`, {
+      const response = await fetch(`${apiUrl}post/`, {
         method: "POST",
-        // Frokm https://stackoverflow.com/questions/41431322/how-to-convert-formdata-html5-object-to-json by hakatashi 
-        body: JSON.stringify(Object.fromEntries(formData))
+        headers: {
+          "token": `${localStorage.getItem('token')}` // If a token is needed
+        },
+        body: formData, // Pass FormData directly
       });
-
+  
       if (response.ok) {
         navigate(`/stream/${authorId}`);
-      }
-      else{
+      } else {
         const error = await response.json();
         alert(JSON.stringify(error));
       }
@@ -69,6 +68,7 @@ export default function CreatePost() {
       alert("Error creating post");
     }
   };
+  
 
   // Handle cancel action
   const cancelPostCreation = () => {

@@ -45,7 +45,8 @@ function App() {
               path="/stream/:authorId/:postId/edit"
               element={<EditPost />}
             />
-            <Route path="/post/:postId" element={<PostDetail />} />
+            <Route path="/posts/:postId" element={<PostDetail />} />
+
           </Routes>
         </Router>
       </div>

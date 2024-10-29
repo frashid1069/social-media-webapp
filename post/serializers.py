@@ -1,8 +1,9 @@
 from rest_framework import serializers
+from author.serializers import AuthorSerializer 
 from .models import Post, Repost
 
 class PostSerializer(serializers.ModelSerializer):
-
+    
     class Meta:
         model = Post
         fields = "__all__"

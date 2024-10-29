@@ -7,7 +7,7 @@ import Comment from "./Comment";
 import { cusFetch } from './Login';
 const apiUrl = process.env.REACT_APP_API_URL
 
-export default function PostCards({ post, editable, isRepost, repostedBy}) {
+export default function PostCards({ post, editable, isRepost, repostedBy, onClick}) {
   const [authors, setAuthors] = useState([]);
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState([]);
@@ -180,34 +180,7 @@ export default function PostCards({ post, editable, isRepost, repostedBy}) {
       }
     }
   }
-//   const handleShare = async () => {
-//     // Check if the post is shareable
-//     if (post.can_share) {
-//         try {
-//             // Attempt to send a POST request to the backend share endpoint for the specific post
-//             const response = await cusFetch(`${apiUrl}post/${post.id}/share/`, {
-//                 method: "POST", // Specifies that this is a POST request, typically used to create or modify resources on the server
-//                 headers: {
-//                     "Content-Type": "application/json", // Informs the server that the request body format will be JSON
-//                     "token": `${localStorage.getItem('token')}` // Retrieves the user’s token from local storage and sends it for authentication
-//                 },
-//             });
 
-//             // Check if the request was successful (status code 200-299)
-//             if (response.ok) {
-//                 console.log("Post shared successfully"); // Log success message to console
-//                 alert("Post shared successfully!"); // Alert user that the post was shared successfully
-//             } else {
-//                 console.error("Failed to share post", response); // Log error message with response details
-//                 alert("Failed to share post."); // Notify the user of the failure to share
-//             }
-//         } catch (error) {
-//             // If an error occurs during the fetch request (e.g., network issues), catch and log the error
-//             console.error("Error sharing post:", error); // Log specific error message to console for debugging
-//         }
-//     }
-// };
-// Function for handling the share action based on post visibility
 const handleShare = async () => {
   if (post.visibility === "public") {
     try {
@@ -228,9 +201,6 @@ const handleShare = async () => {
     }
   }
 };
-
-
-
 
   useEffect(() => {
     const fetchReposts = async () => {
@@ -276,56 +246,108 @@ const handleShare = async () => {
 
 
 
-  return (
-    <div key={post.id} className="post-card" onClick={goEdit}>
-      <h3 className="post-card-title">{post.title}</h3>
-      <div className="btn-container">
-        <button className="post-card-author" onClick={goProfile}>
-          {matchAuthor(post.author)}
-        </button>
-        <button className="btn-like" onClick={handleLike}>
-            {liked ? "Liked" : "Like"} ({likes.length})
-        </button>
-        <button className="btn-show-likes" onClick={goToLikesPage}>
-          Show Likes
-        </button>
-        {post.visibility === "public" && (
-          <button className="btn-share" onClick={handleShare}>
-            Share
-          </button>
-        )}
-        {!isRepost && (<button className="btn-repost" onClick={handleRepost}>{hasReposted ? "Unrepost" : "Repost"}</button>)}
-        {isRepost && !hasReposted && (<button className="btn-repost" onClick={handleRepost}> {hasReposted ? "Unrepost" : "Repost"}</button>)}
-      </div>
-      {/* Render the Markdown content as HTML */}
-      <div
-        className="post-card-content"
-        dangerouslySetInnerHTML={getMarkdownContent()}
-      />
-      {/* Render the image if it's available */}
-      {imageURL && (
-        <div className="post-card-image">
-          <img src={imageURL} alt="Post" className="post-image" />
-        </div>
-      )}
-      <p className="post-card-update-date">Updated at: {new Date(post.updated_at).toLocaleString()}</p>
+  // return (
+  //   <div key={post.id} className="post-card" onClick={goEdit}>
+  //     <h3 className="post-card-title">{post.title}</h3>
+  //     <div className="btn-container">
+  //       <button className="post-card-author" onClick={goProfile}>
+  //         {matchAuthor(post.author)}
+  //       </button>
+  //       <button className="btn-like" onClick={handleLike}>
+  //           {liked ? "Liked" : "Like"} ({likes.length})
+  //       </button>
+  //       <button className="btn-show-likes" onClick={goToLikesPage}>
+  //         Show Likes
+  //       </button>
+  //       {post.visibility === "public" && (
+  //         <button className="btn-share" onClick={handleShare}>
+  //           Share
+  //         </button>
+  //       )}
+  //       {!isRepost && (<button className="btn-repost" onClick={handleRepost}>{hasReposted ? "Unrepost" : "Repost"}</button>)}
+  //       {isRepost && !hasReposted && (<button className="btn-repost" onClick={handleRepost}> {hasReposted ? "Unrepost" : "Repost"}</button>)}
+  //     </div>
+  //     {/* Render the Markdown content as HTML */}
+  //     <div
+  //       className="post-card-content"
+  //       dangerouslySetInnerHTML={getMarkdownContent()}
+  //     />
+  //     {/* Render the image if it's available */}
+  //     {imageURL && (
+  //       <div className="post-card-image">
+  //         <img src={imageURL} alt="Post" className="post-image" />
+  //       </div>
+  //     )}
+  //     <p className="post-card-update-date">Updated at: {new Date(post.updated_at).toLocaleString()}</p>
       
-      <div className="comment-grid">
-        <h5 className="comment-title">Comments:</h5>
-        {matchedComments.map((comment) => (
-          <Comment comment={comment} key={comment.id} />
-        ))}
-      </div>
-      <form onSubmit={submitComment}>
-        <textarea
-          placeholder="Write your comment here..."
-          value={newCommentContent}
-          onChange={(e) => setNewCommentContent(e.target.value)}
-          required
-        />
-        <button type="submit">Send</button>
-      </form>
-      {isRepost && <p><strong>Reposted by {reposted_by}</strong></p>}
+  //     <div className="comment-grid">
+  //       <h5 className="comment-title">Comments:</h5>
+  //       {matchedComments.map((comment) => (
+  //         <Comment comment={comment} key={comment.id} />
+  //       ))}
+  //     </div>
+  //     <form onSubmit={submitComment}>
+  //       <textarea
+  //         placeholder="Write your comment here..."
+  //         value={newCommentContent}
+  //         onChange={(e) => setNewCommentContent(e.target.value)}
+  //         required
+  //       />
+  //       <button type="submit">Send</button>
+  //     </form>
+  //     {isRepost && <p><strong>Reposted by {reposted_by}</strong></p>}
+  //   </div>
+  // );
+// }
+
+return (
+  <div key={post.id} className="post-card" onClick={onClick} style={{ cursor: "pointer" }}>
+    <h3 className="post-card-title">{post.title}</h3>
+    <div className="btn-container">
+      <button className="post-card-author" onClick={(e) => { e.stopPropagation(); goProfile(); }}>
+        {matchAuthor(post.author)}
+      </button>
+      <button className="btn-like" onClick={(e) => { e.stopPropagation(); handleLike(); }}>
+        {liked ? "Liked" : "Like"} ({likes.length})
+      </button>
+      <button className="btn-show-likes" onClick={(e) => { e.stopPropagation(); goToLikesPage(); }}>
+        Show Likes
+      </button>
+      {post.visibility === "public" && (
+        <button className="btn-share" onClick={(e) => { e.stopPropagation(); handleShare(); }}>
+          Share
+        </button>
+      )}
+      {!isRepost && (<button className="btn-repost" onClick={(e) => { e.stopPropagation(); handleRepost(); }}>{hasReposted ? "Unrepost" : "Repost"}</button>)}
+      {isRepost && !hasReposted && (<button className="btn-repost" onClick={(e) => { e.stopPropagation(); handleRepost(); }}>{hasReposted ? "Unrepost" : "Repost"}</button>)}
     </div>
-  );
+    <div
+      className="post-card-content"
+      dangerouslySetInnerHTML={getMarkdownContent()}
+    />
+    {imageURL && (
+      <div className="post-card-image">
+        <img src={imageURL} alt="Post" className="post-image" />
+      </div>
+    )}
+    <p className="post-card-update-date">Updated at: {new Date(post.updated_at).toLocaleString()}</p>
+    
+    <div className="comment-grid">
+      <h5 className="comment-title">Comments:</h5>
+      {matchedComments.map((comment) => (
+        <Comment comment={comment} key={comment.id} />
+      ))}
+    </div>
+    <form onSubmit={submitComment}>
+      <textarea
+        placeholder="Write your comment here..."
+        value={newCommentContent}
+        onChange={(e) => setNewCommentContent(e.target.value)}
+        required
+      />
+      <button type="submit">Send</button>
+    </form>
+    {isRepost && <p><strong>Reposted by {reposted_by}</strong></p>}
+  </div>
+);
 }

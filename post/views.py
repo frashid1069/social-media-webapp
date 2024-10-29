@@ -16,7 +16,9 @@ from rest_framework.authentication import get_authorization_header
 class PostView(ModelViewSet):
     #authentication_classes = [authentication.JwtQueryParamsAuthentication]
     #authentication_classes = []
-    queryset = Post.objects
+    # queryset = Post.objects
+    # queryset = Post.objects.all()
+    queryset = Post.objects.select_related('author').all()
     serializer_class = PostSerializer
     permission_classes = [permissions.AllowAny]  # Allows public access for reading
 

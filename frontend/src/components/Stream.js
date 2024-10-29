@@ -237,6 +237,9 @@ export default function Stream() {
               post={post}
               key={post.id}
               editable={false}
+              // onClick={() => navigate(`/posts/${post.id}`)} 
+              onClick={() => isVisible ? navigate(`/posts/${post.id}`) : navigate(`/stream/${authorId}/${post.id}/edit`)}
+
               canShare={post.can_share} // ADDED CAN_SHARE PROP
               isRepost={post.isRepost}
               repostedBy={post.repostedBy}
@@ -251,6 +254,9 @@ export default function Stream() {
               post={post}
               key={post.id}
               editable={true}
+              // onClick={() => navigate(`/posts/${post.id}`)}
+              onClick={() => isVisible ? navigate(`/posts/${post.id}`) : navigate(`/stream/${authorId}/${post.id}/edit`)}
+
               canShare={post.can_share} // ADDED CAN_SHARE PROP
               isRepost={post.isRepost}
               repostedBy={post.repostedBy}

@@ -8,11 +8,19 @@ export default function PostDetail() {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const token = localStorage.getItem("token");
 
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await fetch(`${apiUrl}/post/${postId}/`);
+                // Using `new URL()` to handle base URL and path correctly
+                const url = new URL(`post/${postId}/`, apiUrl);
+                const response = await fetch(url.toString(), {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "token": token,
+                    },
+                });
                 if (response.ok) {
                     const data = await response.json();
                     setPost(data);
@@ -37,10 +45,9 @@ export default function PostDetail() {
             {post ? (
                 <>
                     <h2>{post.title}</h2>
-                    <p>Author: {post.author.display_name || "Unknown Author"}</p>
-                    <div
-                        dangerouslySetInnerHTML={{ __html: post.content }}
-                    ></div>
+                    <p>Author: {post.author ? post.author.display_name : "Unknown Author"}</p>
+
+                    <div dangerouslySetInnerHTML={{ __html: post.content }}></div>
                     {post.image_content && (
                         <img
                             src={post.image_content}

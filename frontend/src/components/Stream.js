@@ -18,25 +18,22 @@ export default function Stream() {
   const [follows, setFollows] = useState([]);
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const { authorId } = useParams();
   console.log(token);
   const [reposts, setReposts] = useState([]);
   const [posts2, setPosts2] = useState([]);
   const [posts3, setPosts3] = useState([]);
 
-  // // get the posts list
+  // get the posts list
   useEffect(() => {
-    fetch(apiUrl + 'post/',
-      {
-        method: "GET",
-        headers: {
-          "token": `${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    )
-
+    fetch(apiUrl + "post/", {
+      method: "GET",
+      headers: {
+        "token": `${token}`,
+        "Content-Type": "application/json",
+      },
+    })
       .then((response) => response.json())
       .then((data) => setPosts3(data));
   }, [apiUrl, token]);
@@ -133,15 +130,50 @@ export default function Stream() {
     return post.visibility.toLowerCase() === "public";
   };
 
-  // check if the post is friends-only
-  const matchesFriends = (post) => {
-    return post.visibility.toLowerCase() === "friend only";
+  //############
+  // check if the post is unlisted
+  const matchesUnlisted = (post) => {
+    return post.visibility.toLowerCase() === "unlisted";
   };
+
+  // get the follower list of current user (authors' id who are following the current user)
+  const followerAuthorsId = [];
+  follows.forEach(getFollowerAuthor);
+  function getFollowerAuthor(f) {
+    if (f.followed === authorIdInt){
+      followerAuthorsId.push(f.follower)
+    }
+  }
+  // get the following list of current user (authors' id followed by the current user)
+  const followingAuthorsId = [];
+  follows.forEach(getFollowAuthor);
+  function getFollowAuthor(f) {
+    if (f.follower === authorIdInt){
+      followingAuthorsId.push(f.followed)
+    }
+  }
+  // get the friends list of current user (friend authors' id of the current user)
+  const friendsAuthorsId = [];
+  followingAuthorsId.forEach(getFriendAuthor);
+  function getFriendAuthor(fId) {
+    follows.forEach((f)=>{
+      if (f.follower === fId && f.followed === authorIdInt){
+        friendsAuthorsId.push(f.follower)
+      }
+    })
+  }
+  // check if the author of the post is friend of the current user
+  // if so, then all posts of that author can be shown on the stream page
+  const matchesFriendAuthor = (post) => {
+    return friendsAuthorsId.includes(post.author);
+  };
+  //##########
 
   // check if the post is from current user
   const matchesAuthor = (post, id) => {
     return post.author === id;
   };
+
   const matchId = (follow) => {
     return follow.followed.toString() === localStorage.getItem("logged_in_id");
   };
@@ -150,22 +182,19 @@ export default function Stream() {
   };
   const pendingFollows = follows.filter((follow) => matchId(follow) && matchPending(follow));
 
-  // // get the public posts and posts that belong to the current user
-  // const visiblePosts = posts.filter(
-  //   (post) =>
-  //     matchUndelete(post) &&
-  //     (matchesPublic(post) ||
-  //       matchesAuthor(post, authorIdInt) ||
-  //       matchesFriends(post))
-  // );
-
-  // Filter posts to include public, friend-only (for friends), and posts belonging to the current user
+  // Filter posts to show posts belonging to the current user, public posts,
+  // unlisted posts belonging to authors that the current user follows, friend-only posts belonging to friends
   const visiblePosts = posts.filter(
     (post) =>
       matchUndelete(post) &&
       (matchesPublic(post) ||
         matchesAuthor(post, authorIdInt) ||
-        (matchesFriends(post) && follows.some(follow => follow.follower === authorIdInt && follow.followed === post.author)))
+        matchesFriendAuthor(post) ||
+        (matchesUnlisted(post) &&
+          follows.some(
+            (follow) =>
+              follow.follower === authorIdInt && follow.followed === post.author
+          )) )
   );
 
   // sort visible posts so that the most recent updated posts appear at the top

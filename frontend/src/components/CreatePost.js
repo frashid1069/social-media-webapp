@@ -26,9 +26,11 @@ export default function CreatePost() {
     setPostType(event.target.value);
     if(event.target.value === "image") {
       document.getElementById("post-content").hidden = true;
+      document.getElementById("image-upload").hidden = false;
     }
     else { 
       document.getElementById("post-content").hidden = false;
+      document.getElementById("image-upload").hidden = true;
     }
   }
   
@@ -91,8 +93,9 @@ export default function CreatePost() {
             value={posttype}
             onChange={handlePostTypeChange}
           >
-            <option value="post">Post</option>
+            <option value="post">Markdown Post</option>
             <option value="image">Image Post</option>
+            <option value="simple">Regular Post</option>
           </select>
           <input
             className="new-post-title"

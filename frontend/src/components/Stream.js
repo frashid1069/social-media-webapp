@@ -20,7 +20,6 @@ export default function Stream() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const { authorId } = useParams();
-  console.log(token);
   const [reposts, setReposts] = useState([]);
   const [posts2, setPosts2] = useState([]);
   const [posts3, setPosts3] = useState([]);
@@ -135,15 +134,6 @@ export default function Stream() {
   const matchesUnlisted = (post) => {
     return post.visibility.toLowerCase() === "unlisted";
   };
-
-  // get the follower list of current user (authors' id who are following the current user)
-  const followerAuthorsId = [];
-  follows.forEach(getFollowerAuthor);
-  function getFollowerAuthor(f) {
-    if (f.followed === authorIdInt){
-      followerAuthorsId.push(f.follower)
-    }
-  }
   // get the following list of current user (authors' id followed by the current user)
   const followingAuthorsId = [];
   follows.forEach(getFollowAuthor);
@@ -151,7 +141,7 @@ export default function Stream() {
     if (f.follower === authorIdInt){
       followingAuthorsId.push(f.followed)
     }
-  }
+  };
   // get the friends list of current user (friend authors' id of the current user)
   const friendsAuthorsId = [];
   followingAuthorsId.forEach(getFriendAuthor);
@@ -161,7 +151,7 @@ export default function Stream() {
         friendsAuthorsId.push(f.follower)
       }
     })
-  }
+  };
   // check if the author of the post is friend of the current user
   // if so, then all posts of that author can be shown on the stream page
   const matchesFriendAuthor = (post) => {

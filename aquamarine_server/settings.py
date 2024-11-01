@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'author',                      # install app service
     'post',                      # install app service
     'comment',                      # install app service
+    'post_image',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

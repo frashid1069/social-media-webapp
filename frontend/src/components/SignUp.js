@@ -144,7 +144,7 @@ export default function SignUp() {
 //   );
 // }
 const handleSubmit = async (event) => {
-  const apiUrl = process.env.REACT_APP_API_URL + 'author/';
+  const apiUrl = process.env.REACT_APP_API_URL + 'signup/';
   event.preventDefault();
   try {
     const response = await fetch(apiUrl, {
@@ -159,8 +159,6 @@ const handleSubmit = async (event) => {
         bio: bio,
         profile_image: selectedImage,
         github_url: githubUrl,
-        created_at: "2024-10-16T21:54:00Z",
-        updated_at: "2024-10-16T21:54:00Z",
       }),
     })
       .then((responsess) => responsess.json())

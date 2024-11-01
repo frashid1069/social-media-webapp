@@ -15,6 +15,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from author.models import Author
 from post.models import Post
 from service.models import Follow
+from rest_framework.permissions import AllowAny
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
@@ -23,7 +24,7 @@ def index(request):
 
 class Login(APIView):
     authentication_classes = []
-    permission_classes = []
+    permission_classes = [AllowAny]
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
@@ -53,7 +54,7 @@ class Login(APIView):
 
 class SignUp(APIView):
     authentication_classes = []
-    permission_classes = []
+    permission_classes = [AllowAny]
     
     def post(self, request):
         serializer = serializers.SignUpSerializer(data=request.data)

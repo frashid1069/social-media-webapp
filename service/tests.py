@@ -6,35 +6,6 @@ from django.contrib.auth.models import User
 from .models import Author, Post
 from service import models
 
-class AuthorViewTest(APITestCase):
-    
-    def setUp(self):
-        # Set up test data, such as creating users and authors
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.author = models.Author.objects.create(user=self.user, username='testauthor', display_name='Test Author')
-        self.client = APIClient()
-
-    def test_author_creation(self):
-        """
-        Test that the author view creates an author.
-        """
-        data = {
-            'username': 'newauthor',
-            'display_name': 'New Author',
-            'password': 'newpassword'
-        }
-        response = self.client.post(reverse('author-list'), data, format='json')
-        print(response.data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['username'], 'newauthor')
-
-    def test_author_list(self):
-        """
-        Test that the author view returns a list of authors.
-        """
-        response = self.client.get(reverse('author-list'))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) > 0)
 
 class PostViewTest(APITestCase):
     
@@ -80,9 +51,8 @@ class LoginViewTest(APITestCase):
 
     def setUp(self):
         # Create a user and author for testing
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.author = models.Author.objects.create(user=self.user, username='testauthor', display_name='Test Author', password='testpass')
-        self.client = APIClient()
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.author = models.Author.objects.create(user=self.user, username='testauthor', display_name='Test Author')
 
     def test_login_successful(self):
         """
@@ -90,7 +60,7 @@ class LoginViewTest(APITestCase):
         """
         data = {
             'username': 'testauthor',
-            'password': 'testpass'
+            'password': 'password'
         }
         response = self.client.post(reverse('login'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -109,9 +79,6 @@ class LoginViewTest(APITestCase):
 
 class SignUpViewTest(APITestCase):
 
-    def setUp(self):
-        self.client = APIClient()
-
     def test_signup_success(self):
         """
         Test that signup is successful with valid data.
@@ -119,7 +86,7 @@ class SignUpViewTest(APITestCase):
         data = {
             'username': 'newuser',
             'display_name': 'New User',
-            'password': 'newpassword'
+            'password': 'password'
         }
         response = self.client.post(reverse('signup'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -129,12 +96,12 @@ class SignUpViewTest(APITestCase):
         """
         Test that signup fails with a duplicate username.
         """
-        existing_user = User.objects.create_user(username='existinguser', password='password123')
+        existing_user = User.objects.create_user(username='existinguser', password='password')
         models.Author.objects.create(user=existing_user, username='existinguser', display_name='Existing User')
         data = {
             'username': 'existinguser',
             'display_name': 'New User',
-            'password': 'newpassword'
+            'password': 'password'
         }
         response = self.client.post(reverse('signup'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

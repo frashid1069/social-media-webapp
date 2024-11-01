@@ -17,7 +17,7 @@ class JwtQueryParamsAuthentication(BaseAuthentication):
 
         try:
             payload = jwt.decode(token, salt, algorithms="HS256")
-            print(payload)
+            #print(payload)
         except Exception:
             raise exceptions.AuthenticationFailed('Invalid token')
 

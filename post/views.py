@@ -247,18 +247,18 @@ class RepostView(ModelViewSet):
             serializer = self.get_serializer(repost)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
-    # def get_queryset(self):
-    #     queryset = super().get_queryset()
-    #     original_post_id = self.request.query_params.get('post')
-    #     reposted_by_id = self.request.query_params.get('reposted_by')
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        original_post_id = self.request.query_params.get('post')
+        reposted_by_id = self.request.query_params.get('reposted_by')
         
-    #     if original_post_id:
-    #         queryset = queryset.filter(post=original_post_id)
+        if original_post_id:
+            queryset = queryset.filter(post=original_post_id)
         
-    #     if reposted_by_id:
-    #         queryset = queryset.filter(reposted_by=reposted_by_id)
+        if reposted_by_id:
+            queryset = queryset.filter(reposted_by=reposted_by_id)
             
-    #     return queryset.order_by("created_at")
+        return queryset.order_by("created_at")
     
     # def get_queryset(self):
     #     queryset = super().get_queryset()
@@ -294,37 +294,46 @@ class RepostView(ModelViewSet):
         
 
             
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        current_user = self.request.user
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     current_user = self.request.user
 
-        # Only include non-deleted reposts
-        queryset = queryset.filter(is_deleted=False)
+    #     # Only include non-deleted reposts
+    #     queryset = queryset.filter(is_deleted=False)
 
-        # Fetch query parameters
-        author_id = self.request.query_params.get('author_id')
-        title = self.request.query_params.get('title')
-        following_list = self.request.query_params.get("following_list")
+    #     # Fetch query parameters
+    #     author_id = self.request.query_params.get('author_id')
+    #     title = self.request.query_params.get('title')
+    #     following_list = self.request.query_params.get("following_list")
+        
+    #     original_post_id = self.request.query_params.get('post')
+    #     reposted_by_id = self.request.query_params.get('reposted_by')
+        
+    #     if original_post_id:
+    #         queryset = queryset.filter(post=original_post_id)
+        
+    #     if reposted_by_id:
+    #         queryset = queryset.filter(reposted_by=reposted_by_id)
 
-        # Filter for reposts by specific author
-        if author_id:
-            queryset = queryset.filter(reposted_by__id=author_id)
-        elif title:
-            queryset = queryset.filter(post__title=title)
-        elif following_list:
-            current_author = Author.objects.get(user=current_user)
-            followed_by_user = Author.objects.filter(following=current_author)
-            queryset = queryset.filter(reposted_by__id__in=followed_by_user.values_list('id', flat=True))
+    #     # Filter for reposts by specific author
+    #     if author_id:
+    #         queryset = queryset.filter(reposted_by__id=author_id)
+    #     elif title:
+    #         queryset = queryset.filter(post__title=title)
+    #     elif following_list:
+    #         current_author = Author.objects.get(user=current_user)
+    #         followed_by_user = Author.objects.filter(following=current_author)
+    #         queryset = queryset.filter(reposted_by__id__in=followed_by_user.values_list('id', flat=True))
 
-        # Additional filtering for friend-only reposts visible to mutual friends
-        if current_user.is_authenticated:
-            current_author = Author.objects.get(user=current_user)
-            friend_ids = Author.objects.filter(
-                followers=current_author,
-                following=current_author
-            ).values_list('id', flat=True)
+    #     # Additional filtering for friend-only reposts visible to mutual friends
+    #     if current_user.is_authenticated:
+    #         current_author = Author.objects.get(user=current_user)
+    #         friend_ids = Author.objects.filter(
+    #             followers=current_author,
+    #             following=current_author
+    #         ).values_list('id', flat=True)
 
-            # Filter for public, unlisted, and friend-only reposts from friends
-            queryset = queryset.filter(reposted_by__id__in=friend_ids)
+    #         # Filter for public, unlisted, and friend-only reposts from friends
+    #         queryset = queryset.filter(reposted_by__id__in=friend_ids)
 
-        return queryset.order_by("created_at")
+    #     return queryset.order_by("created_at")

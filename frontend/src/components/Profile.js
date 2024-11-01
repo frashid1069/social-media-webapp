@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "../streamStyle.css";
 import PostCards from "./PostCards";
 import { cusFetch } from './Login';
@@ -7,16 +7,21 @@ import { cusFetch } from './Login';
 const apiUrl = process.env.REACT_APP_API_URL
 
 /**
- * This is a component for displaying the profile page
- *  import "../streamStyle_Sukh.css";
+ * This is a component for displaying the profile page\
  *
  */
 export default function Profile() {
   const [author, setAuthor] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [follows, setFollows] = useState([]);
+  const [authorList, setAuthorList] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const { authorId } = useParams();
   const navigate = useNavigate();
+
+  // get the author id as an int
+  const authorIdInt = parseInt(authorId);
+
   // https://stackoverflow.com/questions/63193114/how-do-i-call-a-function-automatically-when-page-loads-up-in-react-js-in-2020
   useEffect(() => {
     ownProfile();
@@ -34,8 +39,37 @@ export default function Profile() {
       .then((response) => response.json())
       .then((data) => setPosts(data));
   }, []);
-  // get the author id as an int
-  const authorIdInt = parseInt(authorId);
+
+  // get the author list
+  useEffect(() => {
+    cusFetch(`${apiUrl}author/`)
+      .then((response) => response.json())
+      .then((data) => setAuthorList(data));
+  }, []);
+  // get the follow list
+  useEffect(() => {
+    cusFetch(`${apiUrl}follow/`)
+      .then((response) => response.json())
+      .then((data) => setFollows(data));
+  }, []);
+  // get the follower list of current user (authors' id who are following the current user)
+  const followerAuthorsId = [];
+  follows.forEach(getFollowerAuthor);
+  function getFollowerAuthor(f) {
+    if (f.followed === authorIdInt){
+      followerAuthorsId.push(f.follower)
+    }
+  };
+  // match the display name of followers
+  const followerList = [];
+  followerAuthorsId.forEach(getFollowerName);
+  function getFollowerName(fId) {
+    authorList.forEach((a)=>{
+      if (a.id === fId){
+        followerList.push(a.display_name)
+      }
+    })
+  };
 
   useEffect(() => {
     checkFollowingStatus();
@@ -153,6 +187,8 @@ export default function Profile() {
       <p className="profile-bio">{author.bio}</p>
       <h4 className="profile-txt">Github URL: </h4>
       <p className="profile-git">{author.github_url}</p>
+      <h4 className="profile-txt">Followers: </h4>
+      {followerList.map((f)=> (<p>{f}</p>))}
       <button onClick={handleEditProfile}>Edit Profile</button>
       {isFollowing ? (
         <button id="unfollowButton" onClick={handleUnfollow}>Unfollow</button>

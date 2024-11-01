@@ -8,6 +8,8 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = "__all__"
 
+        #exclude = ['created_at', 'updated_at', 'is_deleted']
+
     def get_can_share(self, obj):
         # Only public posts are shareable
         return obj.visibility == 'public'

@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import datetime
+from django.utils import timezone
 from django.contrib.auth.models import User
 
 
@@ -16,8 +16,8 @@ class Author(models.Model):
     github_url = models.URLField(blank=True, null=True)
     # From https://www.devhandbook.com/django/user-profile/
     profile_image = models.ImageField(upload_to="profile_pics", blank=True, null=True)
-    created_at = models.DateTimeField(default=datetime.now)
-    updated_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
     followers = models.ManyToManyField('self', symmetrical=False, related_name='following', blank=True)
     #email = models.EmailField(unique=True)
 

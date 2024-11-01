@@ -7,8 +7,6 @@ from rest_framework.exceptions import PermissionDenied
 
 # Create your views here.
 class AuthorView(ModelViewSet):
-    # authentication_classes = []
-    # permission_classes = []
     queryset = models.Author.objects
     serializer_class = serializers.AuthorSerializer
     

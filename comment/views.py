@@ -53,6 +53,9 @@ class CommentView(ModelViewSet):
         responses={200: CommentSerializer, 400: "Bad Request", 404: "Not Found"},
     )
     def update(self, request, *args, **kwargs):
+        author = self.get_object()
+        if author.user != request.user:
+            raise PermissionDenied("You do not have permission to edit this profile.")
         return super().update(request, *args, **kwargs)
 
     @extend_schema(

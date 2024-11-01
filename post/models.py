@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import datetime
+from django.utils import timezone
 from author.models import Author
 from django.utils.text import slugify
 import os
@@ -11,8 +11,8 @@ class Post(models.Model):
     content_type = models.CharField(max_length=50, choices=[('text/markdown', 'Markdown'), ('image/jpeg', 'JPEG')])
     # From https://stackoverflow.com/questions/58144230/how-to-set-image-field-as-optional by govind
     image_content = models.ImageField(upload_to="post_pics", blank=True, null=True)
-    created_at = models.DateTimeField(default=datetime.now)
-    updated_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
     # database value/ human readable 
     VISIBILITY_CHOICES = [
         ('public', 'Public'),
@@ -53,7 +53,7 @@ def upload_post_image(instance, filename):
 class Repost(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reposts')
     reposted_by = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='reposts')
-    created_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
     visibility = models.CharField(max_length=20, choices=[('public', 'Public'), ('unlisted', 'Unlisted'), ('friend-only', 'Friend Only')], default='public')
     

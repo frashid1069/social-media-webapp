@@ -12,6 +12,8 @@ import Likes from "./components/Likes";
 import Welcome from "./components/Welcome";
 import PostDetail from "./components/PostDetail"; 
 
+import ImageDisplay from './components/ImageDisplay';
+
 /**
  * You can put path for components
  *
@@ -24,6 +26,7 @@ function App() {
       <div className="login">
         <Router basename="/home">
           <Routes>
+            <Route path="image" element={<ImageDisplay/>}></Route>
             <Route path="/" element={<Welcome />}></Route>
             <Route path="/login" element={<Login />}></Route>
             <Route path="/signup" element={<SignUp />}></Route>

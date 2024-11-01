@@ -51,7 +51,7 @@ export default function CreatePost() {
     }
   
     try {
-      const response = await fetch(`${apiUrl}image_post/`, {
+      const response = await fetch(`${apiUrl}post/`, {
         method: "POST",
         headers: {
           "token": `${localStorage.getItem('token')}` // If a token is needed

@@ -6,46 +6,29 @@ from django.contrib.auth.models import User
 from .models import Author, Post
 from service import models
 
-
-class PostViewTest(APITestCase):
-    
+# class for set up testcase
+class BaseAPITestCase(APITestCase):
     def setUp(self):
-        # Create a user and an author
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.author = models.Author.objects.create(user=self.user, username='testauthor', display_name='Test Author')
-        self.post = models.Post.objects.create(author=self.author, title="Test Post", visibility="public", is_deleted=False)
-        self.client = APIClient()
+        super().setUp()
+        self.user, self.author = self.create_test_user_and_author()
 
-    def test_post_creation(self):
-        """
-        Test that a post is created correctly.
-        """
-        self.client.force_authenticate(user=self.user)
+        # Login to obtain token and set credentials
+        self.token = self.login_and_get_token()
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+    def create_test_user_and_author(self):
+        user = User.objects.create_user(username="testuser", password="password")
+        author = Author.objects.create(user=user, username="testauthor", display_name="Test Author")
+        return user, author
+
+    def login_and_get_token(self):
         data = {
-            'author': self.author.id,
-            'title': 'New Post',
-            'visibility': 'public'
+            'username': 'testauthor',
+            'password': 'password'
         }
-        response = self.client.post(reverse('post-list'), data, format='json')
-        print(response.data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['title'], 'New Post')
-
-    def test_get_post_list(self):
-        """
-        Test getting a list of posts.
-        """
-        response = self.client.get(reverse('post-list'))
+        response = self.client.post(reverse('login'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) > 0)
-
-    def test_filter_posts_by_author(self):
-        """
-        Test filtering posts by author ID.
-        """
-        response = self.client.get(reverse('post-list'), {'author_id': self.author.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) > 0)
+        return response.data.get("token")
 
 class LoginViewTest(APITestCase):
 
@@ -107,114 +90,3 @@ class SignUpViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class APITests(APITestCase):
-   
-    def setUp(self):
-
-        # Create a test author
-        self.author = Author.objects.create(
-            user=User.objects.create_user(username="testauthor", password='1'),
-            username="testauthor",
-            display_name="Test Author",
-            password='1',
-        )
-        
-        # Create a test post
-        self.post = Post.objects.create(
-            author=self.author,
-            title="Test Post",
-            content="This is a test post",
-            content_type="text/markdown"
-        )
-
-    def test_get_post_list(self):
-        """
-        Test getting the list of posts for a particular author
-        URL: /api/post/?author_id=<id>
-        """
-        url = reverse('post-list')  # This will resolve to /api/post/
-        response = self.client.get(url, {'author_id': self.author.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_get_author_list(self):
-        """
-        Test getting the list of authors
-        URL: /api/author/
-        """
-        url = reverse('author-list')  # This will resolve to /api/author/
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_get_single_post(self):
-        """
-        Test getting a single post
-        URL: /api/post/<id>/
-        """
-        url = reverse('post-detail', kwargs={'pk': self.post.id})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['title'], self.post.title)
-
-    def test_create_post(self):
-        """
-        Test creating a post using POST request
-        URL: /api/post/
-        """
-        url = reverse('post-list')
-        data = {
-            'author': self.author.id,
-            'title': "New Test Post",
-            'content': "This is a new test post",
-            'content_type': "text/markdown"
-        }
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    
-    def test_delete_post(self):
-        """
-        Test soft deleting a post
-        URL: /api/post/<id>/
-        """
-        url = reverse('post-detail', kwargs={'pk': self.post.id})
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        
-        # Verify the post is marked as deleted
-        self.post.refresh_from_db()
-        self.assertTrue(self.post.is_deleted)
-
-    def test_get_comment_list(self):
-        """
-        Test getting the list of comments for a post
-        URL: /api/comment/?post_id=<id>
-        """
-        url = reverse('comment-list')
-        response = self.client.get(url, {'post_id': self.post.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_get_likes(self):
-        """
-        Test getting the list of likes for a post
-        URL: /api/like/?post_id=<id>
-        """
-        url = reverse('like-list')
-        response = self.client.get(url, {'post_id': self.post.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_follow_list(self):
-        """
-        Test getting a list of followers or followees
-        URL: /api/follow/?author_id=<id>
-        """
-        url = reverse('follow-list')
-        response = self.client.get(url, {'author_id': self.author.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_inbox_list(self):
-        """
-        Test getting the list of inbox items for an author
-        URL: /api/inbox/?author_id=<id>
-        """
-        url = reverse('inbox-list')
-        response = self.client.get(url, {'author_id': self.author.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)

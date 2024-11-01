@@ -6,6 +6,5 @@ router = routers.DefaultRouter()
 router.register('image_post', views.ImagePostView)
 urlpatterns = [
     path('', include(router.urls)),
-    path('image_post/image/', views.get_image, name='get_image'),
     
 ]

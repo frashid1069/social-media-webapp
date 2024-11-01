@@ -39,7 +39,7 @@ class Login(APIView):
                  return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
             
             token = create_token({'id': author.user.id, 'username': author.user.username}, 100000)
-            print(token)
+
             return Response({
                 'token': token,
                 'user': {

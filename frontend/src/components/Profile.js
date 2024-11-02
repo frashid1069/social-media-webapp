@@ -78,10 +78,12 @@ export default function Profile() {
   // Check if the logged-in user is following the profile author
   const checkFollowingStatus = async () => {
     const loggedIn = localStorage.getItem("logged_in_id");
-    const response = await cusFetch(`${apiUrl}authors/${loggedIn}/following/${authorId}/`);
+    const response = await cusFetch(`${apiUrl}follow/`);
     if (response.ok) {
       const data = await response.json();
-      setIsFollowing(data.isFollowing);
+      if(data.length > 0) {
+        setIsFollowing(true);
+      }
     }
   };
 
@@ -125,7 +127,8 @@ export default function Profile() {
       pending: "yes"
     });
     if (response.ok) {
-      alert("hello");
+      alert("you have followed this author");
+      setIsFollowing(true);
     }
   };
 
@@ -133,8 +136,8 @@ export default function Profile() {
   const handleUnfollow = async (event) => {
     event.preventDefault();
     const loggedIn = localStorage.getItem("logged_in_id");
-    const response = await cusFetch(`${apiUrl}unfollow/`, {
-      method: "POST",
+    const response = await cusFetch(`${apiUrl}follow/`, {
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },

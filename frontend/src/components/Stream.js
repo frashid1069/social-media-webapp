@@ -158,7 +158,13 @@ export default function Stream() {
   const goCreatePost = () => {
     navigate(`/stream/${authorId}/createPost`);
   };
-
+  const matchId = (follow) => {
+    return follow.followed.toString() === localStorage.getItem("logged_in_id");
+  };
+  const matchPending = (follow) => {
+    return follow.pending === "yes";
+  };
+  const pendingFollows = follows.filter((follow) => matchId(follow) && matchPending(follow));
   return (
     <div className="stream-page">
       <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
@@ -176,6 +182,17 @@ export default function Stream() {
         >
           {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
         </button>
+        <select
+          className="dropdown"
+          id="follow-notifications"
+        >
+          <option>{pendingFollows.length} pending follow requests</option>
+          <option>
+            {pendingFollows.map((follow) => (
+              <option key={follow.id}>{follow.followed}</option>
+            ))}
+          </option>
+        </select>
       </div>
 
       {isVisible && (

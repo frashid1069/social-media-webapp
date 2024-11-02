@@ -162,9 +162,12 @@ class FollowView(ModelViewSet):
         queryset = super().get_queryset()
         author_id = self.request.query_params.get('author_id')
         pending =  self.request.query_params.get('pending')
+        follower = self.request.query_params.get("follower")
         # Query is a list of all follow requests that are pending, used for notifying user of them 
         if author_id and pending:
             queryset = queryset.filter(followed=author_id, pending=pending)
+        if author_id and follower:
+            queryset = queryset.filter(followed=author_id, follower=follower)
         return queryset
     
 class InboxView(ModelViewSet):

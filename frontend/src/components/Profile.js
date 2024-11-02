@@ -78,10 +78,11 @@ export default function Profile() {
   // Check if the logged-in user is following the profile author
   const checkFollowingStatus = async () => {
     const loggedIn = localStorage.getItem("logged_in_id");
-    const response = await cusFetch(`${apiUrl}follow/`);
+    const response = await cusFetch(`${apiUrl}follow/?author_id=${authorId}&follower=${loggedIn}`);
     if (response.ok) {
       const data = await response.json();
       if(data.length > 0) {
+        localStorage.setItem("follow_id", data[0].id)
         setIsFollowing(true);
       }
     }
@@ -135,16 +136,12 @@ export default function Profile() {
   // Unfollow functionality
   const handleUnfollow = async (event) => {
     event.preventDefault();
-    const loggedIn = localStorage.getItem("logged_in_id");
-    const response = await cusFetch(`${apiUrl}follow/`, {
+    const follow_id = localStorage.getItem("follow_id");
+    const response = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        follower: loggedIn,
-        followed: authorId,
-      }),
     });
     if (response.ok) {
       alert("You have unfollowed this author.");

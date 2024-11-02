@@ -23,6 +23,7 @@ export default function Stream() {
   const [reposts, setReposts] = useState([]);
   const [posts2, setPosts2] = useState([]);
   const [posts3, setPosts3] = useState([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Get the posts list
   useEffect(() => {
@@ -37,9 +38,26 @@ export default function Stream() {
       .then((data) => setPosts3(data));
   }, [apiUrl, token]);
 
-  // Get the follows list
+  // // Get the follows list
+  // useEffect(() => {
+  //   fetch(apiUrl + "follow/", {
+  //     method: "GET",
+  //     headers: {
+  //       "token": `${token}`,
+  //       "Content-Type": "application/json",
+  //     },
+  //   })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log(data); // Inspect structure to find the correct field for follower name
+  //       setFollows(data);
+  //     });
+  // }, [apiUrl, token]);
+
+  // Fetch follow requests and get follower details
+  // Fetch follow requests and get follower details
   useEffect(() => {
-    fetch(apiUrl + "follow/", {
+    fetch(`${apiUrl}follow/`, {
       method: "GET",
       headers: {
         "token": `${token}`,
@@ -47,8 +65,46 @@ export default function Stream() {
       },
     })
       .then((response) => response.json())
-      .then((data) => setFollows(data));
-  }, []);
+      .then((data) => {
+        const pendingRequests = data.filter(
+          (follow) => follow.pending === "yes" && follow.followed === authorIdInt
+        );
+
+        // Fetch follower details for each follow request
+        const followerPromises = pendingRequests.map((follow) =>
+          fetch(`${apiUrl}author/${follow.follower}`, {
+            method: "GET",
+            headers: {
+              "token": `${token}`,
+              "Content-Type": "application/json",
+            },
+          }).then((response) => response.json())
+        );
+
+        // Map display names to the follow requests
+        Promise.all(followerPromises).then((followers) => {
+          const followsWithNames = pendingRequests.map((follow, index) => ({
+            ...follow,
+            followerName: followers[index].display_name, // Use display_name field from Author model
+          }));
+          console.log("Mapped Follows with Names:", followsWithNames); // Verify data
+          setFollows(followsWithNames);
+        });
+      });
+  }, [apiUrl, token, authorIdInt]);
+
+  // Handle accepting or declining follow requests
+  const handleAccept = (followerId) => {
+    alert(`Accepted follow request from ${followerId}`);
+    // Implement the accept follow request functionality here
+  };
+
+  const handleDecline = (followerId) => {
+    alert(`Declined follow request from ${followerId}`);
+    // Implement the decline follow request functionality here
+  };
+
+
 
   // Fetch reposts
   useEffect(() => {
@@ -165,6 +221,8 @@ export default function Stream() {
     return follow.pending === "yes";
   };
   const pendingFollows = follows.filter((follow) => matchId(follow) && matchPending(follow));
+
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   return (
     <div className="stream-page">
       <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
@@ -182,18 +240,36 @@ export default function Stream() {
         >
           {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
         </button>
-        <select
-          className="dropdown"
-          id="follow-notifications"
-        >
-          <option>{pendingFollows.length} pending follow requests</option>
-          <option>
-            {pendingFollows.map((follow) => (
-              <option key={follow.id}>{follow.followed}</option>
-            ))}
-          </option>
-        </select>
+        {/* Custom dropdown for follow requests */}
+        <div className="dropdown">
+          <button className="dropdown-toggle" onClick={toggleDropdown}>
+            {follows.length} pending follow requests
+          </button>
+
+          {dropdownOpen && (
+            <div className="dropdown-menu">
+              {follows.map((follow) => (
+                <div key={follow.id} className="dropdown-item">
+                  <span>{follow.followerName}</span> {/* Display follower's name */}
+                  <button
+                    className="tick-btn"
+                    onClick={() => handleAccept(follow.follower)}
+                  >
+                    ✔️
+                  </button>
+                  <button
+                    className="cross-btn"
+                    onClick={() => handleDecline(follow.follower)}
+                  >
+                    ❌
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
 
       {isVisible && (
         <div className="post-grid">

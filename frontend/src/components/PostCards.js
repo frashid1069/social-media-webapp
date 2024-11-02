@@ -218,9 +218,9 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
         <button className="btn-like" onClick={(e) => { e.stopPropagation(); handleLike(); }}>
           {liked ? "Liked" : "Like"} ({likes.length})
         </button>
-        <button className="btn-show-likes" onClick={(e) => { e.stopPropagation(); goToLikesPage(); }}>
+        {/* <button className="btn-show-likes" onClick={(e) => { e.stopPropagation(); goToLikesPage(); }}>
           Show Likes
-        </button>
+        </button> */}
         {post.visibility === "public" && (
           <button className="btn-share" onClick={(e) => { e.stopPropagation(); handleShare(); }}>
             Share

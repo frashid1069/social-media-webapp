@@ -68,7 +68,7 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
 
   useEffect(() => {
     cusFetchLikes();
-  }, [post.id, authorIdInt]);
+  }, [post.id, authorIdInt, hasReposted]);
 
   // Check if the post is viewable by the current user based on visibility and friendship
   const canViewPost = post.visibility !== "friend-only" || isFriend;

@@ -184,3 +184,44 @@ select {
     transition: background-color 0.3s ease;
     max-width: 400px;
 }
+
+.followButton {
+    background-color: lightblue;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    font-weight: bold;
+    display: inline-block;
+    margin: 10px auto;
+    text-align: center;
+}
+
+.followButton:hover {
+    background-color: dodgerblue;
+    transform: scale(1.05);
+}
+
+/* Unfollow Button Styles */
+.unfollowButton {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    font-weight: bold;
+    display: inline-block;
+    margin: 10px auto;
+    text-align: center;
+}
+
+.unfollowButton:hover {
+    background-color: darkred;
+    transform: scale(1.05);
+}

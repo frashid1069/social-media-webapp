@@ -26,6 +26,25 @@ class Author(models.Model):
         return self.display_name  # Simpler __str__ for clarity
     
     def is_friend_with(self, other_author):
+        """
+        Determines if the current author has a mutual friendship with another author.
+        
+        This function checks for a "friend" relationship by verifying that both authors follow each other
+        with non-pending follow requests (i.e., 'pending' status is set to 'no'). For two authors to be 
+        considered friends, both must have approved follow requests in each other's direction.
+
+        Args:
+            other_author (Author): The other author to check for mutual friendship.
+
+        Returns:
+            bool: True if there is a mutual friendship (i.e., both authors follow each other without 
+                pending requests), otherwise False.
+                
+        Note:
+            - Uses the Follow model to check for follow records where each author follows the other 
+            with 'pending' set to 'no'.
+            - This helps maintain the integrity of friendships, as only mutual, approved follows qualify.
+        """
         from service.models import Follow
         """Check if the current author and the specified author are friends (mutual follows)."""
         return Follow.objects.filter(follower=self, followed=other_author, pending='no').exists() and \

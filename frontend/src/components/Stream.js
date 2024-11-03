@@ -276,7 +276,9 @@ export default function Stream() {
         >
           {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
         </button>
-        {/* Custom dropdown for follow requests */}
+        {/* Custom dropdown for follow requests 
+            CHAT GPT: Prompt help me create a custom dropdown that shows the follow requestsindividually and along with
+            options to accept or decline. Date: NOV 2, 2024*/}
         <div className="dropdown">
           <button className="dropdown-toggle" onClick={toggleDropdown}>
             {follows.length} pending follow requests

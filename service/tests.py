@@ -10,20 +10,22 @@ from service import models
 class BaseAPITestCase(APITestCase):
     def setUp(self):
         super().setUp()
-        self.user, self.author = self.create_test_user_and_author()
-
+        self.user1, self.author1 = self.create_test_user_and_author()
+        self.user2, self.author2 = self.create_test_user_and_author()
+        self.user3, self.author3 = self.create_test_user_and_author()
         # Login to obtain token and set credentials
         self.token = self.login_and_get_token()
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
     def create_test_user_and_author(self):
-        user = User.objects.create_user(username="testuser", password="password")
-        author = Author.objects.create(user=user, username="testauthor", display_name="Test Author")
+        users = User.objects.all()
+        user = User.objects.create_user(username=f"testuser{len(users)}", password="password")
+        author = Author.objects.create(user=user, username=f"testauthor{len(users)}", display_name=f"Test Author {len(users)}")
         return user, author
 
     def login_and_get_token(self):
         data = {
-            'username': 'testauthor',
+            'username': 'testauthor1',
             'password': 'password'
         }
         response = self.client.post(reverse('login'), data, format='json')
@@ -89,4 +91,56 @@ class SignUpViewTest(APITestCase):
         response = self.client.post(reverse('signup'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+# Below test cases made with the help of OpenAI. (2023). ChatGPT (GPT-3.5) "how to write test cases for an api in django python" 2024-11-03  
+class FollowViewTest(BaseAPITestCase):
+    
+    def setUp(self):
+        super().setUp()
+    
+    def test_requestFollow(self):
+        data = {
+            "follower": "1",
+            "followed": "2",
+            "pending": "yes"
+        }
+        response = self.client.post(reverse("follow-list"), data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['follower'], 1)
+        self.assertEqual(response.data['followed'], 2)
 
+    def test_acceptFollow(self):
+        data = {
+            "follower": "1",
+            "followed": "2",
+            "pending": "yes"
+        }
+        response = self.client.post(reverse("follow-list"), data, format="json")
+
+        data = {
+            "follower": "1",
+            "followed": "2",
+            "pending": "no"
+        }
+        response = self.client.put(reverse("follow-detail", args=["1"]), data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['pending'], 'no')
+
+    def test_declineFollow(self):
+        data = {
+            "follower": "1",
+            "followed": "2",
+            "pending": "yes"
+        }
+        response = self.client.post(reverse("follow-list"), data, format="json")
+        response = self.client.delete(reverse("follow-detail", args=["1"]), format="json")
+        self.assertEqual(response.status_code, 204)
+
+    def test_unfollow(self):
+        data = {
+            "follower": "1",
+            "followed": "2",
+            "pending": "no"
+        }
+        response = self.client.post(reverse("follow-list"), data, format="json")
+        response = self.client.delete(reverse("follow-detail", args=["1"]), format="json")
+        self.assertEqual(response.status_code, 204)

@@ -112,7 +112,7 @@ export default function Profile() {
     navigate(`/stream/${localStorage.getItem("logged_in_id")}`);
   };
   
-  // Handle comment submission
+  // Handle following
   const handleFollow = async (event) => {
     event.preventDefault();
     var loggedIn = localStorage.getItem("logged_in_id");

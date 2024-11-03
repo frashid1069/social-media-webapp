@@ -185,8 +185,8 @@ select {
     max-width: 400px;
 }
 
-.followButton {
-    background-color: lightblue;
+/* #followButton {
+    background-color: #007bff;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -200,13 +200,12 @@ select {
     text-align: center;
 }
 
-.followButton:hover {
+#followButton:hover {
     background-color: dodgerblue;
     transform: scale(1.05);
-}
+} */
 
-/* Unfollow Button Styles */
-.unfollowButton {
+/* #unfollowButton {
     background-color: red;
     color: white;
     border: none;
@@ -219,9 +218,13 @@ select {
     display: inline-block;
     margin: 10px auto;
     text-align: center;
-}
+} */
 
-.unfollowButton:hover {
+/* #unfollowButton:hover {
     background-color: darkred;
     transform: scale(1.05);
+} */
+
+#unfollowButton {
+    background-color: red;
 }

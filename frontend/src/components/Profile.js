@@ -85,6 +85,11 @@ export default function Profile() {
         localStorage.setItem("follow_id", data[0].id)
         setIsFollowing(true);
       }
+      else {
+        // No follow relationship found, reset follow status
+        localStorage.removeItem("follow_id");
+        setIsFollowing(false);
+      }
     }
   };
 
@@ -129,6 +134,7 @@ export default function Profile() {
     });
     if (response.ok) {
       alert("you have followed this author");
+      await checkFollowingStatus(); // Update follow status and follow_id after following
       setIsFollowing(true);
     }
   };
@@ -145,7 +151,8 @@ export default function Profile() {
     });
     if (response.ok) {
       alert("You have unfollowed this author.");
-      setIsFollowing(false); // Update following status
+      await checkFollowingStatus(); // Refresh follow status after unfollowing
+      setIsFollowing(false); 
     }
   };
 

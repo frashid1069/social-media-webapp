@@ -95,13 +95,49 @@ export default function Stream() {
 
   // Handle accepting or declining follow requests
   const handleAccept = (followerId) => {
-    alert(`Accepted follow request from ${followerId}`);
-    // Implement the accept follow request functionality here
+    fetch(`${apiUrl}follow/accept/`, {
+      method: "POST",
+      headers: {
+        "token": `${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        follower: followerId,
+        followed: authorIdInt,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          setFollows((prevFollows) =>
+            prevFollows.filter((follow) => follow.follower !== followerId)
+          );
+          alert(`Accepted follow request from ${followerId}`);
+        }
+      })
   };
 
   const handleDecline = (followerId) => {
-    alert(`Declined follow request from ${followerId}`);
-    // Implement the decline follow request functionality here
+    fetch(`${apiUrl}follow/decline/`, {
+      method: "POST",
+      headers: {
+        "token": `${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        follower: followerId,
+        followed: authorIdInt,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          setFollows((prevFollows) =>
+            prevFollows.filter((follow) => follow.follower !== followerId)
+          );
+          alert(`Declined follow request from ${followerId}`);
+        }
+      })
   };
 
 
@@ -253,13 +289,13 @@ export default function Stream() {
                   <span>{follow.followerName}</span> {/* Display follower's name */}
                   <button
                     className="tick-btn"
-                    onClick={() => handleAccept(follow.follower)}
+                    onClick={(e) => { e.stopPropagation(); handleAccept(follow.follower); }}
                   >
                     ✔️
                   </button>
                   <button
                     className="cross-btn"
-                    onClick={() => handleDecline(follow.follower)}
+                    onClick={(e) => { e.stopPropagation(); handleDecline(follow.follower); }}
                   >
                     ❌
                   </button>

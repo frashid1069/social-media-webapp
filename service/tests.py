@@ -181,3 +181,30 @@ class LikeViewTest(BaseAPITestCase):
         # Attempt to create a duplicate like
         response = self.client.post(self.like_url, data, format="json")
         self.assertEqual(Like.objects.count(), 1)   # only one like object should still remain
+        
+        
+class EditProfileTest(APITestCase):
+    def setUp(self):
+        # Create a user and author for testing
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.author = Author.objects.create(user=self.user, username='testauthor', display_name='Test Author')
+        self.client.login(username='testuser', password='password')
+
+    def test_edit_profile(self):
+        """
+        Ensure we can edit a profile.
+        """
+        url = reverse('edit_profile', args=[self.author.id])
+        data = {
+            'username': 'updateduser',
+            'display_name': 'Updated Author',
+            'bio': 'This is an updated bio.',
+            'github_url': 'https://github.com/updateduser'
+        }
+        response = self.client.put(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.author.refresh_from_db()
+        self.assertEqual(self.author.username, data['username'])
+        self.assertEqual(self.author.display_name, data['display_name'])
+        self.assertEqual(self.author.bio, data['bio'])
+        self.assertEqual(self.author.github_url, data['github_url'])

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../streamStyle.css";
 import PostCards from "./PostCards";
+import { cusFetch } from "./Login";
 
 /**
  * This is a component for displaying the personal stream page by using PostCards component.
@@ -24,6 +25,7 @@ export default function Stream() {
   const [posts2, setPosts2] = useState([]);
   const [posts3, setPosts3] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const follow_id = localStorage.getItem("follow_id");
 
   // Get the posts list
   useEffect(() => {
@@ -94,9 +96,11 @@ export default function Stream() {
   }, [apiUrl, token, authorIdInt]);
 
   // Handle accepting or declining follow requests
-  const handleAccept = (followerId) => {
-    fetch(`${apiUrl}follow/accept/`, {
-      method: "POST",
+  const handleAccept = async (followerId, followerName) => {
+    if (!follow_id) return
+    
+    const response = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
+      method: "PUT",
       headers: {
         "token": `${token}`,
         "Content-Type": "application/json",
@@ -104,40 +108,54 @@ export default function Stream() {
       body: JSON.stringify({
         follower: followerId,
         followed: authorIdInt,
+        pending: "no"
       }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          setFollows((prevFollows) =>
-            prevFollows.filter((follow) => follow.follower !== followerId)
-          );
-          alert(`Accepted follow request from ${followerId}`);
-        }
-      })
+    });
+    if (response.ok) {
+      alert(`Accepted follow request from ${followerName}`);
+      setFollows((prevFollows) =>
+        prevFollows.filter((follow) => follow.follower !== followerId)
+      );
+    }
   };
 
-  const handleDecline = (followerId) => {
-    fetch(`${apiUrl}follow/decline/`, {
-      method: "POST",
-      headers: {
-        "token": `${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        follower: followerId,
-        followed: authorIdInt,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          setFollows((prevFollows) =>
-            prevFollows.filter((follow) => follow.follower !== followerId)
-          );
-          alert(`Declined follow request from ${followerId}`);
-        }
-      })
+  const handleDecline = async (followerId, followerName) => {
+    if (!follow_id) return 
+
+    try {
+      // First, check if the follow object exists
+      const checkResponse = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
+        method: "GET",
+        headers: {
+          "token": `${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!checkResponse.ok) {
+        alert("The follow request no longer exists.");
+        return;
+      }
+  
+      // If it exists, proceed with deletion
+      const deleteResponse = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
+        method: "DELETE",
+        headers: {
+          "token": `${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (deleteResponse.ok) {
+        // Remove the follow request from the pending list
+        setFollows((prevFollows) =>
+          prevFollows.filter((follow) => follow.follower !== followerId)
+        );
+        alert(`Declined follow request from ${followerName}`);
+      }
+    } catch (error) {
+      console.error("Error declining follow request:", error);
+    }
   };
 
 
@@ -286,18 +304,18 @@ export default function Stream() {
 
           {dropdownOpen && (
             <div className="dropdown-menu">
-              {follows.map((follow) => (
+              {pendingFollows.map((follow) => (
                 <div key={follow.id} className="dropdown-item">
                   <span>{follow.followerName}</span> {/* Display follower's name */}
                   <button
                     className="tick-btn"
-                    onClick={(e) => { e.stopPropagation(); handleAccept(follow.follower); }}
+                    onClick={(e) => { handleAccept(follow.follower, follow.followerName) }}
                   >
                     ✔️
                   </button>
                   <button
                     className="cross-btn"
-                    onClick={(e) => { e.stopPropagation(); handleDecline(follow.follower); }}
+                    onClick={(e) => { handleDecline(follow.follower, follow.followerName) }}
                   >
                     ❌
                   </button>

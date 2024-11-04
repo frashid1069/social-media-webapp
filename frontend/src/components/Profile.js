@@ -17,6 +17,7 @@ export default function Profile() {
   const [authorList, setAuthorList] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const { authorId } = useParams();
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
   // get the author id as an int
@@ -56,7 +57,7 @@ export default function Profile() {
   const followerAuthorsId = [];
   follows.forEach(getFollowerAuthor);
   function getFollowerAuthor(f) {
-    if (f.followed === authorIdInt){
+    if (f.followed === authorIdInt && f.pending == "no"){
       followerAuthorsId.push(f.follower)
     }
   };
@@ -119,6 +120,7 @@ export default function Profile() {
     const response = await cusFetch(`${apiUrl}follow/`, {
       method: "POST",
       headers: {
+        "token": `${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -126,11 +128,6 @@ export default function Profile() {
         followed: authorId,
         pending: "yes"
       }),
-    });
-    var body = JSON.stringify({
-      follower: authorId,
-      followed: authorId,
-      pending: "yes"
     });
     if (response.ok) {
       alert("you have followed this author");

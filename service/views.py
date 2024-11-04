@@ -244,7 +244,6 @@ def follow_author(request, author_id):
     
     # Create a new follow request if none exists
     Follow.objects.create(follower=follower, followed=followed, pending="yes")
-    # return JsonResponse({"success": True, "message": "Follow request sent."}) 
     return
 
 def handle_follow(request, follow_id):
@@ -252,16 +251,17 @@ def handle_follow(request, follow_id):
     choice = request.POST.get("choice")
     follow = Follow.objects.filter(id=follow_id).first()
 
+    # if doesn't exist, return
     if not follow:
         return
 
+    # if follow request declined, delete the follow object entirely
     if choice == "no":
         follow.delete()
-        # return JsonResponse({"success": True, "message": "Follow request declined."})
+    # If accepted, update and save follow object to show that the sender is following the receiver    
     elif choice == "yes":
         follow.pending = "no"
         follow.save()
-        # return JsonResponse({"success": True, "message": "Follow request accepted."})
     # Return to ui
     return
 
@@ -273,7 +273,6 @@ def unfollow_author(request, author_id):
     follow_instance = Follow.objects.filter(follower=current_user_author, followed=author_to_unfollow)
     if follow_instance:
         follow_instance.delete()  # Remove the Follow relationship
-        # return JsonResponse({"success": True, "message": "Unfollowed successfully."})
     return
 
 

@@ -57,8 +57,8 @@ default password 1
 all has 1 public post
 1,3 has 1 unlisted and 1 friend-only posts 
 
-1 follows 2,3 | 
-2 follows 3 | 
+1 follows 2,3 || 
+2 follows 3 || 
 3 follows 1
 
 1,3 are friends

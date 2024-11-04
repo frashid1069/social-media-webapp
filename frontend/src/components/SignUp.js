@@ -166,11 +166,11 @@ const handleSubmit = async (event) => {
 
     if (response.ok) {
       window.location.href = "/login"; // Redirect after saving
-    } else {
-      alert("Failed to update post");
-    }
-  } catch (error) {
-    alert("Error updating post");
+    } 
+  } 
+  catch (error) {
+    alert("Requested admin to register user");
+    window.location.href = "/home/login"; // Redirect after saving
   }
 };
 

@@ -119,6 +119,9 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
   };
 
   const getMarkdownContent = () => {
+    if(post.content.startsWith("/")) {
+      return { __html: marked("") };
+    }
     return { __html: marked(post.content || "") };
   };
 

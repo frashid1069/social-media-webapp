@@ -97,8 +97,6 @@ export default function Stream() {
 
   // Handle accepting or declining follow requests
   const handleAccept = async (followerId, followerName) => {
-    if (!follow_id) return
-    
     const response = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
       method: "PUT",
       headers: {
@@ -120,8 +118,6 @@ export default function Stream() {
   };
 
   const handleDecline = async (followerId, followerName) => {
-    if (!follow_id) return 
-
     try {
       // First, check if the follow object exists
       const checkResponse = await cusFetch(`${apiUrl}follow/${follow_id}/`, {

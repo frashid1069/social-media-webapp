@@ -79,18 +79,23 @@ export default function Profile() {
   // Check if the logged-in user is following the profile author
   const checkFollowingStatus = async () => {
     const loggedIn = localStorage.getItem("logged_in_id");
-    const response = await cusFetch(`${apiUrl}follow/?author_id=${authorId}&follower=${loggedIn}`);
-    if (response.ok) {
-      const data = await response.json();
-      if(data.length > 0) {
-        localStorage.setItem("follow_id", data[0].id)
-        setIsFollowing(true);
+    try {
+      const response = await cusFetch(`${apiUrl}follow/?author_id=${authorId}&follower=${loggedIn}`);
+      if (response.ok) {
+        const data = await response.json();
+        if(data.length > 0) {
+          localStorage.setItem("follow_id", data[0].id)
+          setIsFollowing(true);
+        }
+        else {
+          // No follow relationship found, reset follow status
+          // localStorage.removeItem("follow_id");
+          setIsFollowing(false);
+        }
       }
-      else {
-        // No follow relationship found, reset follow status
-        localStorage.removeItem("follow_id");
-        setIsFollowing(false);
-      }
+    } 
+    catch (error) {
+      console.error("Error checking following status:", error);
     }
   };
 

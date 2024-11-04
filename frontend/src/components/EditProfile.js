@@ -12,12 +12,14 @@ function EditProfile() {
     The formData state variable is used to store the data that the author will input. 
   */
   const [formData, setFormData] = useState({
+    user: null,
+    id: null,
     username: '',
     display_name: '',
-    password: '',
     bio: '',
     github_url: '',
     profile_image: null,
+    created_at: '',
   });
 
   const token = localStorage.getItem('token');  
@@ -45,6 +47,8 @@ function EditProfile() {
     .then((response) => response.json())
     .then((data) => setFormData(data));
   }, [authorId]);
+
+  console.log(formData);
 
   /*
     The handleChange function is used to update the formData state variable whenever the author inputs data into the form fields. This 
@@ -85,6 +89,8 @@ function EditProfile() {
     }
   
     
+    // formDataToSend.append('updated_at', new Date().toISOString());
+    //update upated_at to current time
     formDataToSend.append('updated_at', new Date().toISOString());
   
     fetch(`${apiUrl}author/${authorId}/`, {
@@ -119,15 +125,6 @@ function EditProfile() {
           type="text" 
           name="display_name" 
           value={formData.display_name} 
-          onChange={handleChange} 
-        />
-      </div>
-      <div>
-        <label>Password:</label>
-        <input 
-          type="password" 
-          name="password" 
-          value={formData.password} 
           onChange={handleChange} 
         />
       </div>

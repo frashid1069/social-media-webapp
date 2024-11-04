@@ -16,6 +16,7 @@ from author.models import Author
 from post.models import Post
 from service.models import Follow
 from rest_framework.permissions import AllowAny
+from author.serializers import AuthorSerializer
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
@@ -347,7 +348,7 @@ The edit_profile function allows the user to edit their profile. The user must b
 '''
 def edit_profile(request, author_id):
     author = Author.objects.get(id=author_id)
-    serializer = serializers.Author(author, data=request.data, partial=True)
+    serializer = AuthorSerializer(author, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)

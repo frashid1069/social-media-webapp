@@ -18,7 +18,7 @@ class Author(models.Model):
     profile_image = models.ImageField(upload_to="profile_pics", blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
-    followers = models.ManyToManyField('self', symmetrical=False, related_name='following', blank=True)
+    # followers = models.ManyToManyField('self', symmetrical=False, related_name='following', blank=True)
     #email = models.EmailField(unique=True)
 
     

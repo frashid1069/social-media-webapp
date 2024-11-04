@@ -62,52 +62,49 @@
     
     
     {
-        "model": "service.author",
+        "model": "author.author",
         "pk": 1,
         "fields": {
             "user": 1,
             "username": "aa",
             "display_name": "A A",
-            "password": "1",
             "bio": "Software developer with 10 years of experience.",
-            "github_url": "https://github.com/johndoe",
+            "github_url": "https://github.com/yongxin12",
             "profile_image": null,
             "created_at": "2024-10-14T12:00:00Z",
             "updated_at": "2024-10-14T12:00:00Z"
         }
     },
     {
-        "model": "service.author",
+        "model": "author.author",
         "pk": 2,
         "fields": {
             "user": 2,
             "username": "js",
             "display_name": "Jane Smith",
-            "password": "1",
             "bio": "Data scientist who loves working with big data.",
-            "github_url": "https://github.com/janesmith",
+            "github_url": "https://github.com/Yoochu",
             "profile_image": null,
             "created_at": "2024-10-14T12:10:00Z",
             "updated_at": "2024-10-14T12:10:00Z"
         }
     },
     {
-        "model": "service.author",
+        "model": "author.author",
         "pk": 3,
         "fields": {
             "user": 3,
             "username": "aj",
             "display_name": "Alice Jones",
-            "password": "1",
             "bio": "Python enthusiast and blogger.",
-            "github_url": "https://github.com/alicejones",
+            "github_url": "https://github.com/frashid1069",
             "profile_image": null,
             "created_at": "2024-10-14T12:20:00Z",
             "updated_at": "2024-10-14T12:20:00Z"
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 1,
         "fields": {
             "author": 1,
@@ -121,7 +118,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 2,
         "fields": {
             "author": 1,
@@ -135,7 +132,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 3,
         "fields": {
             "author": 1,
@@ -149,7 +146,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 4,
         "fields": {
             "author": 2,
@@ -163,7 +160,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 5,
         "fields": {
             "author": 3,
@@ -177,7 +174,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 6,
         "fields": {
             "author": 3,
@@ -191,7 +188,7 @@
         }
     },
     {
-        "model": "service.post",
+        "model": "post.post",
         "pk": 7,
         "fields": {
             "author": 3,
@@ -205,7 +202,7 @@
         }
     },
     {
-        "model": "service.comment",
+        "model": "comment.comment",
         "pk": 1,
         "fields": {
             "content": "Great post, John!",
@@ -216,7 +213,7 @@
         }
     },
     {
-        "model": "service.comment",
+        "model": "comment.comment",
         "pk": 2,
         "fields": {
             "content": "Very helpful, thanks Jane.",
@@ -227,7 +224,7 @@
         }
     },
     {
-        "model": "service.comment",
+        "model": "comment.comment",
         "pk": 3,
         "fields": {
             "content": "Awesome tips, Alice!",

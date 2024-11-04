@@ -11,13 +11,20 @@ class JwtQueryParamsAuthentication(BaseAuthentication):
     
     def authenticate(self, request):
         
-        token = request.headers.get('token')
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split("Bearer ")[1]
+        else:
+            token = request.headers.get('token')
+        
+        if not token:
+            return None
+            
         salt = settings.SECRET_KEY
         
-
         try:
             payload = jwt.decode(token, salt, algorithms="HS256")
-            print(payload)
+            #print(payload)
         except Exception:
             raise exceptions.AuthenticationFailed('Invalid token')
 

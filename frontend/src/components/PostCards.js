@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked";
 import "../streamStyle.css";
-import "../likes.css"
+import "../likes.css";
 import Comment from "./Comment";
-const apiUrl = process.env.REACT_APP_API_URL
+import { cusFetch } from './Login';
+const apiUrl = process.env.REACT_APP_API_URL;
 
-export default function PostCards({ post, editable }) {
+export default function PostCards({ post, editable, isRepost, repostedBy, onClick, isFriend }) {
   const [authors, setAuthors] = useState([]);
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState([]);
@@ -14,44 +15,65 @@ export default function PostCards({ post, editable }) {
   const [newCommentContent, setNewCommentContent] = useState("");
   const { authorId } = useParams();
   const authorIdInt = parseInt(authorId);
+  const [hasReposted, setHasReposted] = useState(false);
+  const token = localStorage.getItem('token'); 
+  const [reposted_by, setRepostedBy] = useState("");
 
   const navigate = useNavigate();
 
-  // Fetch the list of authors
+  // Fetch repostedBy author info if post is a repost
   useEffect(() => {
-    fetch(`${apiUrl}author/`)
+    if (isRepost) {
+      fetch(`${apiUrl}author/${repostedBy}/`, {
+        method: "GET",
+        headers: {
+          "token": `${token}`,
+          "Content-Type": "application/json",
+        }
+      })
+      .then((response) => response.json())
+      .then((data) => setRepostedBy(data.display_name));
+    }
+  }, [isRepost, repostedBy, token]);
+
+  // Fetch list of authors
+  useEffect(() => {
+    cusFetch(`${apiUrl}author/`)
       .then((response) => response.json())
       .then((data) => setAuthors(data));
   }, []);
 
-  // Fetch the list of comments
+  // Fetch comments
   useEffect(() => {
-    fetch(`${apiUrl}comment/`)
-      .then((response) => response.json())
-      .then((data) => setComments(data));
+    cusFetchComments();
   }, []);
 
-  // Function to fetch likes for the post
-  const fetchLikes = () => {
-    fetch(`${apiUrl}like/`)
+  const cusFetchComments = () => {
+    cusFetch(`${apiUrl}comment/`)
+      .then((response) => response.json())
+      .then((data) => setComments(data));
+  };
+
+  // Fetch likes for the post
+  const cusFetchLikes = () => {
+    cusFetch(`${apiUrl}like/`)
       .then((response) => response.json())
       .then((data) => {
         const postLikes = data.filter((like) => like.post === post.id);
         setLikes(postLikes);
-
-        // Check if the current author has already liked this post
         const userLiked = postLikes.some((like) => like.author === authorIdInt);
         setLiked(userLiked);
-      })
+      });
   };
 
-  // Fetch likes when the component mounts or when post ID or author ID changes
   useEffect(() => {
-    fetchLikes();
-  }, [post.id, authorIdInt]);
+    cusFetchLikes();
+  }, [post.id, authorIdInt, hasReposted]);
 
+  // Check if the post is viewable by the current user based on visibility and friendship
+  const canViewPost = post.visibility !== "friend-only" || isFriend;
 
-  // Match the corresponding author's name for the post
+  // Functionality for matchAuthor
   const matchAuthor = (authorId) => {
     const author = authors.find((a) => a.id === authorId);
     return author ? author.display_name : "Unknown Author";
@@ -60,27 +82,23 @@ export default function PostCards({ post, editable }) {
   // Filter comments for the post
   const matchedComments = comments.filter((comment) => comment.post === post.id);
 
-  // Navigate to the edit page for the post
   const goEdit = () => {
     if (editable) {
       navigate(`/stream/${post.author}/${post.id}/edit`);
     }
   };
 
-  // Navigate to the corresponding profile page
   const goProfile = () => {
     navigate(`/stream/${post.author}/profile`);
   };
 
-  // Navigate to the likes page
   const goToLikesPage = () => {
     navigate(`/stream/${post.author}/${post.id}/likes`);
   };
 
-  // Handle comment submission
   const submitComment = async (event) => {
     event.preventDefault();
-    const response = await fetch(`${apiUrl}comment/`, {
+    const response = await cusFetch(`${apiUrl}comment/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -96,46 +114,28 @@ export default function PostCards({ post, editable }) {
 
     if (response.ok) {
       setNewCommentContent("");
-      // Optionally, refresh comments list here
+      cusFetchComments();
     }
   };
 
-  // Convert Markdown content to HTML safely
   const getMarkdownContent = () => {
+    // From https://www.w3schools.com/jsref/jsref_startswith.asp 
+    if(post.content.startsWith("/")) {
+      return { __html: marked("") };
+    }
     return { __html: marked(post.content || "") };
   };
 
-  // Construct a proper URL for the image content
-  const imageURL = post.image_content
-    ? post.image_content.startsWith("http")
-      ? post.image_content // If the URL is already absolute, use it as-is
-      : `http://localhost:8000${post.image_content}`
-    : null; // Handle the case where image_content is null or undefined
+  // const imageURL = post.image_content
+  //   ? post.image_content.startsWith("http")
+  //     ? post.image_content
+  //     : `http://localhost:8000${post.image_content}`
+  //   : null;
+  const imageURL = post.image_url || null;
 
-  console.log("Image URL:", imageURL);
-
-  // function for liking and un-liking a post
   const handleLike = async () => {
-    if (liked) {
-      // Find the like object for this author and post to delete
-      const likeToDelete = likes.find((like) => like.author === authorIdInt && like.post === post.id);
-    
-      if (likeToDelete) {
-        // Send DELETE request to delete the specific like
-        await fetch(`${apiUrl}like/${likeToDelete.id}/`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        setLiked(false);
-        // Refresh likes to update count
-        fetchLikes();
-      }
-    } 
-    else {
-      // Like the post (send POST request)
-      const response = await fetch(`${apiUrl}like/`, {
+    if (!liked) {
+      const response = await cusFetch(`${apiUrl}like/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -148,46 +148,114 @@ export default function PostCards({ post, editable }) {
 
       if (response.ok) {
         setLiked(true);
-        // Refresh likes to update count
-        fetchLikes();
+        cusFetchLikes();
       }
     }
+  };
+
+  const handleShare = async () => {
+    if (post.visibility === "public") {
+      try {
+        const response = await cusFetch(`${apiUrl}post/${post.id}/share/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            token: `${localStorage.getItem("token")}`,
+          },
+        });
+        if (response.ok) {
+          alert("Post shared successfully!");
+        } else {
+          alert("Failed to share post.");
+        }
+      } catch (error) {
+        console.error("Error sharing post:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const fetchReposts = async () => {
+      const response = await fetch(`${apiUrl}repost/?post=${post.id}&reposted_by=${authorIdInt}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "token": `${token}`,
+        }
+      });
+      const data = await response.json();
+      if (data.length > 0) {
+        setHasReposted(true);
+      }
+    };
+    fetchReposts();
+  }, [post.id, authorIdInt, token]);
+
+  const handleRepost = async () => {
+    const response = await cusFetch(`${apiUrl}repost/`, {
+      method: "POST",
+      headers: {
+        "token": `${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reposted_by: authorIdInt,
+        post: post.id,
+      }),
+    });
+
+    if (response.ok) {
+      setHasReposted(!hasReposted);
+    }
+  };
+
+  if (!canViewPost) {
+    return null;
   }
 
   return (
-    <div key={post.id} className="post-card" onClick={goEdit}>
+    <div key={post.id} className="post-card" onClick={onClick} style={{ cursor: "pointer" }}>
       <h3 className="post-card-title">{post.title}</h3>
       <div className="btn-container">
-        <button className="post-card-author" onClick={goProfile}>
+        <button className="post-card-author" onClick={(e) => { e.stopPropagation(); goProfile(); }}>
           {matchAuthor(post.author)}
         </button>
-        <button className="btn-like" onClick={handleLike}>
-            {liked ? "Unlike" : "Like"} ({likes.length})
+        <button className="btn-like" onClick={(e) => { e.stopPropagation(); handleLike(); }}>
+          {liked ? "Liked" : "Like"} ({likes.length})
         </button>
-        <button className="btn-show-likes" onClick={goToLikesPage}>
+        {/* <button className="btn-show-likes" onClick={(e) => { e.stopPropagation(); goToLikesPage(); }}>
           Show Likes
-        </button>
+        </button> */}
+        {post.visibility === "public" && (
+          <button className="btn-share" onClick={(e) => { e.stopPropagation(); handleShare(); }}>
+            Share
+          </button>
+        )}
+        {!isRepost && !hasReposted && (
+          <button className="btn-repost" onClick={(e) => { e.stopPropagation(); handleRepost(); }}>
+            Repost
+          </button>
+        )}
+        {isRepost && !hasReposted && (
+          <button className="btn-repost" onClick={(e) => { e.stopPropagation(); handleRepost(); }}>
+            Repost
+          </button>
+        )}
       </div>
-      {/* Render the Markdown content as HTML */}
-      <div
-        className="post-card-content"
-        dangerouslySetInnerHTML={getMarkdownContent()}
-      />
-      {/* Render the image if it's available */}
+      <div className="post-card-content" dangerouslySetInnerHTML={getMarkdownContent()} />
       {imageURL && (
         <div className="post-card-image">
           <img src={imageURL} alt="Post" className="post-image" />
         </div>
       )}
       <p className="post-card-update-date">Updated at: {new Date(post.updated_at).toLocaleString()}</p>
-      
-      <div className="comment-grid">
+      <div className="comment-grid" onClick={(e) => e.stopPropagation()}>
         <h5 className="comment-title">Comments:</h5>
         {matchedComments.map((comment) => (
           <Comment comment={comment} key={comment.id} />
         ))}
       </div>
-      <form onSubmit={submitComment}>
+      <form onSubmit={submitComment} onClick={(e) => e.stopPropagation()}>
         <textarea
           placeholder="Write your comment here..."
           value={newCommentContent}
@@ -196,6 +264,7 @@ export default function PostCards({ post, editable }) {
         />
         <button type="submit">Send</button>
       </form>
+      {isRepost && <p><strong>Reposted by {reposted_by}</strong></p>}
     </div>
   );
 }

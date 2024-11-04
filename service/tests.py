@@ -3,85 +3,41 @@ from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.contrib.auth.models import User
+from .models import Author, Post, Like
 from service import models
 
-class AuthorViewTest(APITestCase):
-    
+# class for set up testcase
+class BaseAPITestCase(APITestCase):
     def setUp(self):
-        # Set up test data, such as creating users and authors
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.author = models.Author.objects.create(user=self.user, username='testauthor', display_name='Test Author')
-        self.client = APIClient()
+        super().setUp()
+        self.user1, self.author1 = self.create_test_user_and_author()
+        self.user2, self.author2 = self.create_test_user_and_author()
+        self.user3, self.author3 = self.create_test_user_and_author()
+        # Login to obtain token and set credentials
+        self.token = self.login_and_get_token()
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
-    def test_author_creation(self):
-        """
-        Test that the author view creates an author.
-        """
+    def create_test_user_and_author(self):
+        users = User.objects.all()
+        user = User.objects.create_user(username=f"testuser{len(users)}", password="password")
+        author = Author.objects.create(user=user, username=f"testauthor{len(users)}", display_name=f"Test Author {len(users)}")
+        return user, author
+
+    def login_and_get_token(self):
         data = {
-            'username': 'newauthor',
-            'display_name': 'New Author',
-            'password': 'newpassword'
+            'username': 'testauthor1',
+            'password': 'password'
         }
-        response = self.client.post(reverse('author-list'), data, format='json')
-        print(response.data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['username'], 'newauthor')
-
-    def test_author_list(self):
-        """
-        Test that the author view returns a list of authors.
-        """
-        response = self.client.get(reverse('author-list'))
+        response = self.client.post(reverse('login'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) > 0)
-
-class PostViewTest(APITestCase):
-    
-    def setUp(self):
-        # Create a user and an author
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.author = models.Author.objects.create(user=self.user, username='testauthor', display_name='Test Author')
-        self.post = models.Post.objects.create(author=self.author, title="Test Post", visibility="public", is_deleted=False)
-        self.client = APIClient()
-
-    def test_post_creation(self):
-        """
-        Test that a post is created correctly.
-        """
-        self.client.force_authenticate(user=self.user)
-        data = {
-            'author': self.author.id,
-            'title': 'New Post',
-            'visibility': 'public'
-        }
-        response = self.client.post(reverse('post-list'), data, format='json')
-        print(response.data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['title'], 'New Post')
-
-    def test_get_post_list(self):
-        """
-        Test getting a list of posts.
-        """
-        response = self.client.get(reverse('post-list'))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) > 0)
-
-    def test_filter_posts_by_author(self):
-        """
-        Test filtering posts by author ID.
-        """
-        response = self.client.get(reverse('post-list'), {'author_id': self.author.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) > 0)
+        return response.data.get("token")
 
 class LoginViewTest(APITestCase):
 
     def setUp(self):
         # Create a user and author for testing
-        self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.author = models.Author.objects.create(user=self.user, username='testauthor', display_name='Test Author', password='testpass')
-        self.client = APIClient()
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.author = models.Author.objects.create(user=self.user, username='testauthor', display_name='Test Author')
 
     def test_login_successful(self):
         """
@@ -89,7 +45,7 @@ class LoginViewTest(APITestCase):
         """
         data = {
             'username': 'testauthor',
-            'password': 'testpass'
+            'password': 'password'
         }
         response = self.client.post(reverse('login'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -108,9 +64,6 @@ class LoginViewTest(APITestCase):
 
 class SignUpViewTest(APITestCase):
 
-    def setUp(self):
-        self.client = APIClient()
-
     def test_signup_success(self):
         """
         Test that signup is successful with valid data.
@@ -118,7 +71,7 @@ class SignUpViewTest(APITestCase):
         data = {
             'username': 'newuser',
             'display_name': 'New User',
-            'password': 'newpassword'
+            'password': 'password'
         }
         response = self.client.post(reverse('signup'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -128,15 +81,130 @@ class SignUpViewTest(APITestCase):
         """
         Test that signup fails with a duplicate username.
         """
-        existing_user = User.objects.create_user(username='existinguser', password='password123')
+        existing_user = User.objects.create_user(username='existinguser', password='password')
         models.Author.objects.create(user=existing_user, username='existinguser', display_name='Existing User')
         data = {
             'username': 'existinguser',
             'display_name': 'New User',
-            'password': 'newpassword'
+            'password': 'password'
         }
         response = self.client.post(reverse('signup'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+# Below test cases made with the help of OpenAI. (2023). ChatGPT (GPT-3.5) "how to write test cases for an api in django python" 2024-11-03  
+class FollowViewTest(BaseAPITestCase):
+    
+    def setUp(self):
+        super().setUp()
+    
+    def test_requestFollow(self):
+        data = {
+            "follower": "1",
+            "followed": "2",
+            "pending": "yes"
+        }
+        response = self.client.post(reverse("follow-list"), data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['follower'], 1)
+        self.assertEqual(response.data['followed'], 2)
 
+    def test_acceptFollow(self):
+        data = {
+            "follower": "1",
+            "followed": "2",
+            "pending": "yes"
+        }
+        response = self.client.post(reverse("follow-list"), data, format="json")
 
+        data = {
+            "follower": "1",
+            "followed": "2",
+            "pending": "no"
+        }
+        response = self.client.put(reverse("follow-detail", args=["1"]), data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['pending'], 'no')
+
+    def test_declineFollow(self):
+        data = {
+            "follower": "1",
+            "followed": "2",
+            "pending": "yes"
+        }
+        response = self.client.post(reverse("follow-list"), data, format="json")
+        response = self.client.delete(reverse("follow-detail", args=["1"]), format="json")
+        self.assertEqual(response.status_code, 204)
+
+    def test_unfollow(self):
+        data = {
+            "follower": "1",
+            "followed": "2",
+            "pending": "no"
+        }
+        response = self.client.post(reverse("follow-list"), data, format="json")
+        response = self.client.delete(reverse("follow-detail", args=["1"]), format="json")
+        self.assertEqual(response.status_code, 204)
+
+class LikeViewTest(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        # Create a sample post for testing likes
+        self.post = Post.objects.create(author=self.author1, title="Test Post", content="This is a test post.")
+        # Define the URL for creating a like, so it can be used across tests
+        self.like_url = reverse("like-list")
+
+    def test_create_like(self):
+        """
+        Tests that a like can be created for a post by an author.
+        """
+        data = {
+            "author": self.author1.id,
+            "post": self.post.id
+        }
+        response = self.client.post(self.like_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Like.objects.count(), 1)
+        self.assertEqual(response.data["author"], self.author1.id)
+        self.assertEqual(response.data["post"], self.post.id)
+
+    def test_create_duplicate_like(self):
+        """
+        Tests that creating a duplicate like does not create a new entry.
+        """
+        # First like creation
+        data = {
+            "author": self.author1.id,
+            "post": self.post.id
+        }
+
+        # Attempt to create a duplicate like
+        response = self.client.post(self.like_url, data, format="json")
+        self.assertEqual(Like.objects.count(), 1)   # only one like object should still remain
+        
+        
+class EditProfileTest(APITestCase):
+    def setUp(self):
+        # Create a user and author for testing
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.author = Author.objects.create(user=self.user, username='testauthor', display_name='Test Author')
+        self.client.login(username='testuser', password='password')
+
+    def test_edit_profile(self):
+        """
+        Ensure we can edit a profile.
+        """
+        url = reverse('edit_profile', args=[self.author.id])
+        data = {
+            'username': 'updateduser',
+            'display_name': 'Updated Author',
+            'bio': 'This is an updated bio.',
+            'github_url': 'https://github.com/updateduser'
+        }
+        response = self.client.put(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.author.refresh_from_db()
+        self.assertEqual(self.author.username, data['username'])
+        self.assertEqual(self.author.display_name, data['display_name'])
+        self.assertEqual(self.author.bio, data['bio'])
+        self.assertEqual(self.author.github_url, data['github_url'])

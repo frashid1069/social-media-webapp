@@ -1,5 +1,5 @@
 ## Frontend dependency install
-
+Make sure you are in the frontend branch 
 ```
 npm install
 ```
@@ -9,6 +9,28 @@ npm install
 ```
 npm start
 ```
+
+## Create static files for backend server
+
+```
+npm run build
+```
+
+**Must login first to pass authentication**
+can't access any api without successful login
+default user and password are in backend README
+sign up is incomplete
+
+## URL examples:
+```
+http://localhost:3000/home/login
+http://localhost:3000/home/stream/1
+
+```
+
+
+
+
 
 
 # Getting Started with Create React App

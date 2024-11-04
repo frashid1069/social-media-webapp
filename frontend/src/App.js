@@ -10,6 +10,9 @@ import EditProfile from "./components/EditProfile";
 import CreatePost from "./components/CreatePost";
 import Likes from "./components/Likes";
 import Welcome from "./components/Welcome";
+import PostDetail from "./components/PostDetail"; 
+
+import ImageDisplay from './components/ImageDisplay';
 
 /**
  * You can put path for components
@@ -21,8 +24,9 @@ function App() {
   return (
     <div className="App">
       <div className="login">
-        <Router basename="/">
+        <Router basename="/home">
           <Routes>
+            <Route path="image" element={<ImageDisplay/>}></Route>
             <Route path="/" element={<Welcome />}></Route>
             <Route path="/login" element={<Login />}></Route>
             <Route path="/signup" element={<SignUp />}></Route>
@@ -44,6 +48,8 @@ function App() {
               path="/stream/:authorId/:postId/edit"
               element={<EditPost />}
             />
+            <Route path="/posts/:postId" element={<PostDetail />} />
+
           </Routes>
         </Router>
       </div>

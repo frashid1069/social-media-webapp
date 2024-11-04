@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
-
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -33,7 +33,9 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'service',                      # install app service
+    'author',                      # install app service
+    'post',                      # install app service
+    'comment',                      # install app service          
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,7 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',               # install rest_framework
     'corsheaders',                  # install django-cors-headers 
-    'drf_spectacular',      
+    'drf_spectacular',    
+    'background_task',              # for github activity 
+    'service',  
 ]
 
 MIDDLEWARE = [
@@ -60,12 +64,12 @@ MIDDLEWARE = [
 # From https://drf-spectacular.readthedocs.io/en/latest/readme.html 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    # 'DEFAULT_AUTHENTICATION_CLASSES': [
-    #     'service.authentication.JwtQueryParamsAuthentication',  # authentication
-    # ],
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'service.authentication.JwtQueryParamsAuthentication',  # authentication
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }
 
 SPECTACULAR_SETTINGS = {
@@ -105,13 +109,24 @@ WSGI_APPLICATION = 'aquamarine_server.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# https://uofa-cmput404.github.io/labsignments/heroku.html#using-a-postgres-database-on-heroku 
+if os.environ.get("DATABASE_URL") != None:
+    # Running on Heroku
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True
+        )
     }
-}
+else:
+    # Running locally.
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
@@ -157,7 +172,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',        # React front-end port
+    'http://127.0.0.1:8000',        # React front-end port
+    'http://localhost:3000',
+]
+
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "token",
 ]
 
 # URL path where media files will be accessible. 
@@ -171,3 +193,32 @@ MEDIA_URL = '/media/'
 # It is built by joining the project's base directory (BASE_DIR) with the 'media' folder.
 # So, in your project's root directory, there will be a folder named 'media' to store user-uploaded files.
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# # include manifest.json and index.html
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'frontend/build/static'),
+#     os.path.join(BASE_DIR, 'frontend/build/'),
+# ]
+
+# change the default templates folder directory
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'frontend/build')],  # This points to the build folder of React
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+
+BACKGROUND_TASK_RUN_ASYNC = True
+MAX_ATTEMPTS = 1
+BACKGROUND_TASK_ASYNC_THREADS = 1

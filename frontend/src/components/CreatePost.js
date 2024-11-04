@@ -10,6 +10,7 @@ import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked"; // Import the Markdown library
 import "../loginStyles.css";
+import { cusFetch } from './Login';
 const apiUrl = process.env.REACT_APP_API_URL
 
 export default function CreatePost() {
@@ -17,13 +18,25 @@ export default function CreatePost() {
   const [postTitle, setPostTitle] = useState("");
   const [visibility, setVisibility] = useState("public");
   const [selectedImage, setSelectedImage] = useState(null); // To handle image uploads
-
+  const [posttype, setPostType] = useState("post");
   const { authorId } = useParams();
   const navigate = useNavigate();
 
+  const handlePostTypeChange = (event) => {
+    setPostType(event.target.value);
+    if(event.target.value === "image") {
+      document.getElementById("post-content").hidden = true;
+      document.getElementById("image-upload").hidden = false;
+    }
+    else { 
+      document.getElementById("post-content").hidden = false;
+      document.getElementById("image-upload").hidden = true;
+    }
+  }
+  
   const createPost = async (event) => {
     event.preventDefault();
-
+  
     // Create FormData to include file (if any)
     const formData = new FormData();
     formData.append("title", postTitle);
@@ -31,30 +44,34 @@ export default function CreatePost() {
     formData.append("content_type", "text/markdown"); // Setting default type to Markdown
     formData.append("visibility", visibility);
     formData.append("author", parseInt(authorId));
-    formData.append("created_at", new Date().toISOString());
-    formData.append("updated_at", new Date().toISOString());
-
+  
     // Append the image file if an image is selected
     if (selectedImage) {
-      formData.append("image_content", selectedImage);
+      formData.set("content", selectedImage);
+      formData.set("content_type", "image/jpeg");
     }
-
+  
     try {
       const response = await fetch(`${apiUrl}post/`, {
         method: "POST",
-        body: formData,
+        headers: {
+          "token": `${localStorage.getItem('token')}` // If a token is needed
+        },
+        body: formData, // Pass FormData directly
       });
-
+  
       if (response.ok) {
         navigate(`/stream/${authorId}`);
       } else {
-        alert("Failed to create a post");
+        const error = await response.json();
+        alert(JSON.stringify(error));
       }
     } catch (error) {
       console.error("Error creating post:", error);
       alert("Error creating post");
     }
   };
+  
 
   // Handle cancel action
   const cancelPostCreation = () => {
@@ -71,6 +88,16 @@ export default function CreatePost() {
       <h2 className="page-subtitle">Create a New Post</h2>
       <form onSubmit={createPost}>
         <div>
+        <select
+            className="posttype-dropdown"
+            id="posttype"
+            value={posttype}
+            onChange={handlePostTypeChange}
+          >
+            <option value="post">Markdown Post</option>
+            <option value="image">Image Post</option>
+            <option value="simple">Regular Post</option>
+          </select>
           <input
             className="new-post-title"
             type="text"
@@ -82,16 +109,16 @@ export default function CreatePost() {
         </div>
         <textarea
           className="new-post-content"
+          id="post-content"
           placeholder="Write your post content in Markdown..."
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
-          required
         />
         {/* Markdown Preview */}
         <div className="markdown-preview">
           <h3>Preview</h3>
-          <div
-            dangerouslySetInnerHTML={getMarkdownPreview()} // Render the Markdown content as HTML
+          <div className="preview"
+            dangerouslySetInnerHTML={getMarkdownPreview()} // Render the Markdown content as HTML 
           ></div>
         </div>
         <div>

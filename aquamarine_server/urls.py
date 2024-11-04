@@ -15,19 +15,29 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView 
 from django.conf import settings
 from django.conf.urls.static import static
+from service.views import index
+from rest_framework.permissions import AllowAny
+from rest_framework.authentication import BasicAuthentication, SessionAuthentication
 
 # From https://drf-spectacular.readthedocs.io/en/latest/readme.html#installation 
 # From https://www.youtube.com/watch?v=jc8v_DpAbEk 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("api/", include("service.urls")),
-    path('schema/', SpectacularAPIView.as_view(), name='schema'), 
-    path('swagger/', SpectacularSwaggerView.as_view(), name='swagger'), 
-    path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path('schema/', SpectacularAPIView.as_view(authentication_classes=[SessionAuthentication, BasicAuthentication],
+                                              permission_classes=[AllowAny]), name='schema'), 
+    path('swagger/', SpectacularSwaggerView.as_view(authentication_classes=[SessionAuthentication, BasicAuthentication],
+                                              permission_classes=[AllowAny]), name='swagger'), 
+    path('redoc/', SpectacularRedocView.as_view(url_name='schema', authentication_classes=[SessionAuthentication, BasicAuthentication],
+                                              permission_classes=[AllowAny]), name='redoc'),
+    re_path(r'^home.*$', index), # applied re to path(), it handles matched urls to the frontend 
+    path('api/', include("service.urls")),
+    path('api/', include("author.urls")),
+    path('api/', include("post.urls")),
+    path('api/', include("comment.urls")),
 ]
 
 # Check if the application is running in development mode (DEBUG = True)

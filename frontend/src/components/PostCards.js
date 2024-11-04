@@ -231,14 +231,14 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
             Share
           </button>
         )}
-        {!isRepost && (
+        {!isRepost && !hasReposted && (
           <button className="btn-repost" onClick={(e) => { e.stopPropagation(); handleRepost(); }}>
-            {hasReposted ? "Unrepost" : "Repost"}
+            Repost
           </button>
         )}
         {isRepost && !hasReposted && (
           <button className="btn-repost" onClick={(e) => { e.stopPropagation(); handleRepost(); }}>
-            {hasReposted ? "Unrepost" : "Repost"}
+            Repost
           </button>
         )}
       </div>

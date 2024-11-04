@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import Author, Post
+from .models import Author, Post, Like
 from service import models
 
 # class for set up testcase
@@ -144,3 +144,25 @@ class FollowViewTest(BaseAPITestCase):
         response = self.client.post(reverse("follow-list"), data, format="json")
         response = self.client.delete(reverse("follow-detail", args=["1"]), format="json")
         self.assertEqual(response.status_code, 204)
+
+class LikeViewTest(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        # Create a sample post for testing likes
+        self.post = Post.objects.create(author=self.author1, title="Test Post", content="This is a test post.")
+
+    def test_create_like(self):
+        """
+        Tests that a like can be created for a post by an author.
+        """
+        url = reverse("like-list")
+        data = {
+            "author": self.author1.id,
+            "post": self.post.id
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Like.objects.count(), 1)
+        self.assertEqual(response.data["author"], self.author1.id)
+        self.assertEqual(response.data["post"], self.post.id)

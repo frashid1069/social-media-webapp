@@ -249,13 +249,13 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
         </div>
       )}
       <p className="post-card-update-date">Updated at: {new Date(post.updated_at).toLocaleString()}</p>
-      <div className="comment-grid">
+      <div className="comment-grid" onClick={(e) => e.stopPropagation()}>
         <h5 className="comment-title">Comments:</h5>
         {matchedComments.map((comment) => (
           <Comment comment={comment} key={comment.id} />
         ))}
       </div>
-      <form onSubmit={submitComment}>
+      <form onSubmit={submitComment} onClick={(e) => e.stopPropagation()}>
         <textarea
           placeholder="Write your comment here..."
           value={newCommentContent}

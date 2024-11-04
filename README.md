@@ -20,6 +20,12 @@ delete .py files in /migrations EXCEPT __init__.py if needed
 python3 manage.py loaddata mock_data.json
 ```
 
+### How to setup github tasks
+```
+python manage.py setup_github_tasks
+python manage.py process_tasks
+```
+
 ### How to run the server
 ```
 python3 manage.py runserver

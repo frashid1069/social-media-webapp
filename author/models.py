@@ -13,7 +13,7 @@ class Author(models.Model):
     username = models.CharField(max_length=20, unique=True)
     display_name = models.CharField(max_length=20, unique=True)
     bio = models.TextField(blank=True, null=True)
-    github_url = models.URLField(blank=True, null=True)
+    github_url = models.URLField(blank=True, null=True, max_length=200, unique=True)
     # From https://www.devhandbook.com/django/user-profile/
     profile_image = models.ImageField(upload_to="profile_pics", blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)

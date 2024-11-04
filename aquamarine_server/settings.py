@@ -33,11 +33,9 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'service',                      # install app service
     'author',                      # install app service
     'post',                      # install app service
-    'comment',                      # install app service
-    'post_image',
+    'comment',                      # install app service          
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,7 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',               # install rest_framework
     'corsheaders',                  # install django-cors-headers 
-    'drf_spectacular',      
+    'drf_spectacular',    
+    'background_task',              # for github activity 
+    'service',  
 ]
 
 MIDDLEWARE = [
@@ -217,3 +217,8 @@ TEMPLATES = [
         },
     },
 ]
+
+
+BACKGROUND_TASK_RUN_ASYNC = True
+MAX_ATTEMPTS = 1
+BACKGROUND_TASK_ASYNC_THREADS = 1

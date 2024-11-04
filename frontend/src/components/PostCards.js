@@ -119,6 +119,7 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
   };
 
   const getMarkdownContent = () => {
+    // From https://www.w3schools.com/jsref/jsref_startswith.asp 
     if(post.content.startsWith("/")) {
       return { __html: marked("") };
     }

@@ -18,25 +18,28 @@ class ImagePostView(ModelViewSet):
         '''
         Handle image upload, encode the image file to base64 data
         '''
-        image_file = request.FILES.get('image_content')
-        if not image_file:
-            return Response({"error": "An image file is required."},
-                            status=status.HTTP_400_BAD_REQUEST)
+        content_type = request.data.get('content_type')
+        if content_type == 'image/jpeg':
+        
+            image_file = request.FILES.get('image_content')
+            if not image_file:
+                return Response({"error": "An image file is required."},
+                                status=status.HTTP_400_BAD_REQUEST)            
+            # base64 encode
+            image_data = image_file.read()
+            base64_data = f"data:{image_file.content_type};base64," + base64.b64encode(image_data).decode('utf-8')
             
-        # base64 encode
-        image_data = image_file.read()
-        base64_data = f"data:{image_file.content_type};base64," + base64.b64encode(image_data).decode('utf-8')
+            # request.data is immutable
+            modified_data = request.data.copy()  
+            modified_data['image_content'] = base64_data 
+            serializer = self.get_serializer(data=modified_data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
         
-        # request.data is immutable
-        modified_data = request.data.copy()  
-        modified_data['image_content'] = base64_data 
-        serializer = self.get_serializer(data=modified_data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            return super().create(request, *args, **kwargs)
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
     

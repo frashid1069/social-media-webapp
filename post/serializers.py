@@ -15,6 +15,19 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.visibility == 'public'
         fields = "__all__"
         
+    def create(self, validated_data):
+        post = Post.objects.create(**validated_data)
+        
+        if post.content_type == 'image/jpeg' and post.content:
+            request = self.context.get('request')
+            author_serial = post.author.id
+            if request:
+                # Generate the url based on author ID and post ID
+                image_url = request.build_absolute_uri(f'/api/post/image/?author_id={author_serial}&post_id={post.id}')
+                post.image_url = image_url
+                post.save()  
+
+        return post
 
 class RepostSerializer(serializers.ModelSerializer):
     class Meta:

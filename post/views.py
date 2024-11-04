@@ -10,6 +10,8 @@ from post.models import Post, Repost
 from rest_framework import status, permissions
 from rest_framework import permissions
 from rest_framework.authentication import get_authorization_header
+import base64
+from django.http import HttpResponse
 
 # Create your views here.
 
@@ -107,7 +109,32 @@ class PostView(ModelViewSet):
         responses={201:  PostSerializer, 400: "Bad Request"},
     )
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        '''
+        Handle image upload, encode the image file to base64 data
+        '''
+        content_type = request.data.get('content_type')
+        print(content_type)
+        if content_type == 'image/jpeg':
+        
+            image_file = request.FILES.get('content')
+            if not image_file:
+                return Response({"error": "An image file is required."},
+                                status=status.HTTP_400_BAD_REQUEST)            
+            # base64 encode
+            image_data = image_file.read()
+            base64_data = base64.b64encode(image_data).decode('utf-8')
+            
+            # request.data is immutable
+            modified_data = request.data.copy()  
+            modified_data['content'] = base64_data 
+            serializer = self.get_serializer(data=modified_data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+        
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            return super().create(request, *args, **kwargs)
     
     def retrieve(self, request, *args, **kwargs):
         post = self.get_object()
@@ -204,11 +231,28 @@ class PostView(ModelViewSet):
 
         except Post.DoesNotExist:
             return Response({"detail": "Original post not found."}, status=status.HTTP_404_NOT_FOUND)
+    
     def list(self, request, *args, **kwargs):
         posts = Post.objects.all()
         reposts = Repost.objects.all()
         return super().list(request, *args, **kwargs)
     
+    @action(detail=False, methods=['get'], url_path='image', url_name='get_image')
+    def get_image(self, request):
+        '''
+        ~api/image_post/image/?author_id=<pk>&post_id=<pk>
+        Retrieve the decoded image based on author_id and image_id
+        content_type (e.g. image/jpeg)
+        '''
+        author_id = request.query_params.get('author_id')
+        post_id = request.query_params.get('post_id')
+        
+        image_post = get_object_or_404(Post, author=author_id, id=post_id)
+        
+        image_binary = base64.b64decode(image_post.content)
+        content_type = image_post.content_type
+
+        return HttpResponse(image_binary, content_type=content_type)
 
 
 class RepostView(ModelViewSet):

@@ -47,7 +47,16 @@ export default function PostDetail() {
                     <h2>{post.title}</h2>
                     <p>Author: {post.author ? post.author.display_name : "Unknown Author"}</p>
 
-                    <div dangerouslySetInnerHTML={{ __html: post.content }}></div>
+                    {post.content_type === "image/jpeg" ? (
+                        <img
+                            src={`data:image/jpeg;base64,${post.content}`}
+                            alt={post.title}
+                            style={{ maxWidth: "100%", height: "auto" }}
+                        />
+                    ) : (
+
+                        <div dangerouslySetInnerHTML={{ __html: post.content }}></div>
+                    )}
                     {post.image_content && (
                         <img
                             src={post.image_content}

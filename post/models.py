@@ -9,10 +9,9 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField(blank=True, null=True) 
     content_type = models.CharField(max_length=50, choices=[('text/markdown', 'Markdown'), ('image/jpeg', 'JPEG')])
+    
     # From https://stackoverflow.com/questions/58144230/how-to-set-image-field-as-optional by govind
     image_content = models.ImageField(upload_to="post_pics", blank=True, null=True)
-    created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(default=timezone.now)
     # database value/ human readable 
     VISIBILITY_CHOICES = [
         ('public', 'Public'),
@@ -20,6 +19,11 @@ class Post(models.Model):
         ('unlisted', 'Unlisted'),
     ]
     visibility = models.CharField(max_length=11, choices=VISIBILITY_CHOICES, default='public')
+    
+    github_event_id = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    image_url = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
     
     def __str__(self):

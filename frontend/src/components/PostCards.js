@@ -122,11 +122,12 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
     return { __html: marked(post.content || "") };
   };
 
-  const imageURL = post.image_content
-    ? post.image_content.startsWith("http")
-      ? post.image_content
-      : `http://localhost:8000${post.image_content}`
-    : null;
+  // const imageURL = post.image_content
+  //   ? post.image_content.startsWith("http")
+  //     ? post.image_content
+  //     : `http://localhost:8000${post.image_content}`
+  //   : null;
+  const imageURL = post.image_url || null;
 
   const handleLike = async () => {
     if (!liked) {

@@ -5,6 +5,8 @@ import base64
 from io import BytesIO
 from PIL import Image
 from .models import Post, Repost
+from author.models import Author
+from django.contrib.auth.models import User
 
 class PostViewTest(BaseAPITestCase):
     '''        data = {
@@ -17,8 +19,14 @@ class PostViewTest(BaseAPITestCase):
     def setUp(self):
         super().setUp()
         # Create a user and an author
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.author = Author.objects.create(user=self.user, display_name='Test Author')
         self.post = Post.objects.create(author=self.author, title="Test Post", visibility="public", is_deleted=False)
+        self.share_url_template = "post-share"
         
+
+
+
         # Create an image
         self.image = BytesIO()
         Image.new("RGB", (100, 100), color="red").save(self.image, format="JPEG")
@@ -37,7 +45,43 @@ class PostViewTest(BaseAPITestCase):
             is_deleted=False
         )
         
-        
+    def test_share_public_post_success(self):
+        """
+        Test that a public post can be shared.
+        """
+        # Ensure the post is public
+        self.post.visibility = "public"
+        self.post.save()
+
+        # Authenticate user
+        self.client.force_authenticate(user=self.user)
+
+        # Share the post
+        share_url = reverse(self.share_url_template, args=[self.post.id])
+        response = self.client.post(share_url)
+
+        # Verify success status (either 200 OK or 201 Created)
+        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_201_CREATED])
+
+    def test_share_non_public_post_failure(self):
+        """
+        Test that a non-public post cannot be shared.
+        """
+        # Set post visibility to private
+        self.post.visibility = "private"
+        self.post.save()
+
+        # Authenticate user
+        self.client.force_authenticate(user=self.user)
+
+        # Attempt to share the private post
+        share_url = reverse(self.share_url_template, args=[self.post.id])
+        response = self.client.post(share_url)
+
+        # Verify failure status without checking for error message
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
     def test_post_creation(self):
         """
         POST request to '/api/post/'

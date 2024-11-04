@@ -66,6 +66,8 @@
         "pk": 1,
         "fields": {
             "user": 1,
+            "fqid": "http://127.0.0.1:8000/api/authors/1",
+            "host": "http://127.0.0.1:8000/api/",
             "username": "aa",
             "display_name": "A A",
             "bio": "Software developer with 10 years of experience.",
@@ -80,6 +82,8 @@
         "pk": 2,
         "fields": {
             "user": 2,
+            "fqid": "http://127.0.0.1:8000/api/authors/2",
+            "host": "http://127.0.0.1:8000/api/",
             "username": "js",
             "display_name": "Jane Smith",
             "bio": "Data scientist who loves working with big data.",
@@ -94,6 +98,8 @@
         "pk": 3,
         "fields": {
             "user": 3,
+            "fqid": "http://127.0.0.1:8000/api/authors/3",
+            "host": "http://127.0.0.1:8000/api/",
             "username": "aj",
             "display_name": "Alice Jones",
             "bio": "Python enthusiast and blogger.",

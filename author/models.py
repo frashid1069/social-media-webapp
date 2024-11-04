@@ -7,19 +7,23 @@ from django.contrib.auth.models import User
 
 
 class Author(models.Model):
-     # Link to Django's User model
-    user = models.OneToOneField(User, on_delete=models.CASCADE) 
-    id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=20, unique=True)
     display_name = models.CharField(max_length=20, unique=True)
     bio = models.TextField(blank=True, null=True)
     github_url = models.URLField(blank=True, null=True, max_length=200, unique=True)
-    # From https://www.devhandbook.com/django/user-profile/
-    profile_image = models.ImageField(upload_to="profile_pics", blank=True, null=True)
+    profile_image = models.ImageField(upload_to="profile_pics", blank=True, null=True) # From https://www.devhandbook.com/django/user-profile/
+    # followers = models.ManyToManyField('self', symmetrical=False, related_name='following', blank=True)
+    
+    # READ ONLY
+    type = models.CharField(max_length=10, default="author", editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE) # Link to Django's User model
+    #TODO: change id
+    id = models.AutoField(primary_key=True)
+    fqid = models.URLField(blank=True, null=True, max_length=200)
+    host = models.URLField(blank=True, null=True, max_length=200)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
-    # followers = models.ManyToManyField('self', symmetrical=False, related_name='following', blank=True)
-    #email = models.EmailField(unique=True)
+
 
     
     def __str__(self):

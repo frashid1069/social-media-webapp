@@ -158,7 +158,7 @@ class LikeView(ModelViewSet):
 class FollowView(ModelViewSet):
     queryset = models.Follow.objects
     serializer_class = serializers.FollowSerializer
-
+    
     def get_queryset(self):
         queryset = super().get_queryset()
         author_id = self.request.query_params.get('author_id')
@@ -174,6 +174,22 @@ class FollowView(ModelViewSet):
 class InboxView(ModelViewSet):
     queryset = models.Inbox.objects
     serializer_class = serializers.LikeSerializer
+
+@api_view(['GET'])
+def get_followers(request, pk):
+    try:
+        author = Author.objects.get(id=pk)
+        followers = author.followers_authors.all()
+
+        authors = [follow.follower for follow in followers]
+        serialized_followers = AuthorSerializer(authors, many=True)
+        return Response({
+            "type": "followers",
+            "followers": serialized_followers.data
+        })
+    except Author.DoesNotExist:
+        return Response({"detail": "Author not found."}, status=status.HTTP_404_NOT_FOUND)
+    
 
 """
 Creates a post and saves it in the database

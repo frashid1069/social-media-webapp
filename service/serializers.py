@@ -36,7 +36,16 @@ class SignUpSerializer(serializers.ModelSerializer):
         # User is inactive until approved by the admin
         user.is_active = False
         user.save()
-        author = Author.objects.create(user=user, username=username, **validated_data)
+        
+        request = self.context.get('request')
+        
+        id = "http://test/api/authors" if not request else request.build_absolute_uri(f'/api/authors/{user.id}')
+        host = "http://test/api/" if not request else request.build_absolute_uri("/api/")
+        author = Author.objects.create(user=user, 
+                                       username=username, 
+                                       fqid=id,
+                                       host=host,
+                                       **validated_data)
         
         return author
 

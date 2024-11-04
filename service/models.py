@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import datetime
+from django.utils import timezone
 from django.contrib.auth.models import User
 from author.models import Author
 from post.models import Post, Repost
@@ -11,7 +11,7 @@ class Like(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='likes')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
     
-    created_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"Like by {self.author} on {self.post}"
@@ -30,7 +30,7 @@ class Follow(models.Model):
     
     PENDING_CHOICES = [('yes', 'Yes'), ('no', 'No')]
     pending = models.CharField(max_length=10, choices=PENDING_CHOICES, default='yes')
-    created_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.follower} follows {self.followed}"
@@ -45,7 +45,7 @@ class Inbox(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
     like = models.ForeignKey(Like, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"Inbox for {self.author}"

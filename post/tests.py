@@ -166,11 +166,19 @@ class PostViewTest(BaseAPITestCase):
         # Verify content type
         self.assertEqual(response['Content-Type'], 'image/jpeg')
         
-    # def test_filter_posts_by_visibility(self):
-    #     """
-    #     GET request to '/api/post/?author_id=<pk>'
-    #     Test filtering posts by author ID.
-    #     """
+    def test_filter_posts_by_visibility_friend(self):
+        for i in range(2):
+            Post.objects.create(author=self.author, title="Test Post", visibility="friend-only", is_deleted=False)
+        response = self.client.get(reverse('post-list'), {'visibility': "friend-only"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(len(response.data) > 0)
+    
+    def test_filter_posts_by_visibility_unlisted(self):
+        for i in range(2):
+            Post.objects.create(author=self.author, title="Test Post", visibility="unlisted", is_deleted=False)
+        response = self.client.get(reverse('post-list'), {'visibility': "unlisted"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(len(response.data) > 0)
     
     
 # Below test cases made with the help of OpenAI. (2023). ChatGPT (GPT-3.5) "how to write test cases for an api in django python" 2024-11-03 

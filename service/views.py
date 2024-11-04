@@ -234,19 +234,34 @@ def edit_post(request, post_id):
 
 def follow_author(request, author_id):
     follower = Author.objects.get(id=author_id)
-    followed = request.POST.get("followed")
-    models.Follow.objects.create(follower=follower, followed=followed)
-    # Return to page now
+    followed_id = request.POST.get("followed")
+    followed = Author.objects.get(id=followed_id)
+
+    # Check if a pending follow request already exists
+    existing_follow = Follow.objects.filter(follower=follower, followed=followed, pending="yes")
+    if existing_follow:
+        return
+    
+    # Create a new follow request if none exists
+    Follow.objects.create(follower=follower, followed=followed, pending="yes")
+    # return JsonResponse({"success": True, "message": "Follow request sent."}) 
     return
 
 def handle_follow(request, follow_id):
-    if request.get("choice") == "no":
-        # From https://stackoverflow.com/questions/3805958/how-to-delete-a-record-in-django-models by Wolph
-        models.Follow.objects.filter(id=follow_id).delete()
-    else:
-        follow = models.Follow.get(id=follow_id)
-        follow["pending"] = "no"
+    # From https://stackoverflow.com/questions/3805958/how-to-delete-a-record-in-django-models by Wolph
+    choice = request.POST.get("choice")
+    follow = Follow.objects.filter(id=follow_id).first()
+
+    if not follow:
+        return
+
+    if choice == "no":
+        follow.delete()
+        # return JsonResponse({"success": True, "message": "Follow request declined."})
+    elif choice == "yes":
+        follow.pending = "no"
         follow.save()
+        # return JsonResponse({"success": True, "message": "Follow request accepted."})
     # Return to ui
     return
 
@@ -255,10 +270,10 @@ def unfollow_author(request, author_id):
     author_to_unfollow = Author.objects.get(id=author_id)
     
     # Check if the Follow relationship exists
-    follow_instance = Follow.objects.filter(follower=current_user_author, followed=author_to_unfollow).first()
+    follow_instance = Follow.objects.filter(follower=current_user_author, followed=author_to_unfollow)
     if follow_instance:
         follow_instance.delete()  # Remove the Follow relationship
-        return
+        # return JsonResponse({"success": True, "message": "Unfollowed successfully."})
     return
 
 

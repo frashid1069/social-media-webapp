@@ -213,13 +213,6 @@ def delete_post(request, post_id):
     # Return to ui
     return
 
-# Now in PostView
-# def get_public_posts(request, author_id):
-#     posts = Post.filter(id=author_id, visibility="public")
-#     posts = posts.order_by("created_at")
-#     # Return to the ui page, pass through the list of posts above
-#     return
-
 def edit_post(request, post_id):
     # Retrieve the post object that matches the given post_id from the database
     post = Post.objects.get(id=post_id)

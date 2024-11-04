@@ -55,16 +55,6 @@ class PostView(ModelViewSet):
         title = self.request.query_params.get('title')
         following_list = self.request.query_params.get("following_list")
 
-        # # Gets a list of all public posts made by the author
-        # if author_id and visibility:
-        #     queryset = queryset.filter(id=author_id, visibility="public").order_by("created_at")
-        # # List of all posts made by people that the user follows 
-        # elif following_list:
-        #     queryset = queryset.filter(id=following_list).order_by("created_at")
-        # elif author_id:
-        #     queryset = queryset.filter(author__id=author_id)  # Filter the queryset by 'author'
-        # elif title:
-        #     queryset = queryset.filter(title=title)
 
         # # ~post/?author_id=<pk>
         # if author_id:
@@ -174,37 +164,6 @@ class PostView(ModelViewSet):
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
     
-    # @action(detail=True, methods=['post'])
-    # def share(self, request, pk=None):
-    #     """
-    #     Shares a public post. Creates a copy of the post attributed to the user sharing it.
-    #     """
-    #     try:
-    #         original_post = self.get_object()  # Retrieve the original post by its primary key (pk) provided in the URL
-
-    #         # Only allow sharing of public posts
-    #         if original_post.visibility != 'public':
-    #             # If the post is not public, respond with a 403 Forbidden status and a descriptive message
-    #             return Response({"detail": "Only public posts can be shared."}, status=status.HTTP_403_FORBIDDEN)
-
-    #         # Create a new post that represents the shared post
-    #         shared_post = Post.objects.create(
-    #             author=request.user.author,  # The user sharing the post becomes the author of the new shared post
-    #             title=f"Shared: {original_post.title}",  # Prefix "Shared: " to the original post title
-    #             content=original_post.content,  # Copy content from the original post
-    #             content_type=original_post.content_type,  # Keep the same content type (e.g., text, image)
-    #             image_content=original_post.image_content,  # Copy the image content if available
-    #             visibility="public",  # The shared post is set to public visibility by default
-    #         )
-
-    #         # Serialize the newly created shared post to prepare it for the response
-    #         serializer = self.get_serializer(shared_post)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)  # Send back the shared post data with a 201 Created status
-
-    #     except Post.DoesNotExist:
-    #         # If the original post does not exist, return a 404 Not Found response with a descriptive message
-    #         return Response({"detail": "Original post not found."}, status=status.HTTP_404_NOT_FOUND)
-
     @action(detail=True, methods=['post'])
     def share(self, request, pk=None):
         """
@@ -303,81 +262,3 @@ class RepostView(ModelViewSet):
             queryset = queryset.filter(reposted_by=reposted_by_id)
             
         return queryset.order_by("created_at")
-    
-    # def get_queryset(self):
-    #     queryset = super().get_queryset()
-    #     current_user = self.request.user
-
-    #     # Filter for not deleted posts
-    #     queryset = queryset.filter(is_deleted=False)
-        
-    #     author_id = self.request.query_params.get('author_id')
-    #     visibility = self.request.query_params.get("visibility")
-    #     title = self.request.query_params.get('title')
-    #     following_list = self.request.query_params.get("following_list")
-
-    #     if author_id and visibility:
-    #         queryset = queryset.filter(visibility="public", author__id=author_id)
-    #     elif title:
-    #         queryset = queryset.filter(title=title)
-    #     elif following_list:
-    #         current_author = Author.objects.get(user=current_user)
-    #         followed_by_user = Author.objects.filter(followers__follower=current_author)
-    #         queryset = queryset.filter(author__id__in=followed_by_user)
-
-    #     # Include 'friend-only' posts if the viewer is a friend of the author
-    #     if current_user.is_authenticated:
-    #         current_author = Author.objects.get(user=current_user)
-    #         friend_ids = Author.objects.filter(followers__follower=current_author, following__followed=current_author, following__pending="no").values_list('id', flat=True)
-    #         queryset = queryset.filter(visibility__in=["public", "unlisted"]).union(
-    #             queryset.filter(visibility="friend-only", author__id__in=friend_ids)
-    #         )
-
-    #     return queryset.order_by("updated_at")
-
-        
-
-            
-    # def get_queryset(self):
-    #     queryset = super().get_queryset()
-    #     current_user = self.request.user
-
-    #     # Only include non-deleted reposts
-    #     queryset = queryset.filter(is_deleted=False)
-
-    #     # Fetch query parameters
-    #     author_id = self.request.query_params.get('author_id')
-    #     title = self.request.query_params.get('title')
-    #     following_list = self.request.query_params.get("following_list")
-        
-    #     original_post_id = self.request.query_params.get('post')
-    #     reposted_by_id = self.request.query_params.get('reposted_by')
-        
-    #     if original_post_id:
-    #         queryset = queryset.filter(post=original_post_id)
-        
-    #     if reposted_by_id:
-    #         queryset = queryset.filter(reposted_by=reposted_by_id)
-
-    #     # Filter for reposts by specific author
-    #     if author_id:
-    #         queryset = queryset.filter(reposted_by__id=author_id)
-    #     elif title:
-    #         queryset = queryset.filter(post__title=title)
-    #     elif following_list:
-    #         current_author = Author.objects.get(user=current_user)
-    #         followed_by_user = Author.objects.filter(following=current_author)
-    #         queryset = queryset.filter(reposted_by__id__in=followed_by_user.values_list('id', flat=True))
-
-    #     # Additional filtering for friend-only reposts visible to mutual friends
-    #     if current_user.is_authenticated:
-    #         current_author = Author.objects.get(user=current_user)
-    #         friend_ids = Author.objects.filter(
-    #             followers=current_author,
-    #             following=current_author
-    #         ).values_list('id', flat=True)
-
-    #         # Filter for public, unlisted, and friend-only reposts from friends
-    #         queryset = queryset.filter(reposted_by__id__in=friend_ids)
-
-    #     return queryset.order_by("created_at")

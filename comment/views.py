@@ -103,75 +103,107 @@ def create_comment(request, author_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 @api_view(['GET'])    
-def comment_list(request, post_id, author_id):
+def comment_list(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
     '''
-    authors/<int:author_id>/posts/<int:post_id>/comments
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments
+    GET [local, remote]: the comments on the post
+    eg. http://localhost:8000/api/authors/1/posts/1/comments
+    URL: ://service/api/posts/{POST_FQID}/comments
+    GET [local, remote]: the comments on the post (that our server knows about)
+    eg. http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/comments
     '''
-    post = get_object_or_404(Post, id=post_id)
-    author = get_object_or_404(Author, id=author_id)
+    if AUTHOR_SERIAL is not None and POST_SERIAL is not None:
+        author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
+        post = get_object_or_404(Post, serial=POST_SERIAL, author__serial=author.serial)
+    elif POST_FQID is not None:
+        post = get_object_or_404(Post, fqid=POST_FQID)
+    else:
+        return Response({"detail": "Comment not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+    comments = Comment.objects.filter(post=post.id)
+    serializer = CommentSerializer(comments, many=True)
     response_data = {
                 "type":"comments",
                 "page":"http://nodebbbb/authors/222/posts/249",
-                "id":"http://nodebbbb/api/authors/222/posts/249/comments",
+                "id":f'{post.fqid}/comments',
                 "page_number":1,
                 "size":5,
-                "count": 1023,
-                "src": "comments"
-            }     
-
-@api_view(['GET'])    
-def comment_list_fqid(request, fqid):
-    post = get_object_or_404(Post, id=fqid)
-    response_data = {
-                "type":"comments",
-                "page":"http://nodebbbb/authors/222/posts/249",
-                "id":"http://nodebbbb/api/authors/222/posts/249/comments",
-                "page_number":1,
-                "size":5,
-                "count": 1023,
-                "src": "comments"
-            }     
+                "count": len(comments),
+                "src": serializer.data
+            }
+    
     return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])    
-def comment_detail(request, author_id, post_id, comment_id):
-    post = get_object_or_404(Post, id=post_id)
-    response_data = {
-                "type":"comments",
-                "page":"http://nodebbbb/authors/222/posts/249",
-                "id":"http://nodebbbb/api/authors/222/posts/249/comments",
-                "page_number":1,
-                "size":5,
-                "count": 1023,
-                "src": "comments"
-            }     
-    return Response(response_data, status=status.HTTP_200_OK)
+def comment_detail(request,  AUTHOR_SERIAL=None, POST_SERIAL=None, REMOTE_COMMENT_FQID=None):
+    """
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/post/{POST_SERIAL}/comment/{REMOTE_COMMENT_FQID}
+    GET [local, remote] get the comment}
+    eg. http://localhost:8000/api/authors/1/post/1/comment/http://127.0.0.1:8000/api/authors/2/commented/1
+    """
+    
+    if AUTHOR_SERIAL is not None and POST_SERIAL is not None and REMOTE_COMMENT_FQID is not None:
+        author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
+        post = get_object_or_404(Post, serial=POST_SERIAL, author__serial=author.serial)
+        comment = get_object_or_404(Comment, post__id=post.id, fqid=REMOTE_COMMENT_FQID)
+    else:
+        return Response({"detail": "Comment not found."}, status=status.HTTP_404_NOT_FOUND)
+    serializer = CommentSerializer(comment)
+    
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 # Commented API
-@api_view(['GET'])    
-def author_comment_list(request, author_id):
-    author = get_object_or_404(Post, id=author_id)
-    response_data = {
-                "type":"comments",
-                "page":"http://nodebbbb/authors/222/posts/249",
-                "id":"http://nodebbbb/api/authors/222/posts/249/comments",
-                "page_number":1,
-                "size":5,
-                "count": 1023,
-                "src": "comments"
-            }     
-    return Response(response_data, status=status.HTTP_200_OK)
+@api_view(['GET', 'POST'])    
+def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
+    """
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/commented
+    eg. http://localhost:8000/api/authors/2/commented
+    GET [local, remote] get the list of comments author has made on:
+        [local] any post
+        [remote] public and unlisted posts
+        paginated
+    POST [local] if you post an object of "type":"comment", it will add your comment to the post whose ID is in the post field
+        Then the node you posted it to is responsible for forwarding it to the correct inbox
+    URL: ://service/api/authors/{AUTHOR_FQID}/commented
+    eg. http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/2/commented
+    GET [local] get the list of comments author has made on any post (that local node knows about)
+    
+    """
+    if request.method == 'GET':
+        if AUTHOR_SERIAL is not None:
+            author = get_object_or_404(Author, serial=AUTHOR_SERIAL)  
+        elif AUTHOR_FQID is not None:
+            author = get_object_or_404(Author, fqid=AUTHOR_FQID)
+        comments = author.comments.all()
+        serializer = CommentSerializer(comments, many=True)
+        response_data = {
+                    "type":"comments",
+                    "page":"http://nodebbbb/authors/222/posts/249",
+                    "id":f'{author.fqid}/commented',
+                    "page_number":1,
+                    "size":5,
+                    "count": len(comments),
+                    "src": serializer.data
+                }     
+        return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])    
-def author_comment_list_fqid(request, author_id,):
-    author = get_object_or_404(Post, id=author_id)
-    response_data = {
-                "type":"comments",
-                "page":"http://nodebbbb/authors/222/posts/249",
-                "id":"http://nodebbbb/api/authors/222/posts/249/comments",
-                "page_number":1,
-                "size":5,
-                "count": 1023,
-                "src": "comments"
-            }     
-    return Response(response_data, status=status.HTTP_200_OK)
+def comment_detail(request, AUTHOR_SERIAL=None, COMMENT_SERIAL=None, COMMENT_FQID=None):
+    """
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/commented/{COMMENT_SERIAL}
+    eg. http://localhost:8000/api/authors/2/commented/1
+    GET [local, remote] get this comment
+    URL: ://service/api/commented/{COMMENT_FQID}
+    eg. http://localhost:8000/api/commented/http://127.0.0.1:8000/api/authors/2/commented/1
+    GET [local] get this comment
+    """
+    if AUTHOR_SERIAL is not None and COMMENT_SERIAL is not None: 
+        author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
+        comment = get_object_or_404(Comment, serial=COMMENT_SERIAL, author=author.serial)
+    elif COMMENT_FQID is not None:
+        comment = get_object_or_404(Comment, fqid=COMMENT_FQID)
+    else:
+        return Response({"detail": "Comment not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = CommentSerializer(comment)
+    return Response(serializer.data, status=status.HTTP_200_OK)

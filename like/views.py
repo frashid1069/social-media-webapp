@@ -107,7 +107,9 @@ def who_liked_this_post(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID
             likes_of_object = Like.objects.filter(object=POST_FQID)
             url = POST_FQID
         except:
-            return Response({"detail": "Likes not found with POST_FQID"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Post not found with POST_FQID."}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
     
     serializer = LikeSerializer(likes_of_object, many=True)
 

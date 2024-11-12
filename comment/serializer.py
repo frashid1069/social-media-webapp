@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from comment.models import Comment
 from author.serializers import AuthorSerializer 
+from like.serializers import Like, LikeSerializer
 
 
 
@@ -12,6 +13,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     likes = serializers.SerializerMethodField(read_only=True)
     published = serializers.DateTimeField(source='created_at', read_only=True)
+    post = serializers.URLField(source="post.fqid", read_only=True)
     
     class Meta:
         model = Comment
@@ -27,6 +29,5 @@ class CommentSerializer(serializers.ModelSerializer):
         ]
         
     def get_likes(self, obj):
-    # likes = Like.objects.filter(post=obj)
-    # return LikeSerializer(likes, many=True).data
-        return "likes"
+        likes = Like.objects.filter(object=id)
+        return LikeSerializer(likes, many=True).data

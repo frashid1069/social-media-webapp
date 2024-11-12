@@ -29,5 +29,5 @@ class CommentSerializer(serializers.ModelSerializer):
         ]
         
     def get_likes(self, obj):
-        likes = Like.objects.filter(object=id)
+        likes = Like.objects.filter(object=obj.fqid)
         return LikeSerializer(likes, many=True).data

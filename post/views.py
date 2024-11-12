@@ -265,62 +265,43 @@ class RepostView(ModelViewSet):
     
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def post_detail(request, post_id, author_id):
+def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
     """
-    URL://service/api/authors/{author_id}/posts/{POST_SERIAL}
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}
+    eg. http://localhost:8000/api/authors/1/posts/1
         GET [local, remote] get the public post whose serial is POST_SERIAL
             friends-only posts: must be authenticated
         DELETE [local] remove a
             local posts: must be authenticated locally as the author
-
+        PUT [local] update a post
+            local posts: must be authenticated locally as the author
     """
-    post = get_object_or_404(Post, id=post_id)
-    author = get_object_or_404(Author, id=author_id)
+    
+    if POST_SERIAL is not None and AUTHOR_SERIAL is not None:
+        author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
+        post = get_object_or_404(Post, serial=POST_SERIAL, author=author.serial)
+    elif POST_FQID is not None:
+        post = get_object_or_404(Post, fqid=POST_FQID)
+    else:
+        return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
     
     if request.method == 'GET':
-        if post.visibility == 'public' or (post.visibility == 'friends'):
-            response_data = {
-                "type": "post",
-                "title": post.title,
-                "id": post.id,
-                "description": "This post discusses stuff -- brief",
-                "contentType": post.content_type,
-                "content": post.content,
-                "author": AuthorSerializer(author).data,
-                "comments": "comments",  
-                "likes": "likes",        
-                "published": post.created_at,
-                "visibility": post.visibility
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-    
+        serializer = PostSerializer(post)        
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     elif request.method == 'PUT':
-        if request.user.author.id != author_id:
+        if request.user.author.id != AUTHOR_SERIAL:
             return Response({"detail": "You are not authorized to update this post."}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = PostSerializer(post, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()  
-            updated_post = serializer.data
-            updated_response_data = {
-                "type": "post",
-                "title": updated_post['title'],
-                "id": post.id,
-                "description": "This post discusses stuff -- brief",
-                "contentType": updated_post['content_type'],
-                "content": updated_post['content'],
-                "author": AuthorSerializer(author).data,
-                "comments": "comments",  # Placeholder for comments
-                "likes": "likes",        # Placeholder for likes
-                "published": post.created_at,
-                "visibility": updated_post['visibility']
-            }
-            return Response(updated_response_data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     elif request.method == 'DELETE':
-        if request.user.author.id != author_id:
+        if request.user.author.id != AUTHOR_SERIAL:
             return Response({"detail": "You are not authorized to delete this post."}, status=status.HTTP_403_FORBIDDEN)
 
         # soft delete the post
@@ -329,13 +310,23 @@ def post_detail(request, post_id, author_id):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['POST', 'GET'])
-def post_list(request, author_id):
-    
-    author = get_object_or_404(Author, id=author_id)
+def post_list(request, AUTHOR_SERIAL):
+    """
+    URL ://service/api/authors/{AUTHOR_SERIAL}/posts/
+    eg. http://localhost:8000/api/authors/1/posts/
+        GET [local, remote] get the recent posts from author AUTHOR_SERIAL (paginated)
+            Not authenticated: only public posts.
+            Authenticated locally as author: all posts.
+            Authenticated locally as friend of author: public + friends-only posts.
+            Authenticated as remote node: This probably should not happen. Remember, the way remote node becomes aware of local posts is by local node pushing those posts to inbox, not by remote node pulling.
+        POST [local] create a new post but generate a new ID
+            Authenticated locally as author
+    """
+    author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
     
     if request.method == 'GET':
         if request.user.is_authenticated:
-            is_author = request.user.author.id == author_id
+            is_author = request.user.author.serial == AUTHOR_SERIAL
             is_friend = author.followers_authors.filter(follower=request.user.author).exists()
             
             if is_author:
@@ -347,34 +338,19 @@ def post_list(request, author_id):
         else:
             posts = Post.objects.filter(author=author, visibility='public')
         
-        serialized_posts = []
-        for post in posts:
-            post_data = {
-                "type": "post",
-                "title": post.title,
-                "id": post.id,
-                "description": "This post discusses stuff -- brief",
-                "contentType": post.content_type,
-                "content": post.content,
-                "author": AuthorSerializer(author).data,
-                "comments": "comments",  # Placeholder for comments
-                "likes": "likes",        # Placeholder for likes
-                "published": post.created_at,
-                "visibility": post.visibility
-            }
-            serialized_posts.append(post_data)
+        serializer = PostSerializer(posts, many=True)        
         # TODO: to_representation and to_internal_value
         response_data = {
                 "type":"posts",
                 "page_number":23,
                 "size":10,
                 "count": len(posts),
-                "src": serialized_posts
+                "src": serializer.data
             }     
         return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        if not request.user.is_authenticated or request.user.author.id != author_id:
+        if not request.user.is_authenticated or request.user.author.id != AUTHOR_SERIAL:
             return Response({"detail": "You are not authorized to create a post for this author."}, status=status.HTTP_403_FORBIDDEN)
 
 
@@ -404,8 +380,13 @@ def post_list(request, author_id):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 @api_view(['GET'])    
-def post_image(request, post_id, author_id):
-    image_post = get_object_or_404(Post, author=author_id, id=post_id)
+def post_image(request, POST_SERIAL, AUTHOR_SERIAL):
+    """
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/image
+        GET [local, remote] get the public post converted to binary as an image
+        return 404 if not an image
+    """
+    image_post = get_object_or_404(Post, author=AUTHOR_SERIAL, serial=POST_SERIAL)
     
     # if 'image/png;base64' != post.content_type or 'image/jpeg;base64' not in post.content_type
     if 'image/png' != image_post.content_type or 'image/jpeg' != image_post.content_type:
@@ -417,6 +398,11 @@ def post_image(request, post_id, author_id):
 
 @api_view(['GET'])    
 def post_image_fqid(request, fqid):
+    """
+    URL: ://service/api/posts/{POST_FQID}/image
+        GET [local, remote] get the public post converted to binary as an image
+        return 404 if not an image
+    """
     image_post = get_object_or_404(Post, id=fqid)
     
     # if 'image/png;base64' != post.content_type or 'image/jpeg;base64' not in post.content_type

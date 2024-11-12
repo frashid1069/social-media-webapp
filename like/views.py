@@ -88,11 +88,11 @@ Likes API
 def who_liked_this_post(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/likes
-    GET [local, remote] a list of likes from other authors on author_id's post post_id
     eg. http://localhost:8000/api/authors/1/posts/1/likes
+        GET [local, remote] a list of likes from other authors on author_id's post post_id
     URL: ://service/api/posts/{POST_FQID}/likes
-    GET [local] a list of likes from other authors on AUTHOR_SERIAL's post POST_SERIAL
     eg. http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/likes
+        GET [local] a list of likes from other authors on AUTHOR_SERIAL's post POST_SERIAL
     """
     
     if AUTHOR_SERIAL is not None and POST_SERIAL is not None:
@@ -129,7 +129,8 @@ def who_liked_this_post(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID
 def who_liked_this_comment(request, AUTHOR_SERIAL, POST_SERIAL, COMMENT_FQID):
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments/{COMMENT_FQID}/likes
-    GET [local, remote] a list of likes from other authors on AUTHOR_SERIAL's post POST_SERIAL comment COMMENT_SERIAL
+    eg. http://localhost:8000/api/authors/1/posts/1/comments/http://127.0.0.1:8000/api/authors/3/commented/1/likes
+        GET [local, remote] a list of likes from other authors on AUTHOR_SERIAL's post POST_SERIAL comment COMMENT_SERIAL
     """
     post = get_object_or_404(Post, serial=POST_SERIAL, author__serial=AUTHOR_SERIAL)
     comment = get_object_or_404(Comment, fqid=COMMENT_FQID, post__id=post.id)
@@ -158,11 +159,11 @@ def things_liked_by_author(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
     """
     "Things Liked By Author"
     URL: ://service/api/authors/{AUTHOR_SERIAL}/liked
-    GET [local, remote] a list of likes by AUTHOR_SERIAL
     eg. http://localhost:8000/api/authors/1/liked
+        GET [local, remote] a list of likes by AUTHOR_SERIAL
     URL: ://service/api/authors/{AUTHOR_FQID}/liked
-    GET [local] a list of likes by AUTHOR_FQID
     eg. http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/1/liked
+        GET [local] a list of likes by AUTHOR_FQID
     """
     if AUTHOR_SERIAL is not None:
         try:
@@ -195,11 +196,11 @@ def things_liked_by_author(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
 def like_detail(request, AUTHOR_SERIAL=None, LIKE_SERIAL=None, LIKE_FQID=None):
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/liked/{LIKE_SERIAL}
-    GET [local, remote] a single like
     eg. http://localhost:8000/api/authors/3/liked/1
+        GET [local, remote] a single like
     URL: ://service/api/liked/{LIKE_FQID}
-    GET [local] a single like
     eg. http://localhost:8000/api/liked/http://127.0.0.1:8000/api/authors/3/liked/1
+        GET [local] a single like
     """
     if LIKE_FQID is not None:
         try:

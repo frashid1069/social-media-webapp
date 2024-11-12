@@ -106,11 +106,11 @@ def create_comment(request, author_id):
 def comment_list(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
     '''
     URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments
-    GET [local, remote]: the comments on the post
     eg. http://localhost:8000/api/authors/1/posts/1/comments
+        GET [local, remote]: the comments on the post
     URL: ://service/api/posts/{POST_FQID}/comments
-    GET [local, remote]: the comments on the post (that our server knows about)
     eg. http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/comments
+        GET [local, remote]: the comments on the post (that our server knows about)
     '''
     if AUTHOR_SERIAL is not None and POST_SERIAL is not None:
         author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
@@ -138,8 +138,8 @@ def comment_list(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
 def comment_detail(request,  AUTHOR_SERIAL=None, POST_SERIAL=None, REMOTE_COMMENT_FQID=None):
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/post/{POST_SERIAL}/comment/{REMOTE_COMMENT_FQID}
-    GET [local, remote] get the comment}
     eg. http://localhost:8000/api/authors/1/post/1/comment/http://127.0.0.1:8000/api/authors/2/commented/1
+        GET [local, remote] get the comment}
     """
     
     if AUTHOR_SERIAL is not None and POST_SERIAL is not None and REMOTE_COMMENT_FQID is not None:
@@ -158,15 +158,15 @@ def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/commented
     eg. http://localhost:8000/api/authors/2/commented
-    GET [local, remote] get the list of comments author has made on:
-        [local] any post
-        [remote] public and unlisted posts
-        paginated
-    POST [local] if you post an object of "type":"comment", it will add your comment to the post whose ID is in the post field
-        Then the node you posted it to is responsible for forwarding it to the correct inbox
+        GET [local, remote] get the list of comments author has made on:
+            [local] any post
+            [remote] public and unlisted posts
+            paginated
+        POST [local] if you post an object of "type":"comment", it will add your comment to the post whose ID is in the post field
+            Then the node you posted it to is responsible for forwarding it to the correct inbox
     URL: ://service/api/authors/{AUTHOR_FQID}/commented
     eg. http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/2/commented
-    GET [local] get the list of comments author has made on any post (that local node knows about)
+        GET [local] get the list of comments author has made on any post (that local node knows about)
     
     """
     if request.method == 'GET':
@@ -192,10 +192,10 @@ def comment_detail(request, AUTHOR_SERIAL=None, COMMENT_SERIAL=None, COMMENT_FQI
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/commented/{COMMENT_SERIAL}
     eg. http://localhost:8000/api/authors/2/commented/1
-    GET [local, remote] get this comment
+        GET [local, remote] get this comment
     URL: ://service/api/commented/{COMMENT_FQID}
     eg. http://localhost:8000/api/commented/http://127.0.0.1:8000/api/authors/2/commented/1
-    GET [local] get this comment
+        GET [local] get this comment
     """
     if AUTHOR_SERIAL is not None and COMMENT_SERIAL is not None: 
         author = get_object_or_404(Author, serial=AUTHOR_SERIAL)

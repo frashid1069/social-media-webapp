@@ -18,9 +18,11 @@ class Author(models.Model):
     type = models.CharField(max_length=10, default="author", editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE) # Link to Django's User model
     #TODO: change id
-    id = models.AutoField(primary_key=True)
+    serial = models.AutoField(primary_key=True)
     fqid = models.URLField(blank=True, null=True, max_length=200)
     host = models.URLField(blank=True, null=True, max_length=200)
+    post_count = models.PositiveIntegerField(default=0)
+    like_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 

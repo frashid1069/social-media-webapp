@@ -63,11 +63,11 @@
     
     {
         "model": "author.author",
-        "pk": 1,
         "fields": {
             "user": 1,
             "fqid": "http://127.0.0.1:8000/api/authors/1",
             "host": "http://127.0.0.1:8000/api/",
+            "serial": 1,
             "username": "aa",
             "display_name": "A A",
             "bio": "Software developer with 10 years of experience.",
@@ -79,11 +79,11 @@
     },
     {
         "model": "author.author",
-        "pk": 2,
         "fields": {
             "user": 2,
             "fqid": "http://127.0.0.1:8000/api/authors/2",
             "host": "http://127.0.0.1:8000/api/",
+            "serial": 2,
             "username": "js",
             "display_name": "Jane Smith",
             "bio": "Data scientist who loves working with big data.",
@@ -95,11 +95,11 @@
     },
     {
         "model": "author.author",
-        "pk": 3,
         "fields": {
             "user": 3,
             "fqid": "http://127.0.0.1:8000/api/authors/3",
             "host": "http://127.0.0.1:8000/api/",
+            "serial": 3,
             "username": "aj",
             "display_name": "Alice Jones",
             "bio": "Python enthusiast and blogger.",
@@ -117,7 +117,9 @@
             "title": "My first post",
             "content": "This is my first post!",
             "content_type": "text/markdown",
-            "image_content": null,
+            "serial": 1,
+            "fqid":"http://127.0.0.1:8000/api/authors/1/posts/1",
+            "description": "Mock data",
             "created_at": "2024-10-14T12:30:00Z",
             "updated_at": "2024-10-14T12:30:00Z",
             "visibility": "public"
@@ -131,7 +133,9 @@
             "title": "author1-unlisted",
             "content": "This is my first post!",
             "content_type": "text/markdown",
-            "image_content": null,
+            "serial": 2,
+            "fqid":"http://127.0.0.1:8000/api/authors/1/posts/2",
+            "description": "Mock data",
             "created_at": "2024-10-14T12:30:00Z",
             "updated_at": "2024-10-14T12:30:00Z",
             "visibility": "unlisted"
@@ -145,7 +149,9 @@
             "title": "author1-friend-only",
             "content": "This is my first post!",
             "content_type": "text/markdown",
-            "image_content": null,
+            "serial": 3,
+            "fqid":"http://127.0.0.1:8000/api/authors/1/posts/3",
+            "description": "Mock data",
             "created_at": "2024-10-14T12:30:00Z",
             "updated_at": "2024-10-14T12:30:00Z",
             "visibility": "friend-only"
@@ -159,7 +165,9 @@
             "title": "author2-public",
             "content": "Sharing my experiences in the world of data science.",
             "content_type": "text/markdown",
-            "image_content": null,
+            "serial": 1,
+            "fqid":"http://127.0.0.1:8000/api/authors/2/posts/1",
+            "description": "Mock data",
             "created_at": "2024-10-14T12:40:00Z",
             "updated_at": "2024-10-14T12:40:00Z",
             "visibility": "public"
@@ -173,7 +181,9 @@
             "title": "author3-public",
             "content": "Here are some cool Python tips.",
             "content_type": "text/markdown",
-            "image_content": null,
+            "serial": 1,
+            "fqid":"http://127.0.0.1:8000/api/authors/3/posts/1",
+            "description": "Mock data",
             "created_at": "2024-10-14T12:50:00Z",
             "updated_at": "2024-10-14T12:50:00Z",
             "visibility": "public"
@@ -187,7 +197,9 @@
             "title": "author3-friend-only",
             "content": "This is my first post!",
             "content_type": "text/markdown",
-            "image_content": null,
+            "serial": 2,
+            "fqid":"http://127.0.0.1:8000/api/authors/3/posts/2",
+            "description": "Mock data",
             "created_at": "2024-10-14T12:30:00Z",
             "updated_at": "2024-10-14T12:30:00Z",
             "visibility": "friend-only"
@@ -201,7 +213,9 @@
             "title": "author3-unlisted",
             "content": "This is my first post!",
             "content_type": "text/markdown",
-            "image_content": null,
+            "serial": 3,
+            "fqid":"http://127.0.0.1:8000/api/authors/3/posts/3",
+            "description": "Mock data",
             "created_at": "2024-10-14T12:30:00Z",
             "updated_at": "2024-10-14T12:30:00Z",
             "visibility": "unlisted"
@@ -214,6 +228,8 @@
             "content": "Great post, John!",
             "author": 2,
             "post": 1,
+            "serial": 1,
+            "fqid": "http://127.0.0.1:8000/api/authors/2/commented/1",
             "created_at": "2024-10-14T13:00:00Z",
             "updated_at": "2024-10-14T13:00:00Z"
         }
@@ -224,7 +240,9 @@
         "fields": {
             "content": "Very helpful, thanks Jane.",
             "author": 3,
-            "post": 2,
+            "post": 1,
+            "serial": 1,
+            "fqid": "http://127.0.0.1:8000/api/authors/3/commented/1",
             "created_at": "2024-10-14T13:10:00Z",
             "updated_at": "2024-10-14T13:10:00Z"
         }
@@ -234,36 +252,44 @@
         "pk": 3,
         "fields": {
             "content": "Awesome tips, Alice!",
-            "author": 1,
-            "post": 3,
+            "author": 3,
+            "post": 1,
+            "serial": 2,
+            "fqid": "http://127.0.0.1:8000/api/authors/3/commented/2",
             "created_at": "2024-10-14T13:20:00Z",
             "updated_at": "2024-10-14T13:20:00Z"
         }
     },
     {
-        "model": "service.like",
+        "model": "like.like",
         "pk": 1,
         "fields": {
             "author": 1,
-            "post": 2,
+            "fqid": "http://127.0.0.1:8000/api/authors/1/liked/1",
+            "object": "http://127.0.0.1:8000/api/authors/1/posts/1",
+            "serial": 1,
             "created_at": "2024-10-14T13:30:00Z"
         }
     },
     {
-        "model": "service.like",
+        "model": "like.like",
         "pk": 2,
         "fields": {
             "author": 2,
-            "post": 3,
+            "fqid": "http://127.0.0.1:8000/api/authors/2/liked/1",
+            "object": "http://127.0.0.1:8000/api/authors/1/posts/1",
+            "serial": 1,
             "created_at": "2024-10-14T13:40:00Z"
         }
     },
     {
-        "model": "service.like",
+        "model": "like.like",
         "pk": 3,
         "fields": {
             "author": 3,
-            "post": 1,
+            "fqid": "http://127.0.0.1:8000/api/authors/3/liked/1",
+            "object": "http://127.0.0.1:8000/api/authors/1/posts/1",
+            "serial": 1,
             "created_at": "2024-10-14T13:50:00Z"
         }
     },
@@ -306,38 +332,6 @@
             "pending": "no",
             "created_at": "2024-10-14T14:20:00Z"
         }
-    },
-    {
-        "model": "service.inbox",
-        "pk": 1,
-        "fields": {
-            "author": 1,
-            "post": 2,
-            "comment": 2,
-            "like": 1,
-            "created_at": "2024-10-14T14:30:00Z"
-        }
-    },
-    {
-        "model": "service.inbox",
-        "pk": 2,
-        "fields": {
-            "author": 2,
-            "post": 3,
-            "comment": 3,
-            "like": 2,
-            "created_at": "2024-10-14T14:40:00Z"
-        }
-    },
-    {
-        "model": "service.inbox",
-        "pk": 3,
-        "fields": {
-            "author": 3,
-            "post": 1,
-            "comment": 1,
-            "like": 3,
-            "created_at": "2024-10-14T14:50:00Z"
-        }
     }
+    
 ]

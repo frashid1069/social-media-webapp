@@ -7,14 +7,14 @@ from comment.models import Comment
 
 # Create your models here.
 
-class Like(models.Model):
-    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='likes')
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
+# class Like(models.Model):
+#     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='likes')
+#     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
     
-    created_at = models.DateTimeField(default=timezone.now)
+#     created_at = models.DateTimeField(default=timezone.now)
 
-    def __str__(self):
-        return f"Like by {self.author} on {self.post}"
+#     def __str__(self):
+#         return f"Like by {self.author} on {self.post}"
 
 class Follow(models.Model):
     '''Follower.objects.create(follower=author1, followed=author2) 
@@ -40,14 +40,14 @@ class Follow(models.Model):
     
 
 # Inbox Model
-class Inbox(models.Model):
-    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='inbox')
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
-    like = models.ForeignKey(Like, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(default=timezone.now)
+# class Inbox(models.Model):
+#     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='inbox')
+#     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+#     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+#     like = models.ForeignKey(Like, on_delete=models.CASCADE)
+#     created_at = models.DateTimeField(default=timezone.now)
 
-    def __str__(self):
-        return f"Inbox for {self.author}"
+#     def __str__(self):
+#         return f"Inbox for {self.author}"
     
     

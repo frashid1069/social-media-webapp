@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -83,76 +83,76 @@ class SignUp(APIView):
             return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         
-class LikeView(ModelViewSet):
-    queryset = models.Like.objects
-    serializer_class = serializers.LikeSerializer
+# class LikeView(ModelViewSet):
+#     queryset = models.Like.objects
+#     serializer_class = serializers.LikeSerializer
 
-    @extend_schema(
-        summary="Retrieve a list of likes",
-        description="""
-        Retrieve a list of likes, with optional filtering.
-        - If `author_id` and `post_id` are provided, returns likes for a particular post made by the specified author.
-        - If `author_id` is provided, returns all likes made by that author.
-        - If `post_id` is provided, returns all likes for the specified post.
-        """,
-        parameters=[
-            OpenApiParameter(name="author_id", description="Filter likes by the author's ID", required=False, type=OpenApiTypes.INT),
-            OpenApiParameter(name="post_id", description="Filter likes by the post's ID", required=False, type=OpenApiTypes.INT),
-        ],
-        responses={200: serializers.LikeSerializer(many=True), 400: "Bad Request"},
-    )
-    def get_queryset(self):
-        # Get the base queryset from the parent class
-        queryset = super().get_queryset()
-        # Extract query parameters from the request
-        post_id = self.request.query_params.get('post_id')
-        author_id = self.request.query_params.get('author_id')
+#     @extend_schema(
+#         summary="Retrieve a list of likes",
+#         description="""
+#         Retrieve a list of likes, with optional filtering.
+#         - If `author_id` and `post_id` are provided, returns likes for a particular post made by the specified author.
+#         - If `author_id` is provided, returns all likes made by that author.
+#         - If `post_id` is provided, returns all likes for the specified post.
+#         """,
+#         parameters=[
+#             OpenApiParameter(name="author_id", description="Filter likes by the author's ID", required=False, type=OpenApiTypes.INT),
+#             OpenApiParameter(name="post_id", description="Filter likes by the post's ID", required=False, type=OpenApiTypes.INT),
+#         ],
+#         responses={200: serializers.LikeSerializer(many=True), 400: "Bad Request"},
+#     )
+#     def get_queryset(self):
+#         # Get the base queryset from the parent class
+#         queryset = super().get_queryset()
+#         # Extract query parameters from the request
+#         post_id = self.request.query_params.get('post_id')
+#         author_id = self.request.query_params.get('author_id')
 
-        # If both 'author_id' and 'post_id' are provided in the request query parameters:
-        # Filter the queryset to return likes where both the author ID and post ID match
-        # i.e., likes made by a specific author on a specific post.
-        # ~post/?author_id=<pk>&post_id=<pk> (likes for a particular post made by a particular author)
-        if author_id and post_id:
-            queryset = queryset.filter(author__id=author_id, post__id=post_id)
+#         # If both 'author_id' and 'post_id' are provided in the request query parameters:
+#         # Filter the queryset to return likes where both the author ID and post ID match
+#         # i.e., likes made by a specific author on a specific post.
+#         # ~post/?author_id=<pk>&post_id=<pk> (likes for a particular post made by a particular author)
+#         if author_id and post_id:
+#             queryset = queryset.filter(author__id=author_id, post__id=post_id)
 
-        # If only 'author_id' is provided in the query parameters:
-        # Filter the queryset to return all likes made by that specific author.
-        # ~post/?author_id=<pk> (all likes made by a particular author)
-        elif author_id:
-            queryset = queryset.filter(author__id=author_id)
+#         # If only 'author_id' is provided in the query parameters:
+#         # Filter the queryset to return all likes made by that specific author.
+#         # ~post/?author_id=<pk> (all likes made by a particular author)
+#         elif author_id:
+#             queryset = queryset.filter(author__id=author_id)
         
-        # If only 'post_id' is provided in the query parameters:
-        # Filter the queryset to return all likes for the specified post.
-        # ~post/?post_id=<pk> (all likes for a particular post)
-        elif post_id:
-            queryset = queryset.filter(post__id=post_id)
+#         # If only 'post_id' is provided in the query parameters:
+#         # Filter the queryset to return all likes for the specified post.
+#         # ~post/?post_id=<pk> (all likes for a particular post)
+#         elif post_id:
+#             queryset = queryset.filter(post__id=post_id)
 
-        return queryset.order_by("created_at") # return the filtered queryset
+#         return queryset.order_by("created_at") # return the filtered queryset
     
-    @extend_schema(
-        summary="Create a new like",
-        description="Create a new like for a post by an author.",
-        request=serializers.LikeSerializer,
-        responses={201: serializers.LikeSerializer, 400: "Bad Request"},
-    )
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+#     @extend_schema(
+#         summary="Create a new like",
+#         description="Create a new like for a post by an author.",
+#         request=serializers.LikeSerializer,
+#         responses={201: serializers.LikeSerializer, 400: "Bad Request"},
+#     )
+#     def create(self, request, *args, **kwargs):
+#         return super().create(request, *args, **kwargs)
     
-    @extend_schema(
-        summary="Retrieve a single like",
-        description="Fetch the details of a like by its ID.",
-        responses={200: serializers.LikeSerializer, 404: "Not Found"},
-    )
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+#     @extend_schema(
+#         summary="Retrieve a single like",
+#         description="Fetch the details of a like by its ID.",
+#         responses={200: serializers.LikeSerializer, 404: "Not Found"},
+#     )
+#     def retrieve(self, request, *args, **kwargs):
+#         return super().retrieve(request, *args, **kwargs)
     
-    @extend_schema(
-        summary="Delete a like",
-        description="Delete a like by its ID.",
-        responses={204: None, 404: "Not Found"},
-    )
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
+#     @extend_schema(
+#         summary="Delete a like",
+#         description="Delete a like by its ID.",
+#         responses={204: None, 404: "Not Found"},
+#     )
+#     def destroy(self, request, *args, **kwargs):
+#         return super().destroy(request, *args, **kwargs)
 
     
 class FollowView(ModelViewSet):
@@ -171,12 +171,22 @@ class FollowView(ModelViewSet):
             queryset = queryset.filter(followed=author_id, follower=follower)
         return queryset
     
-class InboxView(ModelViewSet):
-    queryset = models.Inbox.objects
-    serializer_class = serializers.LikeSerializer
 
 @api_view(['GET'])
 def get_followers(request, pk):
+    '''
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/followers
+        GET [local, remote]: get a list of authors who are AUTHOR_SERIAL's followers
+    TODO:URL: ://service/api/authors/{AUTHOR_SERIAL}/followers/{FOREIGN_AUTHOR_FQID}
+
+        Note: foreign author ID should be a percent encoded URL of the foreign author. An example URL would be:
+            http://example-node-1/api/authors/178aba49-ca39-4741-b227-f40d072b1222/followers/http%3A%2F%2Fexample-node-2%2Fauthors%2F5f57808f-0bc9-4b3d-bdd1-bb07c976d12d
+        DELETE [local]: remove FOREIGN_AUTHOR_FQID as a follower of AUTHOR_SERIAL (must be authenticated)
+        PUT [local]: Add FOREIGN_AUTHOR_FQID as a follower of AUTHOR_SERIAL (must be authenticated)
+        GET [local, remote] check if FOREIGN_AUTHOR_FQID is a follower of AUTHOR_SERIAL
+            Should return 404 if they're not
+            This is how you can check if follow request is accepted
+    '''
     try:
         author = Author.objects.get(id=pk)
         followers = author.followers_authors.all()
@@ -190,6 +200,67 @@ def get_followers(request, pk):
     except Author.DoesNotExist:
         return Response({"detail": "Author not found."}, status=status.HTTP_404_NOT_FOUND)
     
+
+@api_view(['POST'])
+def send_follow_request(request, pk):
+    """
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/inbox
+        POST [remote]: send a follow request to AUTHOR_SERIAL
+            AUTHOR_SERIAL will be the object below
+    """
+    try:
+        object_author = Author.objects.get(id=pk)
+        
+        try:
+            actor_author = request.user.author
+        except Author.DoesNotExist:
+            return Response({"detail": "Actor author not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        follow_exists = Follow.objects.filter(follower=actor_author, followed=object_author).exists() # already followed
+        mutual_follow = Follow.objects.filter(follower=object_author, followed=actor_author).exists() # becomes friend if object author followed actor
+
+        if follow_exists and mutual_follow:
+            return Response({"detail": "Authors are already friends."}, status=status.HTTP_200_OK)
+        elif follow_exists:
+            return Response({"detail": "Follow request already exists."}, status=status.HTTP_409_CONFLICT)
+        elif mutual_follow:
+            Follow.objects.create(follower=actor_author, followed=object_author, pending='no')
+            return Response({"detail": f"You are now friends of {object_author.display_name}"}, status=status.HTTP_201_CREATED)
+
+        Follow.objects.create(follower=actor_author, followed=object_author, pending='yes')
+
+        response_data = {
+            "type": "follow",
+            "summary": f"{actor_author.display_name} wants to follow {object_author.display_name}",
+            "actor": AuthorSerializer(actor_author).data,
+            "object": AuthorSerializer(object_author).data,
+        }
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+    except Author.DoesNotExist:
+        return Response({"detail": "Recipient author not found."}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+def inbox(request, AUTHOR_SERIAL):
+    """
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/inbox
+    1) POST [remote]: send a like object to AUTHOR_SERIAL}
+    Body is like object
+    2) POST [remote]: comment on a post by AUTHOR_SERIAL
+    Body is a comment object
+    3) POST [remote]: send a follow request to AUTHOR_SERIAL
+    AUTHOR_SERIAL will be the object below
+    4) receives all the new posts from who you follow
+    """
+    
+    author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
+    
+    if request.data.type == 'follow':
+        print("follow")
+    
+    return Response(status=status.HTTP_200_OK)
+
 
 """
 Creates a post and saves it in the database

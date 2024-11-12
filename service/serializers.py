@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Author, Post, Comment, Like, Follow, Inbox
+from .models import Author, Post, Comment, Follow
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
@@ -50,17 +50,13 @@ class SignUpSerializer(serializers.ModelSerializer):
         return author
 
         
-class LikeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Like
-        fields = "__all__"
+# class LikeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Like
+#         fields = "__all__"
 
 class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
         fields = "__all__"
         
-class InboxSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Inbox
-        fields = "__all__"

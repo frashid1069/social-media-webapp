@@ -8,6 +8,31 @@ from rest_framework import status
 from rest_framework.response import Response
 from author.serializers import Author, AuthorSerializer
 from post.serializers import Post
+from rest_framework.pagination import PageNumberPagination
+
+class CommentPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'size'
+    page_query_param = 'page'  
+    
+    # sorting
+    def paginate_queryset(self, queryset, request, view=None):
+        if not queryset.ordered:
+            queryset = queryset.order_by('created_at')
+        return super().paginate_queryset(queryset, request, view=view)
+    
+    def get_paginated_response(self, data, url):
+
+        response_data = {
+                "type":"comments",
+                "page": url,
+                "id":f'{url}/comments',
+                "page_number":self.page.number,
+                "size": self.get_page_size(self.request),
+                "count": len(data),
+                "src": data
+            }
+        return Response(response_data, status=status.HTTP_200_OK)
 
 class CommentView(ModelViewSet):
     queryset = Comment.objects
@@ -107,9 +132,11 @@ def comment_list(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
     '''
     URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments
     eg. http://localhost:8000/api/authors/1/posts/1/comments
+    eg. http://localhost:8000/api/authors/1/posts/1/comments?page=1&size=2
         GET [local, remote]: the comments on the post
     URL: ://service/api/posts/{POST_FQID}/comments
     eg. http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/comments
+    eg. http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/comments?page=1&size=2
         GET [local, remote]: the comments on the post (that our server knows about)
     '''
     if AUTHOR_SERIAL is not None and POST_SERIAL is not None:
@@ -120,19 +147,13 @@ def comment_list(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
     else:
         return Response({"detail": "Comment not found."}, status=status.HTTP_404_NOT_FOUND)
         
+    url = post.fqid
     comments = Comment.objects.filter(post=post.id)
-    serializer = CommentSerializer(comments, many=True)
-    response_data = {
-                "type":"comments",
-                "page":"http://nodebbbb/authors/222/posts/249",
-                "id":f'{post.fqid}/comments',
-                "page_number":1,
-                "size":5,
-                "count": len(comments),
-                "src": serializer.data
-            }
     
-    return Response(response_data, status=status.HTTP_200_OK)
+    paginator = CommentPagination()
+    paged_comments = paginator.paginate_queryset(comments, request)
+    serializer = CommentSerializer(paged_comments, many=True)
+    return paginator.get_paginated_response(serializer.data, url)
 
 @api_view(['GET'])    
 def comment_detail(request,  AUTHOR_SERIAL=None, POST_SERIAL=None, REMOTE_COMMENT_FQID=None):
@@ -158,6 +179,7 @@ def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/commented
     eg. http://localhost:8000/api/authors/2/commented
+    eg. http://localhost:8000/api/authors/2/commented?page=1&size=2
         GET [local, remote] get the list of comments author has made on:
             [local] any post
             [remote] public and unlisted posts
@@ -166,6 +188,7 @@ def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
             Then the node you posted it to is responsible for forwarding it to the correct inbox
     URL: ://service/api/authors/{AUTHOR_FQID}/commented
     eg. http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/2/commented
+    eg. http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/2/commented?page=1&size=2
         GET [local] get the list of comments author has made on any post (that local node knows about)
     
     """
@@ -174,18 +197,14 @@ def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
             author = get_object_or_404(Author, serial=AUTHOR_SERIAL)  
         elif AUTHOR_FQID is not None:
             author = get_object_or_404(Author, fqid=AUTHOR_FQID)
+            
+        url = author.fqid
         comments = author.comments.all()
-        serializer = CommentSerializer(comments, many=True)
-        response_data = {
-                    "type":"comments",
-                    "page":"http://nodebbbb/authors/222/posts/249",
-                    "id":f'{author.fqid}/commented',
-                    "page_number":1,
-                    "size":5,
-                    "count": len(comments),
-                    "src": serializer.data
-                }     
-        return Response(response_data, status=status.HTTP_200_OK)
+        
+        paginator = CommentPagination()
+        paged_comments = paginator.paginate_queryset(comments, request)
+        serializer = CommentSerializer(paged_comments, many=True)
+        return paginator.get_paginated_response(serializer.data, url)
 
 @api_view(['GET'])    
 def comment_detail(request, AUTHOR_SERIAL=None, COMMENT_SERIAL=None, COMMENT_FQID=None):

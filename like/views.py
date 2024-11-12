@@ -8,6 +8,31 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
+
+class LikePagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'size'
+    page_query_param = 'page'  
+    
+    # sorting
+    def paginate_queryset(self, queryset, request, view=None):
+        if not queryset.ordered:
+            queryset = queryset.order_by('created_at')
+        return super().paginate_queryset(queryset, request, view=view)
+    
+    def get_paginated_response(self, data, url):
+
+        response_data = {
+        "type":"likes",
+        "page": url,
+        "id": f'{url}/likes',
+        "page_number":self.page.number,
+        "size": self.get_page_size(self.request),
+        "count": len(data),
+        "src": data
+    }
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class LikeView(ModelViewSet):
@@ -89,9 +114,11 @@ def who_liked_this_post(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/likes
     eg. http://localhost:8000/api/authors/1/posts/1/likes
+    eg. http://localhost:8000/api/authors/1/posts/1/likes?page=2&size=1
         GET [local, remote] a list of likes from other authors on author_id's post post_id
     URL: ://service/api/posts/{POST_FQID}/likes
     eg. http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/likes
+    eg. http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/likes?page=2&size=1
         GET [local] a list of likes from other authors on AUTHOR_SERIAL's post POST_SERIAL
     """
     
@@ -111,25 +138,18 @@ def who_liked_this_post(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID
     else:
         return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
     
-    serializer = LikeSerializer(likes_of_object, many=True)
-
-    response_data = {
-        "type":"likes",
-        "page":"http://nodeaaaa/authors/222/posts/249",
-        "id": f'{url}/likes',
-        "page_number":1,
-        "size":50,
-        "count": len(serializer.data),
-        "src": serializer.data
-    }
+    paginator = LikePagination()
+    paged_likes = paginator.paginate_queryset(likes_of_object, request)
+    serializer = LikeSerializer(paged_likes, many=True)
+    return paginator.get_paginated_response(serializer.data, url)
     
-    return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def who_liked_this_comment(request, AUTHOR_SERIAL, POST_SERIAL, COMMENT_FQID):
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments/{COMMENT_FQID}/likes
     eg. http://localhost:8000/api/authors/1/posts/1/comments/http://127.0.0.1:8000/api/authors/3/commented/1/likes
+    eg. http://localhost:8000/api/authors/1/posts/1/comments/http://127.0.0.1:8000/api/authors/3/commented/1/likes?page=1&size=1
         GET [local, remote] a list of likes from other authors on AUTHOR_SERIAL's post POST_SERIAL comment COMMENT_SERIAL
     """
     post = get_object_or_404(Post, serial=POST_SERIAL, author__serial=AUTHOR_SERIAL)
@@ -137,19 +157,13 @@ def who_liked_this_comment(request, AUTHOR_SERIAL, POST_SERIAL, COMMENT_FQID):
     url = comment.fqid
     
     likes_of_object = Like.objects.filter(object=url)
-    serializer = LikeSerializer(likes_of_object, many=True)
+
+    paginator = LikePagination()
+    paged_likes = paginator.paginate_queryset(likes_of_object, request)
+    serializer = LikeSerializer(paged_likes, many=True)
+    return paginator.get_paginated_response(serializer.data, url)
     
-    response_data = {
-        "type":"likes",
-        "page":"http://nodeaaaa/authors/222/posts/249",
-        "id": f'{url}/likes',
-        "page_number":1,
-        "size":50,
-        "count": len(serializer.data),
-        "src": serializer.data
-    }
     
-    return Response(response_data, status=status.HTTP_200_OK)
 
 '''
 Liked API
@@ -160,9 +174,11 @@ def things_liked_by_author(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
     "Things Liked By Author"
     URL: ://service/api/authors/{AUTHOR_SERIAL}/liked
     eg. http://localhost:8000/api/authors/1/liked
+    eg. http://localhost:8000/api/authors/1/liked?page=1&size=1
         GET [local, remote] a list of likes by AUTHOR_SERIAL
     URL: ://service/api/authors/{AUTHOR_FQID}/liked
     eg. http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/1/liked
+    eg. http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/1/liked?page=1&size=1
         GET [local] a list of likes by AUTHOR_FQID
     """
     if AUTHOR_SERIAL is not None:
@@ -179,18 +195,12 @@ def things_liked_by_author(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
         return Response({"detail": "Author not found."}, status=status.HTTP_404_NOT_FOUND)
     
     likes_of_object = author.likes.all()
-    serializer = LikeSerializer(likes_of_object, many=True)
-    response_data = {
-        "type":"likes",
-        "page":"http://nodeaaaa/authors/222/posts/249",
-        "id": f'{author.fqid}/liked',
-        "page_number":1,
-        "size":50,
-        "count": len(serializer.data),
-        "src": serializer.data
-    }
-    
-    return Response(response_data, status=status.HTTP_200_OK)
+    url = author.fqid
+        
+    paginator = LikePagination()
+    paged_likes = paginator.paginate_queryset(likes_of_object, request)
+    serializer = LikeSerializer(paged_likes, many=True)
+    return paginator.get_paginated_response(serializer.data, url)
 
 @api_view(['GET'])
 def like_detail(request, AUTHOR_SERIAL=None, LIKE_SERIAL=None, LIKE_FQID=None):

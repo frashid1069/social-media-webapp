@@ -13,7 +13,29 @@ from rest_framework.authentication import get_authorization_header
 import base64
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
-# Create your views here.
+from rest_framework.pagination import PageNumberPagination
+
+class PostPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'size'
+    page_query_param = 'page'  
+    
+    # sorting
+    def paginate_queryset(self, queryset, request, view=None):
+        if not queryset.ordered:
+            queryset = queryset.order_by('created_at')
+        return super().paginate_queryset(queryset, request, view=view)
+    
+    def get_paginated_response(self, data):
+        response_data = {
+                "type":"posts",
+                "page_number":self.page.number,
+                "size": self.get_page_size(self.request),
+                "count": len(data),
+                "src": data
+            }     
+        return Response(response_data, status=status.HTTP_200_OK)
+
 
 class PostView(ModelViewSet):
     #authentication_classes = [authentication.JwtQueryParamsAuthentication]
@@ -314,6 +336,7 @@ def post_list(request, AUTHOR_SERIAL):
     """
     URL ://service/api/authors/{AUTHOR_SERIAL}/posts/
     eg. http://localhost:8000/api/authors/1/posts/
+    eg. http://localhost:8000/api/authors/3/posts/?page=1&size=1
         GET [local, remote] get the recent posts from author AUTHOR_SERIAL (paginated)
             Not authenticated: only public posts.
             Authenticated locally as author: all posts.
@@ -337,17 +360,14 @@ def post_list(request, AUTHOR_SERIAL):
                 posts = Post.objects.filter(author=author, visibility='public')
         else:
             posts = Post.objects.filter(author=author, visibility='public')
-        
-        serializer = PostSerializer(posts, many=True)        
+             
         # TODO: to_representation and to_internal_value
-        response_data = {
-                "type":"posts",
-                "page_number":23,
-                "size":10,
-                "count": len(posts),
-                "src": serializer.data
-            }     
-        return Response(response_data, status=status.HTTP_200_OK)
+     
+        paginator = PostPagination()
+        paged_posts = paginator.paginate_queryset(posts, request)
+        serializer = PostSerializer(paged_posts, many=True)
+        return paginator.get_paginated_response(serializer.data) 
+        
 
     elif request.method == 'POST':
         if not request.user.is_authenticated or request.user.author.id != AUTHOR_SERIAL:

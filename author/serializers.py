@@ -9,6 +9,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     displayName = serializers.CharField(source="display_name")
     github = serializers.URLField(source="github_url")
     profileImage = serializers.URLField(source="profile_image", required=False)
+    page = serializers.URLField(source='fqid', read_only=True)
     
     class Meta:
         model = Author
@@ -19,5 +20,7 @@ class AuthorSerializer(serializers.ModelSerializer):
             "displayName",
             "github",
             "profileImage",
+            "page"
         ]
-        #read_only_fields = ['user', 'id', 'created_at', 'updated_at']
+        
+

@@ -1,8 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from rest_framework.viewsets import ModelViewSet
 from comment.models import Comment
 from comment.serializer import CommentSerializer
+from rest_framework.decorators import api_view
+from rest_framework import status
+from rest_framework.response import Response
+from author.serializers import Author, AuthorSerializer
+from post.serializers import Post
 
 class CommentView(ModelViewSet):
     queryset = Comment.objects
@@ -65,3 +70,108 @@ class CommentView(ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+    
+# Comments API
+@api_view(['POST'])
+def create_comment(request, author_id):
+    '''
+    authors/<int:author_id>/inbox
+    '''
+    author = get_object_or_404(Author, id=author_id)
+    
+    if not request.user.is_authenticated:
+        return Response({"detail": "You are not authorized to create a comment for this post."}, status=status.HTTP_403_FORBIDDEN)
+         
+    serializer = CommentSerializer(data=request.data)
+        
+    if serializer.is_valid():
+        serializer.save(author=author)
+        comment = serializer.data
+        
+        response_data = {
+                "type": "comment",
+                "author": AuthorSerializer(author).data,
+                "comment": comment['content'],
+                "contentType": "text/markdown",
+                "published": comment['created_at'],
+                "id": "http://nodeaaaa/api/authors/111/commented/130",
+                "post": "http://nodebbbb/api/authors/222/posts/249",
+                "likes": "likes",        
+            }
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+@api_view(['GET'])    
+def comment_list(request, post_id, author_id):
+    '''
+    authors/<int:author_id>/posts/<int:post_id>/comments
+    '''
+    post = get_object_or_404(Post, id=post_id)
+    author = get_object_or_404(Author, id=author_id)
+    response_data = {
+                "type":"comments",
+                "page":"http://nodebbbb/authors/222/posts/249",
+                "id":"http://nodebbbb/api/authors/222/posts/249/comments",
+                "page_number":1,
+                "size":5,
+                "count": 1023,
+                "src": "comments"
+            }     
+
+@api_view(['GET'])    
+def comment_list_fqid(request, fqid):
+    post = get_object_or_404(Post, id=fqid)
+    response_data = {
+                "type":"comments",
+                "page":"http://nodebbbb/authors/222/posts/249",
+                "id":"http://nodebbbb/api/authors/222/posts/249/comments",
+                "page_number":1,
+                "size":5,
+                "count": 1023,
+                "src": "comments"
+            }     
+    return Response(response_data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])    
+def comment_detail(request, author_id, post_id, comment_id):
+    post = get_object_or_404(Post, id=post_id)
+    response_data = {
+                "type":"comments",
+                "page":"http://nodebbbb/authors/222/posts/249",
+                "id":"http://nodebbbb/api/authors/222/posts/249/comments",
+                "page_number":1,
+                "size":5,
+                "count": 1023,
+                "src": "comments"
+            }     
+    return Response(response_data, status=status.HTTP_200_OK)
+
+# Commented API
+@api_view(['GET'])    
+def author_comment_list(request, author_id):
+    author = get_object_or_404(Post, id=author_id)
+    response_data = {
+                "type":"comments",
+                "page":"http://nodebbbb/authors/222/posts/249",
+                "id":"http://nodebbbb/api/authors/222/posts/249/comments",
+                "page_number":1,
+                "size":5,
+                "count": 1023,
+                "src": "comments"
+            }     
+    return Response(response_data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])    
+def author_comment_list_fqid(request, author_id,):
+    author = get_object_or_404(Post, id=author_id)
+    response_data = {
+                "type":"comments",
+                "page":"http://nodebbbb/authors/222/posts/249",
+                "id":"http://nodebbbb/api/authors/222/posts/249/comments",
+                "page_number":1,
+                "size":5,
+                "count": 1023,
+                "src": "comments"
+            }     
+    return Response(response_data, status=status.HTTP_200_OK)

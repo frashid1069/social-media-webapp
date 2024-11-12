@@ -1,34 +1,60 @@
 from django.db import models
 from django.utils import timezone
 from author.models import Author
+from django.db.models import Max
 from django.utils.text import slugify
 import os
 
 class Post(models.Model):
-    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='posts')
     title = models.CharField(max_length=255)
-    content = models.TextField(blank=True, null=True) 
-    content_type = models.CharField(max_length=50, choices=[('text/markdown', 'Markdown'), ('image/jpeg', 'JPEG')])
-    
-    # From https://stackoverflow.com/questions/58144230/how-to-set-image-field-as-optional by govind
-    image_content = models.ImageField(upload_to="post_pics", blank=True, null=True)
-    # database value/ human readable 
-    VISIBILITY_CHOICES = [
-        ('public', 'Public'),
-        ('friend-only', 'Friend Only'),
-        ('unlisted', 'Unlisted'),
+    description = models.TextField(blank=True, null=True)
+    CONTENT_TYPE_CHOICES = [
+        ('text/markdown', 'Markdown'), 
+        ('text/plain', 'UTF-8'),
+        ('image/jpeg', 'jpeg'),
+        ('application/base64', 'jpeg/png'),
+        ('image/png;base64', 'png'),
+        ('image/jpeg;base64', 'jpeg'),
+        ]
+    content_type = models.CharField(max_length=50, choices=CONTENT_TYPE_CHOICES)
+    content = models.TextField(blank=True, null=True)
+    VISIBILITY_CHOICES = [ # database value/ human readable 
+        ('public', 'PUBLIC'),
+        ('friend-only', 'FRIENDS'),
+        ('unlisted', 'UNLISTED'),
     ]
     visibility = models.CharField(max_length=11, choices=VISIBILITY_CHOICES, default='public')
-    
+    '''
+    # From https://stackoverflow.com/questions/58144230/how-to-set-image-field-as-optional by govind
+    image_content = models.ImageField(upload_to="post_pics", blank=True, null=True)
+    '''
+    # READ ONLY
+    type = models.CharField(max_length=10, default="post", editable=False)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='posts')
+    fqid = models.URLField(blank=True, null=True, max_length=200)
+    serial = models.PositiveIntegerField(default=0)
+    comment_count = models.PositiveIntegerField(default=0)
     github_event_id = models.CharField(max_length=100, unique=True, blank=True, null=True)
     image_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
+        
+    
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            # for serial increament
+            self.serial = self.author.post_count + 1
+            self.author.post_count = self.serial
+            self.author.save(update_fields=['post_count']) 
+            # for fqid
+            self.fqid = self.author.fqid + "posts/" + str(self.serial)
+            
+        super(Post, self).save(*args, **kwargs)
     
     def __str__(self):
-        return self.title
-
+        return self.fqid
+'''
 def upload_post_image(instance, filename):
     # - sukh 
     # This function is used to define the file path for uploading an image for a post.
@@ -50,7 +76,7 @@ def upload_post_image(instance, filename):
     # Return the full path where the file will be stored. The file will be placed inside the "post_pics/" directory.
     # os.path.join("post_pics", new_filename) will create a path like "post_pics/my-first-post.jpg".
     return os.path.join("post_pics", new_filename)
-
+'''
 
 
 # Repost Model

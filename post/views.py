@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from author.models import Author
+from author.serializers import AuthorSerializer, Author
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from post.serializers import PostSerializer, RepostSerializer
 from rest_framework.viewsets import ModelViewSet
@@ -12,7 +12,7 @@ from rest_framework import permissions
 from rest_framework.authentication import get_authorization_header
 import base64
 from django.http import HttpResponse
-
+from rest_framework.decorators import api_view
 # Create your views here.
 
 class PostView(ModelViewSet):
@@ -262,3 +262,194 @@ class RepostView(ModelViewSet):
             queryset = queryset.filter(reposted_by=reposted_by_id)
             
         return queryset.order_by("created_at")
+    
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def post_detail(request, post_id, author_id):
+    """
+    URL://service/api/authors/{author_id}/posts/{POST_SERIAL}
+        GET [local, remote] get the public post whose serial is POST_SERIAL
+            friends-only posts: must be authenticated
+        DELETE [local] remove a
+            local posts: must be authenticated locally as the author
+
+    """
+    post = get_object_or_404(Post, id=post_id)
+    author = get_object_or_404(Author, id=author_id)
+    
+    if request.method == 'GET':
+        if post.visibility == 'public' or (post.visibility == 'friends'):
+            response_data = {
+                "type": "post",
+                "title": post.title,
+                "id": post.id,
+                "description": "This post discusses stuff -- brief",
+                "contentType": post.content_type,
+                "content": post.content,
+                "author": AuthorSerializer(author).data,
+                "comments": "comments",  
+                "likes": "likes",        
+                "published": post.created_at,
+                "visibility": post.visibility
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+    
+    
+    elif request.method == 'PUT':
+        if request.user.author.id != author_id:
+            return Response({"detail": "You are not authorized to update this post."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = PostSerializer(post, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()  
+            updated_post = serializer.data
+            updated_response_data = {
+                "type": "post",
+                "title": updated_post['title'],
+                "id": post.id,
+                "description": "This post discusses stuff -- brief",
+                "contentType": updated_post['content_type'],
+                "content": updated_post['content'],
+                "author": AuthorSerializer(author).data,
+                "comments": "comments",  # Placeholder for comments
+                "likes": "likes",        # Placeholder for likes
+                "published": post.created_at,
+                "visibility": updated_post['visibility']
+            }
+            return Response(updated_response_data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'DELETE':
+        if request.user.author.id != author_id:
+            return Response({"detail": "You are not authorized to delete this post."}, status=status.HTTP_403_FORBIDDEN)
+
+        # soft delete the post
+        post.is_deleted = True
+        post.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['POST', 'GET'])
+def post_list(request, author_id):
+    
+    author = get_object_or_404(Author, id=author_id)
+    
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+            is_author = request.user.author.id == author_id
+            is_friend = author.followers_authors.filter(follower=request.user.author).exists()
+            
+            if is_author:
+                posts = Post.objects.filter(author=author)
+            elif is_friend:
+                posts = Post.objects.filter(author=author).filter(visibility__in=['public', 'friends'])
+            else:
+                posts = Post.objects.filter(author=author, visibility='public')
+        else:
+            posts = Post.objects.filter(author=author, visibility='public')
+        
+        serialized_posts = []
+        for post in posts:
+            post_data = {
+                "type": "post",
+                "title": post.title,
+                "id": post.id,
+                "description": "This post discusses stuff -- brief",
+                "contentType": post.content_type,
+                "content": post.content,
+                "author": AuthorSerializer(author).data,
+                "comments": "comments",  # Placeholder for comments
+                "likes": "likes",        # Placeholder for likes
+                "published": post.created_at,
+                "visibility": post.visibility
+            }
+            serialized_posts.append(post_data)
+        # TODO: to_representation and to_internal_value
+        response_data = {
+                "type":"posts",
+                "page_number":23,
+                "size":10,
+                "count": len(posts),
+                "src": serialized_posts
+            }     
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        if not request.user.is_authenticated or request.user.author.id != author_id:
+            return Response({"detail": "You are not authorized to create a post for this author."}, status=status.HTTP_403_FORBIDDEN)
+
+
+        image_file = request.FILES.get('content')
+        
+        
+        if image_file and image_file.content_type == 'image/jpeg':
+            if not image_file:
+                return Response({"error": "An image file is required."},
+                                status=status.HTTP_400_BAD_REQUEST)            
+            # base64 encode
+            image_data = image_file.read()
+            base64_data = base64.b64encode(image_data).decode('utf-8')
+            
+            # request.data is immutable
+            request_data = request.data.copy()
+            request_data['content'] = base64_data
+
+            serializer = PostSerializer(data=request_data)
+        else:   
+            serializer = PostSerializer(data=request.data)
+            
+        if serializer.is_valid():
+            serializer.save(author=author)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+@api_view(['GET'])    
+def post_image(request, post_id, author_id):
+    image_post = get_object_or_404(Post, author=author_id, id=post_id)
+    
+    # if 'image/png;base64' != post.content_type or 'image/jpeg;base64' not in post.content_type
+    if 'image/png' != image_post.content_type or 'image/jpeg' != image_post.content_type:
+        return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    image_binary = base64.b64decode(image_post.content)
+    content_type = image_post.content_type
+    return HttpResponse(image_binary, content_type=content_type)
+
+@api_view(['GET'])    
+def post_image_fqid(request, fqid):
+    image_post = get_object_or_404(Post, id=fqid)
+    
+    # if 'image/png;base64' != post.content_type or 'image/jpeg;base64' not in post.content_type
+    if 'image/png' != image_post.content_type or 'image/jpeg' != image_post.content_type:
+        return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    image_binary = base64.b64decode(image_post.content)
+    content_type = image_post.content_type
+    return HttpResponse(image_binary, content_type=content_type)
+
+
+@api_view(['GET', 'POST'])
+def test(request):
+    if request.method == 'GET':
+        posts = Post.objects.all()
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)
+    
+    elif request.method == 'POST':
+        serializer = PostSerializer(data=request.data)
+        if serializer.is_valid():
+            # Assume the author is already set, or set it here
+            post = serializer.save(author=request.user.author)  # Example: associate with the logged-in user
+            return Response(PostSerializer(post).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def test1(request, pk):
+    try:
+        post = Post.objects.get(pk=pk)
+    except Post.DoesNotExist:
+        return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = PostSerializer(post)
+    return Response(serializer.data)

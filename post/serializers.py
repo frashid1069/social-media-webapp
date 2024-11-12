@@ -3,12 +3,39 @@ from author.serializers import AuthorSerializer
 from .models import Post, Repost
 
 class PostSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=True)
+    id = serializers.URLField(source='fqid', read_only=True)
+    description = serializers.CharField(required=True)
+    contentType = serializers.CharField(source='content_type')
+    content = serializers.CharField(required=True)
+    author = AuthorSerializer(read_only=True)
+    comments = serializers.SerializerMethodField(read_only=True)
+    likes = serializers.SerializerMethodField(read_only=True)
+    published = serializers.DateTimeField(source='created_at', read_only=True)
     
     class Meta:
+        
         model = Post
-        fields = "__all__"
+        fields = [
+            "type",
+            "title",
+            "id",
+            "description",
+            "contentType",
+            "content",
+            "author",
+            "comments",
+            "likes",
+            "published",
+            "visibility",
+        ]
 
-        #exclude = ['created_at', 'updated_at', 'is_deleted']
+    def get_comments(self, obj):
+        # comments = Comment.objects.filter(post=obj)
+        # return CommentSerializer(comments, many=True).data
+        return "comments"
+        
+    
 
     def get_can_share(self, obj):
         # Only public posts are shareable

@@ -17,6 +17,8 @@ from post.models import Post
 from service.models import Follow
 from rest_framework.permissions import AllowAny
 from author.serializers import AuthorSerializer
+from like.serializers import LikeSerializer
+from comment.serializer import CommentSerializer
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
@@ -76,84 +78,8 @@ class SignUp(APIView):
                 
             except IntegrityError:
                 return Response({'error': 'A user with that username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    
-        # If the data is invalid, return the serializer errors
         else:
             return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-        
-# class LikeView(ModelViewSet):
-#     queryset = models.Like.objects
-#     serializer_class = serializers.LikeSerializer
-
-#     @extend_schema(
-#         summary="Retrieve a list of likes",
-#         description="""
-#         Retrieve a list of likes, with optional filtering.
-#         - If `author_id` and `post_id` are provided, returns likes for a particular post made by the specified author.
-#         - If `author_id` is provided, returns all likes made by that author.
-#         - If `post_id` is provided, returns all likes for the specified post.
-#         """,
-#         parameters=[
-#             OpenApiParameter(name="author_id", description="Filter likes by the author's ID", required=False, type=OpenApiTypes.INT),
-#             OpenApiParameter(name="post_id", description="Filter likes by the post's ID", required=False, type=OpenApiTypes.INT),
-#         ],
-#         responses={200: serializers.LikeSerializer(many=True), 400: "Bad Request"},
-#     )
-#     def get_queryset(self):
-#         # Get the base queryset from the parent class
-#         queryset = super().get_queryset()
-#         # Extract query parameters from the request
-#         post_id = self.request.query_params.get('post_id')
-#         author_id = self.request.query_params.get('author_id')
-
-#         # If both 'author_id' and 'post_id' are provided in the request query parameters:
-#         # Filter the queryset to return likes where both the author ID and post ID match
-#         # i.e., likes made by a specific author on a specific post.
-#         # ~post/?author_id=<pk>&post_id=<pk> (likes for a particular post made by a particular author)
-#         if author_id and post_id:
-#             queryset = queryset.filter(author__id=author_id, post__id=post_id)
-
-#         # If only 'author_id' is provided in the query parameters:
-#         # Filter the queryset to return all likes made by that specific author.
-#         # ~post/?author_id=<pk> (all likes made by a particular author)
-#         elif author_id:
-#             queryset = queryset.filter(author__id=author_id)
-        
-#         # If only 'post_id' is provided in the query parameters:
-#         # Filter the queryset to return all likes for the specified post.
-#         # ~post/?post_id=<pk> (all likes for a particular post)
-#         elif post_id:
-#             queryset = queryset.filter(post__id=post_id)
-
-#         return queryset.order_by("created_at") # return the filtered queryset
-    
-#     @extend_schema(
-#         summary="Create a new like",
-#         description="Create a new like for a post by an author.",
-#         request=serializers.LikeSerializer,
-#         responses={201: serializers.LikeSerializer, 400: "Bad Request"},
-#     )
-#     def create(self, request, *args, **kwargs):
-#         return super().create(request, *args, **kwargs)
-    
-#     @extend_schema(
-#         summary="Retrieve a single like",
-#         description="Fetch the details of a like by its ID.",
-#         responses={200: serializers.LikeSerializer, 404: "Not Found"},
-#     )
-#     def retrieve(self, request, *args, **kwargs):
-#         return super().retrieve(request, *args, **kwargs)
-    
-#     @extend_schema(
-#         summary="Delete a like",
-#         description="Delete a like by its ID.",
-#         responses={204: None, 404: "Not Found"},
-#     )
-#     def destroy(self, request, *args, **kwargs):
-#         return super().destroy(request, *args, **kwargs)
-
     
 class FollowView(ModelViewSet):
     queryset = models.Follow.objects
@@ -255,11 +181,56 @@ def inbox(request, AUTHOR_SERIAL):
     """
     
     author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
+    try: 
+        type = request.data.get('type')
+    except:
+        return Response({"error": "Type is not found in the feild."}, status=status.HTTP_400_BAD_REQUEST)
     
-    if request.data.type == 'follow':
+    if type == 'like':
+        object = request.data.get("object")
+        if object is not None and author.fqid in object:
+            sender_host = request.data.get("author", {}).get("host")
+            if sender_host == author.host:
+                sender = get_object_or_404(Author, fqid=request.data.get("author", {}).get("id"))
+
+            # else:
+            # create an author
+        
+            serializer = LikeSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(author=sender)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response({"error": "Object doesn't matched with AUTHOR_SERIAL"},status=status.HTTP_400_BAD_REQUEST)
+    
+    elif type == 'follow':
         print("follow")
+
+    elif type == 'comment':
+        post = request.data.get("post")
+        print(author.fqid)
+        if post is not None and author.fqid in post:
+            sender_host = request.data.get("author", {}).get("host")
+            post = get_object_or_404(Post, fqid=post)
+            if sender_host == author.host:
+                sender = get_object_or_404(Author, fqid=request.data.get("author", {}).get("id"))
+            # else:
+            # create an author
+        
+            serializer = CommentSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(author=sender, post=post)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response({"error": "Post doesn't matched with AUTHOR_SERIAL"},status=status.HTTP_400_BAD_REQUEST)
     
-    return Response(status=status.HTTP_200_OK)
+    elif type == 'post':
+        sender = request.data.get("author", {}).get("displayName")
+        print(f"Received a new post from {sender}")
+        return Response(status=status.HTTP_200_OK)
+        
+    
+    return Response({"error": "Nothing matched"},status=status.HTTP_400_BAD_REQUEST)
 
 
 """

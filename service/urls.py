@@ -17,7 +17,6 @@ router = routers.DefaultRouter()
 #router.register('author', views.AuthorView)
 #router.register('post', views.PostView)
 #router.register('comment', views.CommentView)
-# router.register('like', views.LikeView)
 router.register('follow', views.FollowView)
 
 urlpatterns = [
@@ -26,7 +25,7 @@ urlpatterns = [
     path("signup/",views.SignUp.as_view(), name="signup"),
     path('stream/<int:author_id>/editProfile', views.edit_profile, name='edit_profile'),
     path('authors/<int:pk>/followers', views.get_followers, name='get_followers'),
-    path('authors/<int:pk>/inbox', views.send_follow_request, name='send_follow_request'),
+    # path('authors/<int:pk>/inbox', views.send_follow_request, name='send_follow_request'),
     path('authors/<int:AUTHOR_SERIAL>/inbox', views.inbox, name='inbox')
 ]
 

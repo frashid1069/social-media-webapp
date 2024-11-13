@@ -8,7 +8,7 @@ from like.serializers import Like, LikeSerializer
 class CommentSerializer(serializers.ModelSerializer):
     
     id = serializers.URLField(source='fqid', read_only=True)
-    contentType = serializers.CharField(source='content_type')
+    contentType = serializers.CharField(source='content_type', required=True)
     comment = serializers.CharField(source='content', required=True)
     author = AuthorSerializer(read_only=True)
     likes = serializers.SerializerMethodField(read_only=True)

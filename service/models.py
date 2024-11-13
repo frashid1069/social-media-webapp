@@ -23,10 +23,10 @@ class Follow(models.Model):
     followers_of_author2 = author2.followers.all()  # Returns [author1]'''
     
     # related_name='following' allows you to get all the authors that a particular author is following.
-    follower = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='following_authors')
+    follower = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='following')
     
     # related_name='followers' allows you to get all the users who follow a particular Author via this ForeignKey
-    followed = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='followers_authors')
+    followed = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='followers')
     
     PENDING_CHOICES = [('yes', 'Yes'), ('no', 'No')]
     pending = models.CharField(max_length=10, choices=PENDING_CHOICES, default='yes')

@@ -3,7 +3,7 @@ from . import views
 from rest_framework import routers
 
 router = routers.DefaultRouter()
-# router.register('post', views.PostView)
+router.register('post', views.PostView)
 router.register('repost', views.RepostView)
 urlpatterns = [
     path('', include(router.urls)),
@@ -13,4 +13,6 @@ urlpatterns = [
     # image post api
     path('authors/<int:AUTHOR_SERIAL>/posts/<int:POST_SERIAL>/image', views.post_image, name='post_image'),
     path('posts/<path:POST_FQID>/image', views.post_image, name='fqid_post_image'),
+    path('posts/', views.get_all_visible_post, name='get_all_visible_post')
 ]
+

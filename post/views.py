@@ -27,12 +27,12 @@ class PostPagination(PageNumberPagination):
             queryset = queryset.order_by('created_at')
         return super().paginate_queryset(queryset, request, view=view)
     
-    def get_paginated_response(self, data):
+    def get_paginated_response(self, data, count):
         response_data = {
                 "type":"posts",
                 "page_number":self.page.number,
                 "size": self.get_page_size(self.request),
-                "count": len(data),
+                "count": count,
                 "src": data
             }     
         return Response(response_data, status=status.HTTP_200_OK)
@@ -351,7 +351,7 @@ def post_list(request, AUTHOR_SERIAL):
     if request.method == 'GET':
         if request.user.is_authenticated:
             is_author = request.user.author.serial == AUTHOR_SERIAL
-            is_friend = author.followers_authors.filter(follower=request.user.author).exists()
+            is_friend = author.followers.filter(follower=request.user.author).exists()
             
             if is_author:
                 posts = Post.objects.filter(author=author)
@@ -434,5 +434,23 @@ def post_image(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
 
     else:
         return Response({"detail": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
-        
-        
+
+@api_view(['GET'])        
+def get_all_visible_post(request):
+    """
+    URL ://service/api/posts/
+    """
+    
+    author = request.user.author
+    follow_objects = author.following.filter(pending='no')
+    posts = Post.objects.filter(visibility='public')
+
+    if follow_objects:
+        for follow in follow_objects:    
+            posts = posts | Post.objects.filter(author=follow.followed, visibility='friend-only')
+     
+    # paginator = PostPagination()
+    # paged_posts = paginator.paginate_queryset(posts, request)
+    # paginator.get_paginated_response(serializer.data, len(posts)) 
+    serializer = PostSerializer(posts, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

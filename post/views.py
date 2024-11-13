@@ -14,6 +14,7 @@ import base64
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
+from service.utils.push import push
 
 class PostPagination(PageNumberPagination):
     page_size = 5
@@ -370,13 +371,11 @@ def post_list(request, AUTHOR_SERIAL):
         
 
     elif request.method == 'POST':
-        if not request.user.is_authenticated or request.user.author.id != AUTHOR_SERIAL:
+        if not request.user.is_authenticated or request.user.author.serial != AUTHOR_SERIAL:
             return Response({"detail": "You are not authorized to create a post for this author."}, status=status.HTTP_403_FORBIDDEN)
 
-
+        # handle image post
         image_file = request.FILES.get('content')
-        
-        
         if image_file and image_file.content_type == 'image/jpeg':
             if not image_file:
                 return Response({"error": "An image file is required."},
@@ -395,67 +394,45 @@ def post_list(request, AUTHOR_SERIAL):
             
         if serializer.is_valid():
             serializer.save(author=author)
+            # push to inbox
+            push(author, request, serializer.data)
+           
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 @api_view(['GET'])    
-def post_image(request, POST_SERIAL, AUTHOR_SERIAL):
+def post_image(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/image
+    eg. http://127.0.0.1:8000/api/authors/3/posts/7/image
         GET [local, remote] get the public post converted to binary as an image
         return 404 if not an image
-    """
-    image_post = get_object_or_404(Post, author=AUTHOR_SERIAL, serial=POST_SERIAL)
-    
-    # if 'image/png;base64' != post.content_type or 'image/jpeg;base64' not in post.content_type
-    if 'image/png' != image_post.content_type or 'image/jpeg' != image_post.content_type:
-        return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
-    
-    image_binary = base64.b64decode(image_post.content)
-    content_type = image_post.content_type
-    return HttpResponse(image_binary, content_type=content_type)
-
-@api_view(['GET'])    
-def post_image_fqid(request, fqid):
-    """
     URL: ://service/api/posts/{POST_FQID}/image
+    eg. http://127.0.0.1:8000/api/posts/http://127.0.0.1:8000/api/authors/3/posts/7/image
         GET [local, remote] get the public post converted to binary as an image
         return 404 if not an image
     """
-    image_post = get_object_or_404(Post, id=fqid)
+    if POST_SERIAL is not None and AUTHOR_SERIAL is not None:
+        image_post = get_object_or_404(Post, author=AUTHOR_SERIAL, serial=POST_SERIAL)
+        # if 'image/png;base64' != post.content_type or 'image/jpeg;base64' not in post.content_type
+        if 'image/png' == image_post.content_type or 'image/jpeg' == image_post.content_type:
+            image_binary = base64.b64decode(image_post.content)
+            content_type = image_post.content_type
+            return HttpResponse(image_binary, content_type=content_type)
+        
+        return Response({"detail": "Image not found with AUTHOR_SERIAL/POST_SERIAL."}, status=status.HTTP_404_NOT_FOUND)
     
-    # if 'image/png;base64' != post.content_type or 'image/jpeg;base64' not in post.content_type
-    if 'image/png' != image_post.content_type or 'image/jpeg' != image_post.content_type:
-        return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
-    
-    image_binary = base64.b64decode(image_post.content)
-    content_type = image_post.content_type
-    return HttpResponse(image_binary, content_type=content_type)
+    elif POST_FQID is not None:
+        image_post = get_object_or_404(Post, fqid=POST_FQID)
+        if 'image/png' == image_post.content_type or 'image/jpeg' == image_post.content_type:
+            image_binary = base64.b64decode(image_post.content)
+            content_type = image_post.content_type
+            return HttpResponse(image_binary, content_type=content_type)
+        
+        return Response({"detail": "Image not found with POST_FQID."}, status=status.HTTP_404_NOT_FOUND)
 
-
-@api_view(['GET', 'POST'])
-def test(request):
-    if request.method == 'GET':
-        posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data)
-    
-    elif request.method == 'POST':
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
-            # Assume the author is already set, or set it here
-            post = serializer.save(author=request.user.author)  # Example: associate with the logged-in user
-            return Response(PostSerializer(post).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['GET'])
-def test1(request, pk):
-    try:
-        post = Post.objects.get(pk=pk)
-    except Post.DoesNotExist:
-        return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-    
-    serializer = PostSerializer(post)
-    return Response(serializer.data)
+    else:
+        return Response({"detail": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        

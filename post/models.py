@@ -48,7 +48,10 @@ class Post(models.Model):
             self.author.post_count = self.serial
             self.author.save(update_fields=['post_count']) 
             # for fqid
-            self.fqid = self.author.fqid + "posts/" + str(self.serial)
+            self.fqid = self.author.fqid + "/posts/" + str(self.serial)
+            if 'image' in self.content_type and self.content:
+                self.image_url = self.fqid + "/image"
+            
             
         super(Post, self).save(*args, **kwargs)
     

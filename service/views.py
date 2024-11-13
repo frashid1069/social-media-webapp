@@ -19,6 +19,7 @@ from rest_framework.permissions import AllowAny
 from author.serializers import AuthorSerializer
 from like.serializers import LikeSerializer
 from comment.serializer import CommentSerializer
+import urllib.parse
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
@@ -99,23 +100,15 @@ class FollowView(ModelViewSet):
     
 
 @api_view(['GET'])
-def get_followers(request, pk):
+def get_followers(request, AUTHOR_SERIAL=None):
     '''
     URL: ://service/api/authors/{AUTHOR_SERIAL}/followers
+    eg. http://localhost:8000/api/authors/2/followers
         GET [local, remote]: get a list of authors who are AUTHOR_SERIAL's followers
-    TODO:URL: ://service/api/authors/{AUTHOR_SERIAL}/followers/{FOREIGN_AUTHOR_FQID}
-
-        Note: foreign author ID should be a percent encoded URL of the foreign author. An example URL would be:
-            http://example-node-1/api/authors/178aba49-ca39-4741-b227-f40d072b1222/followers/http%3A%2F%2Fexample-node-2%2Fauthors%2F5f57808f-0bc9-4b3d-bdd1-bb07c976d12d
-        DELETE [local]: remove FOREIGN_AUTHOR_FQID as a follower of AUTHOR_SERIAL (must be authenticated)
-        PUT [local]: Add FOREIGN_AUTHOR_FQID as a follower of AUTHOR_SERIAL (must be authenticated)
-        GET [local, remote] check if FOREIGN_AUTHOR_FQID is a follower of AUTHOR_SERIAL
-            Should return 404 if they're not
-            This is how you can check if follow request is accepted
     '''
     try:
-        author = Author.objects.get(id=pk)
-        followers = author.followers_authors.all()
+        author =  get_object_or_404(Author, serial=AUTHOR_SERIAL)
+        followers = author.followers.all()
 
         authors = [follow.follower for follow in followers]
         serialized_followers = AuthorSerializer(authors, many=True)
@@ -125,48 +118,60 @@ def get_followers(request, pk):
         })
     except Author.DoesNotExist:
         return Response({"detail": "Author not found."}, status=status.HTTP_404_NOT_FOUND)
-    
 
-@api_view(['POST'])
-def send_follow_request(request, pk):
+@api_view(['GET','PUT','DELETE'])
+def foreign_followers(request, AUTHOR_SERIAL=None, FOREIGN_AUTHOR_FQID=None):
     """
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/inbox
-        POST [remote]: send a follow request to AUTHOR_SERIAL
-            AUTHOR_SERIAL will be the object below
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/followers/{FOREIGN_AUTHOR_FQID}
+    eg. http://localhost:8000/api/authors/1/followers/http%3A%2F%2F127.0.0.1%3A8000%2Fapi%2Fauthors%2F3
+        Note: foreign author ID should be a percent encoded URL of the foreign author. An example URL would be:
+            http://example-node-1/api/authors/178aba49-ca39-4741-b227-f40d072b1222/followers/http%3A%2F%2Fexample-node-2%2Fauthors%2F5f57808f-0bc9-4b3d-bdd1-bb07c976d12d
+        DELETE [local]: remove FOREIGN_AUTHOR_FQID as a follower of AUTHOR_SERIAL (must be authenticated)
+        PUT [local]: Add FOREIGN_AUTHOR_FQID as a follower of AUTHOR_SERIAL (must be authenticated)
+        GET [local, remote] check if FOREIGN_AUTHOR_FQID is a follower of AUTHOR_SERIAL
+            Should return 404 if they're not
+            This is how you can check if follow request is accepted
     """
-    try:
-        object_author = Author.objects.get(id=pk)
+    foreign_author_fqid = urllib.parse.unquote(FOREIGN_AUTHOR_FQID)
+    foreign_author = get_object_or_404(Author, fqid=foreign_author_fqid)
+
+    author =  get_object_or_404(Author, serial=AUTHOR_SERIAL)
+    follow_objects = author.followers.all()
+    follow_object = None
+    for follow in follow_objects:
+        if foreign_author.fqid == follow.follower.fqid:
+            follow_object = follow
+            
+    if request.method == "GET":
+        if follow_object and follow_object.pending == 'no':
+                serializer = AuthorSerializer(foreign_author)
+                return Response(serializer.data, status=status.HTTP_200_OK)
         
-        try:
-            actor_author = request.user.author
-        except Author.DoesNotExist:
-            return Response({"detail": "Actor author not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        follow_exists = Follow.objects.filter(follower=actor_author, followed=object_author).exists() # already followed
-        mutual_follow = Follow.objects.filter(follower=object_author, followed=actor_author).exists() # becomes friend if object author followed actor
-
-        if follow_exists and mutual_follow:
-            return Response({"detail": "Authors are already friends."}, status=status.HTTP_200_OK)
-        elif follow_exists:
-            return Response({"detail": "Follow request already exists."}, status=status.HTTP_409_CONFLICT)
-        elif mutual_follow:
-            Follow.objects.create(follower=actor_author, followed=object_author, pending='no')
-            return Response({"detail": f"You are now friends of {object_author.display_name}"}, status=status.HTTP_201_CREATED)
-
-        Follow.objects.create(follower=actor_author, followed=object_author, pending='yes')
-
-        response_data = {
-            "type": "follow",
-            "summary": f"{actor_author.display_name} wants to follow {object_author.display_name}",
-            "actor": AuthorSerializer(actor_author).data,
-            "object": AuthorSerializer(object_author).data,
-        }
-
-        return Response(response_data, status=status.HTTP_201_CREATED)
-
-    except Author.DoesNotExist:
-        return Response({"detail": "Recipient author not found."}, status=status.HTTP_404_NOT_FOUND)
-
+        return Response({"detail": f"You are not a follower of {AUTHOR_SERIAL}."}, status=status.HTTP_404_NOT_FOUND)
+            
+    elif request.method == "PUT":
+        if request.user.author == author:
+            if follow_object and follow_object.pending == 'yes':
+                follow_object.pending = 'no'
+                serializer = AuthorSerializer(foreign_author)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+            return Response({"detail": f"You are already a follower of {AUTHOR_SERIAL}."}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response({"detail": f"Must be authenticated {AUTHOR_SERIAL}."}, status=status.HTTP_403_FORBIDDEN)
+            
+    elif request.method == "DELETE":
+        if request.user.author == author:
+            if follow_object and follow_object.pending == 'no':
+                follow_object.delete()
+                serializer = AuthorSerializer(foreign_author)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            return Response({"detail": f"You are not a follower of {AUTHOR_SERIAL}."}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response({"detail": f"Must be authenticated {AUTHOR_SERIAL}."}, status=status.HTTP_403_FORBIDDEN)
+    
+ 
 @api_view(['POST'])
 def inbox(request, AUTHOR_SERIAL):
     """
@@ -204,7 +209,41 @@ def inbox(request, AUTHOR_SERIAL):
         return Response({"error": "Object doesn't matched with AUTHOR_SERIAL"},status=status.HTTP_400_BAD_REQUEST)
     
     elif type == 'follow':
-        print("follow")
+        """
+        URL: ://service/api/authors/{AUTHOR_SERIAL}/inbox
+            POST [remote]: send a follow request to AUTHOR_SERIAL
+                AUTHOR_SERIAL will be the object below
+        """
+       
+        object_author = author    
+        try:
+            actor_author = request.user.author
+        except Author.DoesNotExist:
+            return Response({"detail": "Actor author not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        follow_exists = Follow.objects.filter(follower=actor_author, followed=object_author).exists() # already followed
+        mutual_follow = Follow.objects.filter(follower=object_author, followed=actor_author).exists() # becomes friend if object author followed actor
+
+        if follow_exists and mutual_follow:
+            return Response({"detail": "Authors are already friends."}, status=status.HTTP_200_OK)
+        elif follow_exists:
+            return Response({"detail": "Follow request already exists."}, status=status.HTTP_409_CONFLICT)
+        elif mutual_follow:
+            Follow.objects.create(follower=actor_author, followed=object_author, pending='no')
+            return Response({"detail": f"You are now friends of {object_author.display_name}"}, status=status.HTTP_201_CREATED)
+
+        Follow.objects.create(follower=actor_author, followed=object_author, pending='yes')
+
+        response_data = {
+            "type": "follow",
+            "summary": f"{actor_author.display_name} wants to follow {object_author.display_name}",
+            "actor": AuthorSerializer(actor_author).data,
+            "object": AuthorSerializer(object_author).data,
+        }
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+        
 
     elif type == 'comment':
         post = request.data.get("post")

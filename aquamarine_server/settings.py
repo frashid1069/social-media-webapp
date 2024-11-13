@@ -197,10 +197,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # # include manifest.json and index.html
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'frontend/build/static'),
-#     os.path.join(BASE_DIR, 'frontend/build/'),
-# ]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend/build/static'),
+    os.path.join(BASE_DIR, 'frontend/build/'),
+]
 
 # change the default templates folder directory
 TEMPLATES = [

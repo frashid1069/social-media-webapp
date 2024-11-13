@@ -23,4 +23,15 @@ class AuthorSerializer(serializers.ModelSerializer):
             "page"
         ]
         
+    def create(self, validated_data):
+        author = Author.objects.create(**validated_data)
+        request = self.context.get('request')
+        if request:
+            fqid = request.build_absolute_uri(f'/api/authors/{author.serial}')
+            author.fqid = fqid
+            author.save()  
+
+        return author
+
+        
 

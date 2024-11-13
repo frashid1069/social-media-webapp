@@ -19,7 +19,7 @@ class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE) # Link to Django's User model
     #TODO: change id
     serial = models.AutoField(primary_key=True)
-    fqid = models.URLField(blank=True, null=True, max_length=200)
+    fqid = models.URLField(blank=True, null=True, max_length=200, unique=True)
     host = models.URLField(blank=True, null=True, max_length=200)
     post_count = models.PositiveIntegerField(default=0)
     like_count = models.PositiveIntegerField(default=0)

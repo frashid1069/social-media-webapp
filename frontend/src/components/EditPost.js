@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../editPost.css";
 
-const apiUrl = process.env.REACT_APP_API_URL;
-
 const EditPost = () => {
     const { AUTHOR_SERIAL, POST_SERIAL } = useParams();
     const [postContent, setPostContent] = useState("");
@@ -15,11 +13,12 @@ const EditPost = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
+    const apiUrl = process.env.REACT_APP_API_URL
 
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await fetch(`authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
+                const response = await fetch(`${apiUrl}authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
                     headers: {
                         "Content-Type": "application/json",
                         "token": token, // Add token to the request headers
@@ -48,10 +47,10 @@ const EditPost = () => {
         event.preventDefault();
         const formData = new FormData();
         formData.append("title", postTitle);
-        formData.append("content_type", postContentType);
+        formData.append("contentType", postContentType);
         formData.append("visibility", visibility);
         // formData.append("author", authorID);
-        formData.append("updated_at", new Date().toISOString());
+        formData.append("published", new Date().toISOString());
 
         if (postContentType === "text/markdown") {
             formData.append("content", postContent);
@@ -59,7 +58,7 @@ const EditPost = () => {
             formData.append("content", selectedImage);
         }
 
-        const response = await fetch(`authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
+        const response = await fetch(`${apiUrl}authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
             method: "PUT",
             headers: {
                 "token": token, // Add token to the request headers for PUT
@@ -83,7 +82,7 @@ const EditPost = () => {
         event.preventDefault();
         const confirmDelete = window.confirm("Are you sure you want to delete this post?");
         if (confirmDelete) {
-            const response = await fetch(`authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
+            const response = await fetch(`${apiUrl}authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
                 method: "DELETE",
                 headers: {
                     "token": token, // Add token for DELETE request

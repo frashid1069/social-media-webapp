@@ -13,8 +13,8 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState("");
-  const { authorId } = useParams();
-  const authorIdInt = parseInt(authorId);
+  const { AUTHOR_SERIAL, POST_SERIAL } = useParams();
+  const authorIdInt = parseInt(AUTHOR_SERIAL);
   const [hasReposted, setHasReposted] = useState(false);
   const token = localStorage.getItem('token'); 
   const [reposted_by, setRepostedBy] = useState("");
@@ -56,19 +56,22 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
 
   // Fetch likes for the post
   const cusFetchLikes = () => {
-    cusFetch(`${apiUrl}like/`)
+    cusFetch(`${apiUrl}authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/likes/`)
       .then((response) => response.json())
       .then((data) => {
-        const postLikes = data.filter((like) => like.post === post.id);
-        setLikes(postLikes);
-        const userLiked = postLikes.some((like) => like.author === authorIdInt);
-        setLiked(userLiked);
+        const postLikes = [];
+        if (data.src.length > 0) {
+          postLikes = [...data.src]
+          setLikes(postLikes);
+          const userLiked = postLikes.some((like) => like.author.id === `${apiUrl}authors/${AUTHOR_SERIAL}`);
+          setLiked(userLiked);
+        }
       });
   };
 
   useEffect(() => {
     cusFetchLikes();
-  }, [post.id, authorIdInt, hasReposted]);
+  }, [hasReposted]);
 
   // Check if the post is viewable by the current user based on visibility and friendship
   const canViewPost = post.visibility !== "friend-only" || isFriend;
@@ -127,18 +130,21 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
   //     : `http://localhost:8000${post.image_content}`
   //   : null;
   const imageURL = post.image_url || null;
+  const myProfile = cusFetch(`${apiUrl}authors/${authorIdInt}/`).then((response) => response.json())
 
   const handleLike = async () => {
     if (!liked) {
-      const response = await cusFetch(`${apiUrl}like/`, {
+      const likeObject = {
+        author: myProfile,
+        object: post,
+      };
+
+      const response = await cusFetch(`${apiUrl}authors/${AUTHOR_SERIAL}/inbox`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          author: authorIdInt,
-          post: post.id,
-        }),
+        body: JSON.stringify(likeObject),
       });
 
       if (response.ok) {
@@ -227,11 +233,6 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
           </button>
         )}
         {!isRepost && !hasReposted && (
-          <button className="btn-repost" onClick={(e) => { e.stopPropagation(); handleRepost(); }}>
-            Repost
-          </button>
-        )}
-        {isRepost && !hasReposted && (
           <button className="btn-repost" onClick={(e) => { e.stopPropagation(); handleRepost(); }}>
             Repost
           </button>

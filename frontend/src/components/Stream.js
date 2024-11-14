@@ -15,6 +15,7 @@ import { cusFetch } from "./Login";
 export default function Stream() {
   const apiUrl = process.env.REACT_APP_API_URL;
   const [posts, setPosts] = useState([]);
+  const [editablePosts, setEditablePosts] = useState([]);
   const [follows, setFollows] = useState([]);
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
@@ -29,16 +30,17 @@ export default function Stream() {
 
   // Get the posts list
   useEffect(() => {
-    fetch(apiUrl + "posts/", {
-      method: "GET",
-      headers: {
-        "token": `${token}`,
-        "Content-Type": "application/json",
-      },
-    })
+    cusFetch(`${apiUrl}posts/`)
       .then((response) => response.json())
       .then((data) => setPosts3(data.src));
   }, [apiUrl, token]);
+  
+  // get the posts owned by the current user
+  useEffect(() => {
+    cusFetch(`${apiUrl}authors/${authorIdInt}/posts/`)
+      .then((response) => response.json())
+      .then((data) => setEditablePosts(data.src));
+  }, [apiUrl, authorIdInt]);
 
   // // Get the follows list
   // useEffect(() => {
@@ -251,9 +253,7 @@ export default function Stream() {
   const sortedAllPosts = posts
     .sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime());
 
-  const editablePosts = posts.filter(
-    (post) => matchesAuthor(post, authorIdInt) && !post.isRepost
-  );
+
   const sortedEditablePosts = editablePosts
     .sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime());
 

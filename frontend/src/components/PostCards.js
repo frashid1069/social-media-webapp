@@ -73,20 +73,15 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
   // Check if the post is viewable by the current user based on visibility and friendship
   const canViewPost = post.visibility !== "friend-only" || isFriend;
 
-  // Functionality for matchAuthor
-  const matchAuthor = (authorId) => {
-    const author = authors.find((a) => a.id === authorId);
-    return author ? author.display_name : "Unknown Author";
+  // get the author's display name for the post
+  const displayAuthor = (post) => {
+    const author = post.author
+    return author.displayName
   };
 
-  // Filter comments for the post
-  const matchedComments = comments.filter((comment) => comment.post === post.id);
+  // get comments for the post
+  const matchedComments = post.comments;
 
-  const goEdit = () => {
-    if (editable) {
-      navigate(`/stream/${post.author}/${post.id}/edit`);
-    }
-  };
 
   const goProfile = () => {
     navigate(`/stream/${post.author}/profile`);
@@ -218,7 +213,7 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
       <h3 className="post-card-title">{post.title}</h3>
       <div className="btn-container">
         <button className="post-card-author" onClick={(e) => { e.stopPropagation(); goProfile(); }}>
-          {matchAuthor(post.author)}
+          {displayAuthor(post)}
         </button>
         <button className="btn-like" onClick={(e) => { e.stopPropagation(); handleLike(); }}>
           {liked ? "Liked" : "Like"} ({likes.length})

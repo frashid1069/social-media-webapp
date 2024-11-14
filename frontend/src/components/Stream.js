@@ -29,7 +29,7 @@ export default function Stream() {
 
   // Get the posts list
   useEffect(() => {
-    fetch(apiUrl + "post/", {
+    fetch(apiUrl + "posts/", {
       method: "GET",
       headers: {
         "token": `${token}`,
@@ -37,7 +37,7 @@ export default function Stream() {
       },
     })
       .then((response) => response.json())
-      .then((data) => setPosts3(data));
+      .then((data) => setPosts3(data.src));
   }, [apiUrl, token]);
 
   // // Get the follows list
@@ -219,36 +219,36 @@ export default function Stream() {
   const isFriend = (post) =>
     friendsAuthorsId.includes(post.author) || post.author === authorIdInt;
 
-  // Define helper functions
-  const matchUndelete = (post) => post.is_deleted === false;
+  // // Define helper functions
+  // const matchUndelete = (post) => post.is_deleted === false;
 
-  const matchesPublic = (post) => post.visibility.toLowerCase() === "public";
+  // const matchesPublic = (post) => post.visibility.toLowerCase() === "public";
 
   const matchesAuthor = (post, id) => post.author === id;
 
-  const matchesUnlisted = (post) => post.visibility.toLowerCase() === "unlisted";
+  // const matchesUnlisted = (post) => post.visibility.toLowerCase() === "unlisted";
 
-  // Allow authors to view their own friends-only posts
-  const matchesFriendAuthor = (post) =>
-    post.visibility.toLowerCase() === "friend-only" &&
-    (friendsAuthorsId.includes(post.author) || post.author === authorIdInt);
+  // // Allow authors to view their own friends-only posts
+  // const matchesFriendAuthor = (post) =>
+  //   post.visibility.toLowerCase() === "friend-only" &&
+  //   (friendsAuthorsId.includes(post.author) || post.author === authorIdInt);
 
-  // Filter posts to show posts belonging to the current user, public posts,
-  // unlisted posts belonging to authors that the current user follows, friend-only posts belonging to friends
-  const visiblePosts = posts.filter(
-    (post) =>
-      matchUndelete(post) &&
-      (matchesPublic(post) ||
-        matchesAuthor(post, authorIdInt) || // Ensures the author can see their own posts
-        matchesFriendAuthor(post) ||
-        (matchesUnlisted(post) &&
-          follows.some(
-            (follow) =>
-              follow.follower === authorIdInt && follow.followed === post.author
-          )))
-  );
+  // // Filter posts to show posts belonging to the current user, public posts,
+  // // unlisted posts belonging to authors that the current user follows, friend-only posts belonging to friends
+  // const visiblePosts = posts.filter(
+  //   (post) =>
+  //     matchUndelete(post) &&
+  //     (matchesPublic(post) ||
+  //       matchesAuthor(post, authorIdInt) || // Ensures the author can see their own posts
+  //       matchesFriendAuthor(post) ||
+  //       (matchesUnlisted(post) &&
+  //         follows.some(
+  //           (follow) =>
+  //             follow.follower === authorIdInt && follow.followed === post.author
+  //         )))
+  // );
 
-  const sortedAllPosts = visiblePosts
+  const sortedAllPosts = posts
     .sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime());
 
   const editablePosts = posts.filter(

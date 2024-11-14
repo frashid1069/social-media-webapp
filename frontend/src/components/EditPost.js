@@ -5,11 +5,11 @@ import "../editPost.css";
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const EditPost = () => {
-    const { postId } = useParams();
+    const { AUTHOR_SERIAL, POST_SERIAL } = useParams();
     const [postContent, setPostContent] = useState("");
     const [postContentType, setPostContentType] = useState("text/markdown");
     const [postTitle, setPostTitle] = useState("");
-    const [authorID, setAuthorID] = useState("");
+    // const [authorID, setAuthorID] = useState("");
     const [visibility, setVisibility] = useState("public");
     const [selectedImage, setSelectedImage] = useState(null);
     const [error, setError] = useState(null);
@@ -19,7 +19,7 @@ const EditPost = () => {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await fetch(`${apiUrl}post/${postId}/`, {
+                const response = await fetch(`authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
                     headers: {
                         "Content-Type": "application/json",
                         "token": token, // Add token to the request headers
@@ -30,8 +30,8 @@ const EditPost = () => {
                     const data = await response.json();
                     setPostContent(data.content);
                     setPostTitle(data.title);
-                    setAuthorID(data.author);
-                    setPostContentType(data.content_type);
+                    // setAuthorID(data.author);
+                    setPostContentType(data.contentType);
                     setVisibility(data.visibility);
                 } else {
                     setError("Failed to fetch post details. Please check if the post exists or if you have permission.");
@@ -42,7 +42,7 @@ const EditPost = () => {
         };
 
         fetchPost();
-    }, [postId, token]);
+    });
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -50,17 +50,16 @@ const EditPost = () => {
         formData.append("title", postTitle);
         formData.append("content_type", postContentType);
         formData.append("visibility", visibility);
-        formData.append("author", authorID);
+        // formData.append("author", authorID);
         formData.append("updated_at", new Date().toISOString());
 
         if (postContentType === "text/markdown") {
             formData.append("content", postContent);
         } else if (postContentType === "image/jpeg" && selectedImage) {
-            formData.append("content", "");
-            formData.append("image_content", selectedImage);
+            formData.append("content", selectedImage);
         }
 
-        const response = await fetch(`${apiUrl}post/${postId}/`, {
+        const response = await fetch(`authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
             method: "PUT",
             headers: {
                 "token": token, // Add token to the request headers for PUT
@@ -70,21 +69,21 @@ const EditPost = () => {
 
         if (response.ok) {
             alert("Post updated successfully");
-            navigate(`/stream/${authorID}`);
+            navigate(`/stream/${AUTHOR_SERIAL}`);
         } else {
             alert("Failed to update post. Please try again.");
         }
     };
 
     const closeEdit = () => {
-        navigate(`/stream/${authorID}`);
+        navigate(`/stream/${AUTHOR_SERIAL}`);
     };
 
     const deletePost = async (event) => {
         event.preventDefault();
         const confirmDelete = window.confirm("Are you sure you want to delete this post?");
         if (confirmDelete) {
-            const response = await fetch(`${apiUrl}post/${postId}/`, {
+            const response = await fetch(`authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
                 method: "DELETE",
                 headers: {
                     "token": token, // Add token for DELETE request
@@ -93,7 +92,7 @@ const EditPost = () => {
 
             if (response.ok) {
                 alert("Post deleted successfully");
-                navigate(`/stream/${authorID}`);
+                navigate(`/stream/${AUTHOR_SERIAL}`);
             } else {
                 alert("Failed to delete post");
             }
@@ -129,6 +128,10 @@ const EditPost = () => {
                     >
                         <option value="text/markdown">Markdown</option>
                         <option value="image/jpeg">JPEG</option>
+                        {/* <option value="text/plain">UTF-8</option>
+                        <option value="image/jpeg;base64">JPEG</option>
+                        <option value="application/base64">JPEG/PNG</option>
+                        <option value="image/png;base64">PNG</option> */}
                     </select>
                 </div>
                 <div className="form-div">

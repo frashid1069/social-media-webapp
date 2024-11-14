@@ -367,7 +367,7 @@ def post_list(request, AUTHOR_SERIAL):
         paginator = PostPagination()
         paged_posts = paginator.paginate_queryset(posts, request)
         serializer = PostSerializer(paged_posts, many=True)
-        return paginator.get_paginated_response(serializer.data) 
+        return paginator.get_paginated_response(serializer.data,len(serializer.data)) 
         
 
     elif request.method == 'POST':
@@ -453,7 +453,7 @@ def get_all_visible_post(request):
      
     # paginator = PostPagination()
     # paged_posts = paginator.paginate_queryset(posts, request)
-    # paginator.get_paginated_response(serializer.data, len(posts)) 
+    # paginator.get_paginated_response(serializer.data,len(serializer.data), len(posts)) 
     posts = posts.order_by("-updated_at")
     serializer = PostSerializer(posts, many=True)
     response_data = {

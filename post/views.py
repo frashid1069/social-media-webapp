@@ -24,7 +24,7 @@ class PostPagination(PageNumberPagination):
     # sorting
     def paginate_queryset(self, queryset, request, view=None):
         if not queryset.ordered:
-            queryset = queryset.order_by('created_at')
+            queryset = queryset.order_by('updated_at')
         return super().paginate_queryset(queryset, request, view=view)
     
     def get_paginated_response(self, data, count):
@@ -443,14 +443,22 @@ def get_all_visible_post(request):
     
     author = request.user.author
     follow_objects = author.following.filter(pending='no')
-    posts = Post.objects.filter(visibility='public')
-
-    if follow_objects:
-        for follow in follow_objects:    
-            posts = posts | Post.objects.filter(author=follow.followed, visibility='friend-only')
+    posts = Post.objects.filter(visibility='public') # all public
+    posts = posts | Post.objects.filter(author=author) # all mine
+    
+    if follow_objects: 
+        for follow in follow_objects:
+            if follow.pending == 'no':    
+                posts = posts | Post.objects.filter(author=follow.followed, visibility__in=['unlisted', 'friends-only'])
      
     # paginator = PostPagination()
     # paged_posts = paginator.paginate_queryset(posts, request)
     # paginator.get_paginated_response(serializer.data, len(posts)) 
+    posts = posts.order_by("-updated_at")
     serializer = PostSerializer(posts, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    response_data = {
+            "type":"posts",
+            "count": len(serializer.data),
+            "src": serializer.data
+        }
+    return Response(response_data, status=status.HTTP_200_OK)

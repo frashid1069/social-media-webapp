@@ -146,7 +146,7 @@
         "pk": 3,
         "fields": {
             "author": 1,
-            "title": "author1-friend-only",
+            "title": "author1-friends-only",
             "content": "This is my first post!",
             "content_type": "text/markdown",
             "serial": 3,
@@ -154,7 +154,7 @@
             "description": "Mock data",
             "created_at": "2024-10-14T12:30:00Z",
             "updated_at": "2024-10-14T12:30:00Z",
-            "visibility": "friend-only"
+            "visibility": "friends-only"
         }
     },
     {
@@ -177,6 +177,38 @@
         "model": "post.post",
         "pk": 5,
         "fields": {
+            "author": 2,
+            "title": "author2-unlisted",
+            "content": "Sharing my experiences in the world of data science.",
+            "content_type": "text/markdown",
+            "serial": 2,
+            "fqid":"http://127.0.0.1:8000/api/authors/2/posts/2",
+            "description": "Mock data",
+            "created_at": "2024-10-14T12:40:00Z",
+            "updated_at": "2024-10-14T12:40:00Z",
+            "visibility": "unlisted"
+        }
+    },
+    {
+        "model": "post.post",
+        "pk": 6,
+        "fields": {
+            "author": 2,
+            "title": "author2-friends-only",
+            "content": "Sharing my experiences in the world of data science.",
+            "content_type": "text/markdown",
+            "serial": 3,
+            "fqid":"http://127.0.0.1:8000/api/authors/2/posts/3",
+            "description": "Mock data",
+            "created_at": "2024-10-14T12:40:00Z",
+            "updated_at": "2024-10-14T12:40:00Z",
+            "visibility": "friends-only"
+        }
+    },
+    {
+        "model": "post.post",
+        "pk": 7,
+        "fields": {
             "author": 3,
             "title": "author3-public",
             "content": "Here are some cool Python tips.",
@@ -191,10 +223,10 @@
     },
     {
         "model": "post.post",
-        "pk": 6,
+        "pk": 8,
         "fields": {
             "author": 3,
-            "title": "author3-friend-only",
+            "title": "author3-friends-only",
             "content": "This is my first post!",
             "content_type": "text/markdown",
             "serial": 2,
@@ -202,12 +234,12 @@
             "description": "Mock data",
             "created_at": "2024-10-14T12:30:00Z",
             "updated_at": "2024-10-14T12:30:00Z",
-            "visibility": "friend-only"
+            "visibility": "friends-only"
         }
     },
     {
         "model": "post.post",
-        "pk": 7,
+        "pk": 9,
         "fields": {
             "author": 3,
             "title": "author3-unlisted",

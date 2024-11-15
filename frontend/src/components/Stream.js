@@ -24,15 +24,25 @@ export default function Stream() {
   const authorIdInt = parseInt(authorId);
   const [reposts, setReposts] = useState([]);
   const [posts2, setPosts2] = useState([]);
-  const [posts3, setPosts3] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const follow_id = localStorage.getItem("follow_id");
+  const [streamPosts, setstreamPosts] = useState([]);
+
+  function getAuthorId(url) {
+    const authorMatch = url.match(/authors\/(\d+)/);
+    return authorMatch ? authorMatch[1] : null;       // Returns author ID or null if not found
+  }
+  
+  function getPostId(url) {
+    const postMatch = url.match(/posts\/(\d+)/);
+    return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
+  }
 
   // Get the posts list
   useEffect(() => {
     cusFetch(`${apiUrl}posts/`)
       .then((response) => response.json())
-      .then((data) => setPosts3(data.src));
+      .then((data) => setstreamPosts(data.src));
   }, [apiUrl, token]);
   
   // get the posts owned by the current user
@@ -202,11 +212,11 @@ export default function Stream() {
 
   useEffect(() => {
     const combinedPosts = [
-      ...posts3.map((post) => ({ ...post, isRepost: false })), // Add isRepost property to original posts
+      ...streamPosts.map((post) => ({ ...post, isRepost: false })), // Add isRepost property to original posts
       ...posts2,
     ];
     setPosts(combinedPosts);
-  }, [posts3, posts2]);
+  }, [streamPosts, posts2]);
 
   // Determine mutual friends for friend-only posts
   const followingAuthorsId = follows
@@ -332,8 +342,8 @@ export default function Stream() {
               editable={false}
               onClick={() =>
                 isVisible
-                  ? navigate(`/posts/${post.id}`)
-                  : navigate(`/stream/${authorId}/${post.id}/edit`)
+                  ? navigate(`authors/${getAuthorId(post.id)}/posts/${getPostId(post.id)}`)
+                  : navigate(`/stream/${getAuthorId(post.id)}/${getAuthorId(post.id)}/edit`)
               }
               canShare={post.can_share}
               isRepost={post.isRepost}
@@ -352,8 +362,8 @@ export default function Stream() {
               editable={true}
               onClick={() =>
                 isVisible
-                  ? navigate(`/posts/${post.id}`)
-                  : navigate(`/stream/${authorId}/${post.id}/edit`)
+                  ? navigate(`authors/${getAuthorId(post.id)}/posts/${getPostId(post.id)}`)
+                  : navigate(`/stream/${getAuthorId(post.id)}/${getPostId(post.id)}/edit`)
               }
               canShare={post.can_share}
               isRepost={post.isRepost}

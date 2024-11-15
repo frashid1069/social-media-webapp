@@ -193,7 +193,7 @@ def inbox(request, AUTHOR_SERIAL):
     
     if type == 'like':
         object = request.data.get("object")
-        if object is not None and author.fqid in object:
+        if object is not None and str(author.host) in object:
             sender_host = request.data.get("author", {}).get("host")
             if sender_host == author.host:
                 sender = get_object_or_404(Author, fqid=request.data.get("author", {}).get("id"))

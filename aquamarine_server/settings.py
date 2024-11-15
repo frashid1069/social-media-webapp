@@ -26,9 +26,11 @@ SECRET_KEY = 'django-insecure-5mbcvr_@qaxbenyqqp)1+1n3zx05h#fp^9s__oj5r4a%k@b*ll
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-# ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
+STATIC_ROOT = BASE_DIR / "frontend/build/static" 
+STATIC_URL = "/static/"
 
 # Application definition
 
@@ -199,7 +201,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # # include manifest.json and index.html
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'frontend/build/static'),
-    os.path.join(BASE_DIR, 'frontend/build/'),
 ]
 
 # change the default templates folder directory

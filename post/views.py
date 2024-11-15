@@ -15,6 +15,7 @@ from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from service.utils.push import push
+from service.utils.check_friend import check_friend
 
 class PostPagination(PageNumberPagination):
     page_size = 5
@@ -308,8 +309,15 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
     else:
         return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
     
+    
     if request.method == 'GET':
-        serializer = PostSerializer(post)        
+        serializer = PostSerializer(post)
+        if serializer.data.get("visibility") == "friends-only":
+            if check_friend(author, request.user.author) or request.user.author == author:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"detail": "You are not authorized to get this post."}, status=status.HTTP_403_FORBIDDEN)
+               
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     elif request.method == 'PUT':
@@ -349,16 +357,10 @@ def post_list(request, AUTHOR_SERIAL):
     author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
     
     if request.method == 'GET':
-        if request.user.is_authenticated:
-            is_author = request.user.author.serial == AUTHOR_SERIAL
-            is_friend = author.followers.filter(follower=request.user.author).exists()
-            
-            if is_author:
-                posts = Post.objects.filter(author=author)
-            elif is_friend:
-                posts = Post.objects.filter(author=author).filter(visibility__in=['public', 'friends'])
-            else:
-                posts = Post.objects.filter(author=author, visibility='public')
+        if request.user.author == author:
+            posts = Post.objects.filter(author=author)
+        elif check_friend(request.user.author, author):
+            posts = Post.objects.filter(author=author).filter(visibility__in=['public', 'friends-only'])
         else:
             posts = Post.objects.filter(author=author, visibility='public')
              
@@ -448,12 +450,13 @@ def get_all_visible_post(request):
     
     if follow_objects: 
         for follow in follow_objects:
-            if follow.pending == 'no':    
-                posts = posts | Post.objects.filter(author=follow.followed, visibility__in=['unlisted', 'friends-only'])
+            if follow.pending == 'no':
+
+                if check_friend(follow.followed, author):
+                    posts = posts | Post.objects.filter(author=follow.followed, visibility__in=['unlisted', 'friends-only'])
+                else:
+                    posts = posts | Post.objects.filter(author=follow.followed, visibility='unlisted')
      
-    # paginator = PostPagination()
-    # paged_posts = paginator.paginate_queryset(posts, request)
-    # paginator.get_paginated_response(serializer.data, len(posts)) 
     posts = posts.order_by("-updated_at")
     serializer = PostSerializer(posts, many=True)
     response_data = {

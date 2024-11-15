@@ -27,8 +27,8 @@ class AuthorSerializer(serializers.ModelSerializer):
         author = Author.objects.create(**validated_data)
         request = self.context.get('request')
         if request:
-            fqid = request.build_absolute_uri(f'/api/authors/{author.serial}')
-            author.fqid = fqid
+            host = request.build_absolute_uri(f'/api/')
+            author.host = host
             author.save()  
 
         return author

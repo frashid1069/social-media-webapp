@@ -21,6 +21,7 @@ class BaseAPITestCase(APITestCase):
         users = User.objects.all()
         user = User.objects.create_user(username=f"testuser{len(users)}", password="password")
         author = Author.objects.create(user=user, username=f"testauthor{len(users)}", display_name=f"Test Author {len(users)}")
+        author.fqid = f"http://testserver/api/authors/{author.serial}"
         return user, author
 
     def login_and_get_token(self):

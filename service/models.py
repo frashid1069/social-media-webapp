@@ -16,6 +16,10 @@ from comment.models import Comment
 #     def __str__(self):
 #         return f"Like by {self.author} on {self.post}"
 
+class Node(models.Model):
+    url = models.URLField(max_length = 100, editable = True)
+    is_allowed = models.BooleanField(default = False)
+
 class Follow(models.Model):
     '''Follower.objects.create(follower=author1, followed=author2) 
     => author1 follows author2

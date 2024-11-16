@@ -22,8 +22,6 @@ export default function Stream() {
   const token = localStorage.getItem("token");
   const { authorId } = useParams();
   const authorIdInt = parseInt(authorId);
-  const [reposts, setReposts] = useState([]);
-  const [posts2, setPosts2] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const follow_id = localStorage.getItem("follow_id");
   const [streamPosts, setstreamPosts] = useState([]);
@@ -42,14 +40,22 @@ export default function Stream() {
   useEffect(() => {
     cusFetch(`${apiUrl}posts/`)
       .then((response) => response.json())
-      .then((data) => setstreamPosts(data.src));
-  }, [apiUrl, token]);
+      .then((data) => {
+        if (data && Object.keys(data).length > 0) {
+          setstreamPosts(data.src);
+        }
+      });
+  });
   
   // get the posts owned by the current user
   useEffect(() => {
     cusFetch(`${apiUrl}authors/${authorIdInt}/posts/`)
       .then((response) => response.json())
-      .then((data) => setEditablePosts(data.src));
+      .then((data) => {
+        if (data && Object.keys(data).length > 0) {
+          setEditablePosts(data.src);
+        }
+      });
   }, [authorIdInt]);
 
   // // Get the follows list
@@ -167,57 +173,6 @@ export default function Stream() {
   };
 
 
-
-  // Fetch reposts
-  useEffect(() => {
-    fetch(`${apiUrl}repost/`, {
-      method: "GET",
-      headers: {
-        "token": `${token}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setReposts(data);
-      });
-  }, [apiUrl, token]);
-
-  useEffect(() => {
-    if (reposts.length > 0) {
-      const postid = reposts.map((repost) => repost.post);
-      fetch(`${apiUrl}post/?ids=${postid.join(",")}`, {
-        method: "GET",
-        headers: {
-          "token": `${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          const repostedPosts = data
-            .filter((post) => postid.includes(post.id))
-            .map((post) => {
-              const repost = reposts.find((r) => r.post === post.id);
-              return {
-                ...post,
-                isRepost: true,
-                repostedBy: repost.reposted_by,
-              };
-            });
-          setPosts2(repostedPosts);
-        });
-    }
-  }, [reposts, apiUrl, token]);
-
-  useEffect(() => {
-    const combinedPosts = [
-      ...streamPosts.map((post) => ({ ...post, isRepost: false })), // Add isRepost property to original posts
-      ...posts2,
-    ];
-    setPosts(combinedPosts);
-  }, [streamPosts, posts2]);
-
   // Determine mutual friends for friend-only posts
   const followingAuthorsId = follows
     .filter((f) => f.follower === authorIdInt)
@@ -260,12 +215,12 @@ export default function Stream() {
   //         )))
   // );
 
-  const sortedAllPosts = posts
-    .sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime());
+  const sortedAllPosts = streamPosts.length > 0 ? 
+    streamPosts.sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime()) : null;
 
 
-  const sortedEditablePosts = editablePosts
-    .sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime());
+  const sortedEditablePosts = editablePosts.length > 0 ? 
+    editablePosts.sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime()) : null;
 
   const goEditableProfile = () => {
     navigate(`/stream/${authorId}/profile`);
@@ -335,7 +290,7 @@ export default function Stream() {
 
       {isVisible && (
         <div className="post-grid">
-          {sortedAllPosts.map((post) => (
+          {sortedAllPosts ? sortedAllPosts.map((post) => (
             <PostCards
               post={post}
               key={post.id}
@@ -350,12 +305,14 @@ export default function Stream() {
               repostedBy={post.repostedBy}
               isFriend={isFriend(post)}
             />
-          ))}
+          )) : 
+            (<p>No posts available.</p>)
+          }
         </div>
       )}
       {!isVisible && (
         <div className="post-grid">
-          {sortedEditablePosts.map((post) => (
+          {sortedEditablePosts ? sortedEditablePosts.map((post) => (
             <PostCards
               post={post}
               key={post.id}
@@ -370,7 +327,9 @@ export default function Stream() {
               repostedBy={post.repostedBy}
               isFriend={isFriend(post)}
             />
-          ))}
+          )) : 
+            (<p>No posts available.</p>)
+          }
         </div>
       )}
     </div>

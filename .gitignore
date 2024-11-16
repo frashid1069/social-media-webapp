@@ -473,3 +473,4 @@ tests/report/
 tests/screenshots/
 
 *.sqlite3
+/staticfiles

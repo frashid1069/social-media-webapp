@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import "../editPost.css";
+import deletePost from "./EditPost";
+import goToStream from "./EditPost"; 
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -9,6 +12,7 @@ export default function PostDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const token = localStorage.getItem("token");
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -34,6 +38,10 @@ export default function PostDetail() {
 
         fetchPost();
     }, [authorId, postId]);
+
+    const goEditPost = () => {
+        navigate(`/stream/${authorId}/${postId}/edit`);
+      };
 
     if (loading) return <p>Loading post...</p>;
     if (error) return <p>{error}</p>;
@@ -63,6 +71,11 @@ export default function PostDetail() {
                     )} */}
                     <p>Posted on: {new Date(post.published).toLocaleString()}</p>
                     {/* <p>Last updated: {new Date(post.updated_at).toLocaleString()}</p> */}
+                    <div className="btn-container">
+                        <button className="edit-btn" type="submit" onClick={goEditPost}>Edit</button>
+                        <button className="delete-btn" type="button" onClick={deletePost}>Delete</button>
+                        <button className="cancel-btn" type="button" onClick={goToStream}>Go Back</button>
+                    </div>
                 </>
             ) : (
                 <p>Post not found.</p>

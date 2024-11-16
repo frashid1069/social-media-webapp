@@ -50,7 +50,7 @@ export default function Stream() {
     cusFetch(`${apiUrl}authors/${authorIdInt}/posts/`)
       .then((response) => response.json())
       .then((data) => setEditablePosts(data.src));
-  }, [apiUrl, authorIdInt]);
+  }, [authorIdInt]);
 
   // // Get the follows list
   // useEffect(() => {

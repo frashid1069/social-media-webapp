@@ -15,10 +15,11 @@ const apiUrl = process.env.REACT_APP_API_URL
 export default function CreatePost() {
   const [postContent, setPostContent] = useState(""); // For Markdown content
   const [postTitle, setPostTitle] = useState("");
+  const [postDescription, setPostDescription] = useState("");
   const [visibility, setVisibility] = useState("public");
   const [selectedImage, setSelectedImage] = useState(null); // To handle image uploads
   const [posttype, setPostType] = useState("post");
-  const { AUTHOR_SERIAL } = useParams();
+  const { authorId } = useParams();
   const navigate = useNavigate();
 
   const handlePostTypeChange = (event) => {
@@ -41,6 +42,7 @@ export default function CreatePost() {
     formData.append("title", postTitle);
     formData.append("content", postContent); // Markdown content
     formData.append("contentType", "text/markdown"); // Setting default type to Markdown
+    formData.append("description", postDescription)
     formData.append("visibility", visibility);
     // formData.append("author", parseInt(authorId));
   
@@ -51,7 +53,7 @@ export default function CreatePost() {
     }
   
     try {
-      const response = await fetch(`${apiUrl}posts/`, {
+      const response = await fetch(`${apiUrl}authors/${authorId}/posts/`, {
         method: "POST",
         headers: {
           "token": `${localStorage.getItem('token')}` // If a token is needed
@@ -60,7 +62,7 @@ export default function CreatePost() {
       });
   
       if (response.ok) {
-        navigate(`/stream/${AUTHOR_SERIAL}`);
+        navigate(`/stream/${authorId}`);
       } else {
         const error = await response.json();
         alert(JSON.stringify(error));
@@ -74,7 +76,7 @@ export default function CreatePost() {
 
   // Handle cancel action
   const cancelPostCreation = () => {
-    navigate(`/stream/${AUTHOR_SERIAL}`);
+    navigate(`/stream/${authorId}`);
   };
 
   // Convert the Markdown content to HTML using "marked"
@@ -103,6 +105,14 @@ export default function CreatePost() {
             placeholder="Title"
             value={postTitle}
             onChange={(e) => setPostTitle(e.target.value)}
+            required
+          />
+          <input
+            className="new-post-description"
+            type="text"
+            placeholder="Description"
+            value={postDescription}
+            onChange={(e) => setPostDescription(e.target.value)}
             required
           />
         </div>

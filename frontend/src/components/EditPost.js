@@ -3,11 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../editPost.css";
 
 const EditPost = () => {
-    const { AUTHOR_SERIAL, POST_SERIAL } = useParams();
+    const { authorId, postId } = useParams();
     const [postContent, setPostContent] = useState("");
     const [postContentType, setPostContentType] = useState("text/markdown");
     const [postTitle, setPostTitle] = useState("");
     // const [authorID, setAuthorID] = useState("");
+    const [postDescription, setPostDescription] = useState("");
     const [visibility, setVisibility] = useState("public");
     const [selectedImage, setSelectedImage] = useState(null);
     const [error, setError] = useState(null);
@@ -18,7 +19,7 @@ const EditPost = () => {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await fetch(`${apiUrl}authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
+                const response = await fetch(`${apiUrl}authors/${authorId}/posts/${postId}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "token": token, // Add token to the request headers
@@ -30,6 +31,7 @@ const EditPost = () => {
                     setPostContent(data.content);
                     setPostTitle(data.title);
                     // setAuthorID(data.author);
+                    setPostDescription(data.description)
                     setPostContentType(data.contentType);
                     setVisibility(data.visibility);
                 } else {
@@ -41,12 +43,13 @@ const EditPost = () => {
         };
 
         fetchPost();
-    });
+    }, [authorId, postId]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         const formData = new FormData();
         formData.append("title", postTitle);
+        formData.append("description", postDescription);
         formData.append("contentType", postContentType);
         formData.append("visibility", visibility);
         // formData.append("author", authorID);
@@ -54,35 +57,36 @@ const EditPost = () => {
 
         if (postContentType === "text/markdown") {
             formData.append("content", postContent);
-        } else if (postContentType === "image/jpeg" && selectedImage) {
+        } 
+        else if (postContentType === "image/jpeg" && selectedImage) {
             formData.append("content", selectedImage);
         }
 
-        const response = await fetch(`${apiUrl}authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
+        const response = await fetch(`${apiUrl}authors/${authorId}/posts/${postId}`, {
             method: "PUT",
             headers: {
-                "token": token, // Add token to the request headers for PUT
+                "token": token, 
             },
             body: formData,
         });
 
         if (response.ok) {
             alert("Post updated successfully");
-            navigate(`/stream/${AUTHOR_SERIAL}`);
+            navigate(`/stream/${authorId}`);
         } else {
             alert("Failed to update post. Please try again.");
         }
     };
 
-    const closeEdit = () => {
-        navigate(`/stream/${AUTHOR_SERIAL}`);
+    const goToStream = () => {
+        navigate(`/stream/${authorId}`);
     };
 
     const deletePost = async (event) => {
         event.preventDefault();
         const confirmDelete = window.confirm("Are you sure you want to delete this post?");
         if (confirmDelete) {
-            const response = await fetch(`${apiUrl}authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/`, {
+            const response = await fetch(`${apiUrl}authors/${authorId}/posts/${postId}`, {
                 method: "DELETE",
                 headers: {
                     "token": token, // Add token for DELETE request
@@ -91,7 +95,7 @@ const EditPost = () => {
 
             if (response.ok) {
                 alert("Post deleted successfully");
-                navigate(`/stream/${AUTHOR_SERIAL}`);
+                navigate(`/stream/${authorId}`);
             } else {
                 alert("Failed to delete post");
             }
@@ -112,6 +116,15 @@ const EditPost = () => {
                         type="text"
                         value={postTitle}
                         onChange={(e) => setPostTitle(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="form-div">
+                    <label>Description:</label>
+                    <input
+                        type="text"
+                        value={postDescription}
+                        onChange={(e) => setPostDescription(e.target.value)}
                         required
                     />
                 </div>
@@ -153,18 +166,18 @@ const EditPost = () => {
                             onChange={(e) => setPostContent(e.target.value)}
                             required
                         />
-                    ) : (
+                        ) : (
                         <input
                             type="file"
                             accept="image/jpeg"
                             onChange={(e) => setSelectedImage(e.target.files[0])}
                             required
-                        />
-                    )}
+                        />)
+                    }
                 </div>
                 <div className="btn-container">
                     <button className="save-btn" type="submit">Save Changes</button>
-                    <button className="cancel-btn" type="button" onClick={closeEdit}>Cancel</button>
+                    <button className="cancel-btn" type="button" onClick={goToStream}>Cancel</button>
                     <button className="delete-btn" type="button" onClick={deletePost}>Delete</button>
                 </div>
             </form>

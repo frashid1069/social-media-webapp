@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from author.serializers import AuthorSerializer, Author
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
-from post.serializers import PostSerializer, RepostSerializer
+from post.serializers import PostSerializer
 from rest_framework.viewsets import ModelViewSet
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from post.models import Post, Repost
+from post.models import Post
 from rest_framework import status, permissions
 from rest_framework import permissions
 from rest_framework.authentication import get_authorization_header
@@ -217,7 +217,6 @@ class PostView(ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         posts = Post.objects.all()
-        reposts = Repost.objects.all()
         return super().list(request, *args, **kwargs)
     
     @action(detail=False, methods=['get'], url_path='image', url_name='get_image')
@@ -237,55 +236,6 @@ class PostView(ModelViewSet):
 
         return HttpResponse(image_binary, content_type=content_type)
 
-
-class RepostView(ModelViewSet):
-    queryset = Repost.objects
-    serializer_class = RepostSerializer
-    
-    def create(self, request, *args, **kwargs):
-        data = request.data
-        print(data)
-        post = data.get('post')
-        reposted_by_id = data.get('reposted_by')
-        
-        if not post or not reposted_by_id:
-            return Response({"error": "Post and reposted_by fields are required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Check if the post exists
-        try:
-            original_post = Post.objects.get(id=post)
-        except Post.DoesNotExist:
-            return Response({"error": "Post does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        
-        try:
-            reposted_by = Author.objects.get(id=reposted_by_id)
-        except Author.DoesNotExist:
-            return Response({"error": "Author does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        repost = Repost.objects.filter(post=original_post, reposted_by=reposted_by).first()
-        
-        if repost:
-            repost.delete()
-            return Response({"message": "Repost removed"}, status=status.HTTP_204_NO_CONTENT)
-        else:
-            repost = Repost(post=original_post, reposted_by=reposted_by)
-            repost.save()
-            serializer = self.get_serializer(repost)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        original_post_id = self.request.query_params.get('post')
-        reposted_by_id = self.request.query_params.get('reposted_by')
-        
-        if original_post_id:
-            queryset = queryset.filter(post=original_post_id)
-        
-        if reposted_by_id:
-            queryset = queryset.filter(reposted_by=reposted_by_id)
-            
-        return queryset.order_by("created_at")
     
 
 @api_view(['GET', 'PUT', 'DELETE'])

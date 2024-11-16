@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from author.models import Author
-from post.models import Post, Repost
+from post.models import Post
 from comment.models import Comment
 
 # Create your models here.

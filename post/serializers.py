@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from author.serializers import AuthorSerializer 
-from .models import Post, Repost
+from .models import Post
 from like.serializers import Like, LikeSerializer
 from comment.serializer import Comment, CommentSerializer
 
@@ -53,11 +53,3 @@ class PostSerializer(serializers.ModelSerializer):
         # Only public posts are shareable
         return obj.visibility == 'public'
         fields = "__all__"
-        
-
-class RepostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Repost
-        fields = "__all__"
-        
-   

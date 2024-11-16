@@ -291,7 +291,7 @@ export default function Stream() {
         <div className="post-grid">
           {!sortedPosts && <p>Loading posts...</p>}
           {sortedPosts && sortedPosts.length === 0 && <p>No posts available.</p>}
-          {sortedPosts.map((post) => (
+          {sortedPosts && sortedPosts.length > 0 && sortedPosts.map((post) => (
             <PostCards
               post={post}
               key={post.id}
@@ -314,7 +314,7 @@ export default function Stream() {
         <div>
           {!sortedEditablePosts && <p>Loading posts...</p>} 
           {sortedEditablePosts && sortedEditablePosts.length === 0 && <p>No posts available.</p>} 
-          {sortedEditablePosts.map((post) => (
+          {sortedEditablePosts && sortedEditablePosts.length > 0 && sortedEditablePosts.map((post) => (
             <PostCards
               post={post}
               key={post.id}

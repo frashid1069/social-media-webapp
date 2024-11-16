@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function PostDetail() {
-    const { postId } = useParams();
+    const { authorId, postId } = useParams();
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -13,9 +13,7 @@ export default function PostDetail() {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                // Using `new URL()` to handle base URL and path correctly
-                const url = new URL(`post/${postId}/`, apiUrl);
-                const response = await fetch(url.toString(), {
+                const response = await fetch(`${apiUrl}authors/${authorId}/posts/${postId}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "token": token,
@@ -35,7 +33,7 @@ export default function PostDetail() {
         };
 
         fetchPost();
-    }, [postId]);
+    }, [authorId, postId]);
 
     if (loading) return <p>Loading post...</p>;
     if (error) return <p>{error}</p>;
@@ -45,27 +43,26 @@ export default function PostDetail() {
             {post ? (
                 <>
                     <h2>{post.title}</h2>
-                    <p>Author: {post.author ? post.author.display_name : "Unknown Author"}</p>
+                    <p>Author: {post.author ? post.author.displayName : "Unknown Author"}</p>
 
-                    {post.content_type === "image/jpeg" ? (
+                    {post.contentType === "image/jpeg" ? (
                         <img
                             src={`data:image/jpeg;base64,${post.content}`}
                             alt={post.title}
                             style={{ maxWidth: "100%", height: "auto" }}
                         />
                     ) : (
-
-                        <div dangerouslySetInnerHTML={{ __html: post.content }}></div>
+                        <div>{post.content}</div>
                     )}
-                    {post.image_content && (
+                    {/* {post.image_content && (
                         <img
                             src={post.image_content}
                             alt={post.title}
                             style={{ maxWidth: "100%", height: "auto" }}
                         />
-                    )}
-                    <p>Posted on: {new Date(post.created_at).toLocaleString()}</p>
-                    <p>Last updated: {new Date(post.updated_at).toLocaleString()}</p>
+                    )} */}
+                    <p>Posted on: {new Date(post.published).toLocaleString()}</p>
+                    {/* <p>Last updated: {new Date(post.updated_at).toLocaleString()}</p> */}
                 </>
             ) : (
                 <p>Post not found.</p>

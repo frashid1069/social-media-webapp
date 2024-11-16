@@ -10,7 +10,6 @@ import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked"; // Import the Markdown library
 import "../loginStyles.css";
-import { cusFetch } from './Login';
 const apiUrl = process.env.REACT_APP_API_URL
 
 export default function CreatePost() {
@@ -19,7 +18,7 @@ export default function CreatePost() {
   const [visibility, setVisibility] = useState("public");
   const [selectedImage, setSelectedImage] = useState(null); // To handle image uploads
   const [posttype, setPostType] = useState("post");
-  const { authorId } = useParams();
+  const { AUTHOR_SERIAL } = useParams();
   const navigate = useNavigate();
 
   const handlePostTypeChange = (event) => {
@@ -41,18 +40,18 @@ export default function CreatePost() {
     const formData = new FormData();
     formData.append("title", postTitle);
     formData.append("content", postContent); // Markdown content
-    formData.append("content_type", "text/markdown"); // Setting default type to Markdown
+    formData.append("contentType", "text/markdown"); // Setting default type to Markdown
     formData.append("visibility", visibility);
-    formData.append("author", parseInt(authorId));
+    // formData.append("author", parseInt(authorId));
   
     // Append the image file if an image is selected
     if (selectedImage) {
       formData.set("content", selectedImage);
-      formData.set("content_type", "image/jpeg");
+      formData.set("contentType", "image/jpeg");
     }
   
     try {
-      const response = await fetch(`${apiUrl}post/`, {
+      const response = await fetch(`${apiUrl}posts/`, {
         method: "POST",
         headers: {
           "token": `${localStorage.getItem('token')}` // If a token is needed
@@ -61,7 +60,7 @@ export default function CreatePost() {
       });
   
       if (response.ok) {
-        navigate(`/stream/${authorId}`);
+        navigate(`/stream/${AUTHOR_SERIAL}`);
       } else {
         const error = await response.json();
         alert(JSON.stringify(error));
@@ -75,7 +74,7 @@ export default function CreatePost() {
 
   // Handle cancel action
   const cancelPostCreation = () => {
-    navigate(`/stream/${authorId}`);
+    navigate(`/stream/${AUTHOR_SERIAL}`);
   };
 
   // Convert the Markdown content to HTML using "marked"

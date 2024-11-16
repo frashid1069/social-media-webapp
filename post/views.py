@@ -369,7 +369,7 @@ def post_list(request, AUTHOR_SERIAL):
         paginator = PostPagination()
         paged_posts = paginator.paginate_queryset(posts, request)
         serializer = PostSerializer(paged_posts, many=True)
-        return paginator.get_paginated_response(serializer.data) 
+        return paginator.get_paginated_response(serializer.data,len(serializer.data)) 
         
 
     elif request.method == 'POST':

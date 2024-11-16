@@ -321,7 +321,7 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     elif request.method == 'PUT':
-        if request.user.author.id != AUTHOR_SERIAL:
+        if request.user.author.serial != AUTHOR_SERIAL:
             return Response({"detail": "You are not authorized to update this post."}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = PostSerializer(post, data=request.data, partial=True)
@@ -332,7 +332,7 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     elif request.method == 'DELETE':
-        if request.user.author.id != AUTHOR_SERIAL:
+        if request.user.author.serial != AUTHOR_SERIAL:
             return Response({"detail": "You are not authorized to delete this post."}, status=status.HTTP_403_FORBIDDEN)
 
         # soft delete the post

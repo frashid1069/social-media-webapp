@@ -14,7 +14,6 @@ import { cusFetch } from "./Login";
  */
 export default function Stream() {
   const apiUrl = process.env.REACT_APP_API_URL;
-  const [posts, setPosts] = useState([]);
   const [editablePosts, setEditablePosts] = useState([]);
   const [follows, setFollows] = useState([]);
   const [isVisible, setIsVisible] = useState(true);
@@ -49,7 +48,7 @@ export default function Stream() {
   
   // get the posts owned by the current user
   useEffect(() => {
-    cusFetch(`${apiUrl}authors/${authorIdInt}/posts/`)
+    cusFetch(`${apiUrl}authors/${authorId}/posts/`)
       .then((response) => response.json())
       .then((data) => {
         if (data && Object.keys(data).length > 0) {
@@ -215,7 +214,7 @@ export default function Stream() {
   //         )))
   // );
 
-  const sortedAllPosts = streamPosts.length > 0 ? 
+  const sortedPosts = streamPosts.length > 0 ? 
     streamPosts.sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime()) : null;
 
 
@@ -290,7 +289,9 @@ export default function Stream() {
 
       {isVisible && (
         <div className="post-grid">
-          {sortedAllPosts ? sortedAllPosts.map((post) => (
+          {!sortedPosts && <p>Loading posts...</p>}
+          {sortedPosts && sortedPosts.length === 0 && <p>No posts available.</p>}
+          {sortedPosts.map((post) => (
             <PostCards
               post={post}
               key={post.id}
@@ -305,14 +306,15 @@ export default function Stream() {
               repostedBy={post.repostedBy}
               isFriend={isFriend(post)}
             />
-          )) : 
-            (<p>No posts available.</p>)
+            ))
           }
         </div>
       )}
       {!isVisible && (
-        <div className="post-grid">
-          {sortedEditablePosts ? sortedEditablePosts.map((post) => (
+        <div>
+          {!sortedEditablePosts && <p>Loading posts...</p>} 
+          {sortedEditablePosts && sortedEditablePosts.length === 0 && <p>No posts available.</p>} 
+          {sortedEditablePosts.map((post) => (
             <PostCards
               post={post}
               key={post.id}
@@ -327,9 +329,8 @@ export default function Stream() {
               repostedBy={post.repostedBy}
               isFriend={isFriend(post)}
             />
-          )) : 
-            (<p>No posts available.</p>)
-          }
+            ))
+          } 
         </div>
       )}
     </div>

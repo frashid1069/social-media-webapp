@@ -7,7 +7,6 @@ const EditPost = () => {
     const [postContent, setPostContent] = useState("");
     const [postContentType, setPostContentType] = useState("text/markdown");
     const [postTitle, setPostTitle] = useState("");
-    // const [authorID, setAuthorID] = useState("");
     const [postDescription, setPostDescription] = useState("");
     const [visibility, setVisibility] = useState("public");
     const [selectedImage, setSelectedImage] = useState(null);
@@ -30,7 +29,6 @@ const EditPost = () => {
                     const data = await response.json();
                     setPostContent(data.content);
                     setPostTitle(data.title);
-                    // setAuthorID(data.author);
                     setPostDescription(data.description)
                     setPostContentType(data.contentType);
                     setVisibility(data.visibility);
@@ -52,7 +50,6 @@ const EditPost = () => {
         formData.append("description", postDescription);
         formData.append("contentType", postContentType);
         formData.append("visibility", visibility);
-        // formData.append("author", authorID);
         formData.append("published", new Date().toISOString());
 
         if (postContentType === "text/markdown") {

@@ -8,7 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-
+build/
 develop-eggs/
 dist/
 downloads/
@@ -120,7 +120,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
@@ -169,7 +168,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-
+build/
 develop-eggs/
 dist/
 downloads/
@@ -469,9 +468,10 @@ docs/locale/
 node_modules/
 tests/coverage_html/
 tests/.coverage*
-
+build/
 tests/report/
 tests/screenshots/
 
 *.sqlite3
 /staticfiles
+.env

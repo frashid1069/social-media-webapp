@@ -13,7 +13,8 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
   const [liked, setLiked] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState("");
   const { AUTHOR_SERIAL, POST_SERIAL } = useParams();
-  const authorIdInt = parseInt(AUTHOR_SERIAL);
+  const { authorId } = useParams();
+  const authorIdInt = parseInt(authorId);
   const [hasReposted, setHasReposted] = useState(false);
   const token = localStorage.getItem('token'); 
   const [reposted_by, setRepostedBy] = useState("");
@@ -48,7 +49,7 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
 
   // Fetch likes for the post
   const cusFetchLikes = () => {
-    cusFetch(`${apiUrl}authors/${AUTHOR_SERIAL}/posts/${POST_SERIAL}/likes/`)
+    cusFetch(`${apiUrl}authors/${getAuthorId(post.id)}/posts/${post.id}/likes/`)
       .then((response) => response.json())
       .then((data) => {
         const postLikes = [];
@@ -99,7 +100,7 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
 
     if (response.ok) {
       setNewCommentContent("");
-      cusFetchComments();
+      // cusFetchComments();
     }
   };
 
@@ -121,7 +122,7 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
         object: post,
       };
 
-      const response = await cusFetch(`${apiUrl}authors/${AUTHOR_SERIAL}/inbox`, {
+      const response = await cusFetch(`${apiUrl}authors/${authorId}/inbox`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

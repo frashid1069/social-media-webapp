@@ -138,6 +138,9 @@ export default function Profile() {
     if(authorId == localStorage.getItem("logged_in_id")) {
       document.getElementById("followButton").hidden = true;
     };
+    if(authorId !== localStorage.getItem("logged_in_id")) {
+      document.getElementById("editButton").hidden = true;
+    };
   };
   return (
     <div className="profile-page">
@@ -147,13 +150,11 @@ export default function Profile() {
       </button>
       <h4 className="profile-txt">Name: </h4>
       <p className="profile-name">{author.displayName}</p>
-      <h4 className="profile-txt">Bio: </h4>
-      <p className="profile-bio">{author.bio}</p>
       <h4 className="profile-txt">Github URL: </h4>
       <p className="profile-git">{author.github}</p>
       <h4 className="profile-txt">Followers: </h4>
       {followerAuthors.map((f)=> (<p>{f}</p>))}
-      <button onClick={handleEditProfile}>Edit Profile</button>
+      <button id = "editButton" onClick={handleEditProfile}>Edit Profile</button>
       {isFollowing ? (
         <button id="unfollowButton" onClick={handleUnfollow}>Unfollow</button>
       ) : (

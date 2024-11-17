@@ -84,16 +84,16 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
 
   const submitComment = async (event) => {
     event.preventDefault();
-    const response = await cusFetch(`${apiUrl}comment/`, {
+    alert(post.id)
+    const response = await cusFetch(`${apiUrl}authors/${authorIdInt}/inbox`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        content: newCommentContent,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        author: authorIdInt,
+        type: "comment",
+        comment: newCommentContent,
+        contentType: "text/markdown",
         post: post.id,
       }),
     });
@@ -113,9 +113,9 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
   };
 
   const imageURL = post.image_url || null;
-  const myProfile = cusFetch(`${apiUrl}authors/${authorIdInt}/`).then((response) => response.json())
 
   const handleLike = async () => {
+    const myProfile = cusFetch(`${apiUrl}authors/${authorIdInt}/`).then((response) => response.json())
     if (!liked) {
       const likeObject = {
         author: myProfile,

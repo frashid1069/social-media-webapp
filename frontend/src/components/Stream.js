@@ -40,7 +40,7 @@ export default function Stream() {
     cusFetch(`${apiUrl}posts/`)
       .then((response) => response.json())
       .then((data) => {
-        if (data && Object.keys(data).length > 0) {
+        if (data && data.src && data.src.length > 0) {
           setstreamPosts(data.src);
         }
       });
@@ -51,7 +51,7 @@ export default function Stream() {
     cusFetch(`${apiUrl}authors/${authorId}/posts/`)
       .then((response) => response.json())
       .then((data) => {
-        if (data && Object.keys(data).length > 0) {
+        if (data && data.src && data.src.length > 0) {
           setEditablePosts(data.src);
         }
       });

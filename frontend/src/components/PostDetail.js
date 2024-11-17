@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../editPost.css";
-import deletePost from "./EditPost";
-import goToStream from "./EditPost"; 
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -39,9 +37,33 @@ export default function PostDetail() {
         fetchPost();
     }, [authorId, postId]);
 
+    const deletePost = async (event) => {
+        event.preventDefault();
+        const confirmDelete = window.confirm("Are you sure you want to delete this post?");
+        if (confirmDelete) {
+            const response = await fetch(`${apiUrl}authors/${authorId}/posts/${postId}`, {
+                method: "DELETE",
+                headers: {
+                    "token": token, // Add token for DELETE request
+                },
+            });
+
+            if (response.ok) {
+                alert("Post deleted successfully");
+                navigate(`/stream/${authorId}`);
+            } else {
+                alert("Failed to delete post");
+            }
+        }
+    };
+
     const goEditPost = () => {
         navigate(`/stream/${authorId}/${postId}/edit`);
-      };
+    };
+
+    const goToStream = () => {
+        navigate(`/stream/${authorId}`);
+    };
 
     if (loading) return <p>Loading post...</p>;
     if (error) return <p>{error}</p>;

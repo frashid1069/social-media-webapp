@@ -8,7 +8,6 @@ import { cusFetch } from './Login';
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function PostCards({ post, editable, isRepost, repostedBy, onClick, isFriend }) {
-  const [authors, setAuthors] = useState([]);
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
@@ -21,6 +20,16 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
 
   const navigate = useNavigate();
 
+  
+  function getAuthorId(url) {
+    const authorMatch = url.match(/authors\/(\d+)/);
+    return authorMatch ? authorMatch[1] : null;       // Returns author ID or null if not found
+  }
+  
+  function getPostId(url) {
+    const postMatch = url.match(/posts\/(\d+)/);
+    return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
+  }
   // Fetch repostedBy author info if post is a repost
   useEffect(() => {
     if (isRepost) {
@@ -36,23 +45,6 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
     }
   }, [isRepost, repostedBy, token]);
 
-  // Fetch list of authors
-  useEffect(() => {
-    cusFetch(`${apiUrl}author/`)
-      .then((response) => response.json())
-      .then((data) => setAuthors(data));
-  }, []);
-
-  // Fetch comments
-  useEffect(() => {
-    cusFetchComments();
-  }, []);
-
-  const cusFetchComments = () => {
-    cusFetch(`${apiUrl}comment/`)
-      .then((response) => response.json())
-      .then((data) => setComments(data));
-  };
 
   // Fetch likes for the post
   const cusFetchLikes = () => {
@@ -73,8 +65,6 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
     cusFetchLikes();
   }, [hasReposted]);
 
-  // Check if the post is viewable by the current user based on visibility and friendship
-  const canViewPost = post.visibility !== "friend-only" || isFriend;
 
   // get the author's display name for the post
   const displayAuthor = (post) => {
@@ -87,12 +77,9 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
 
 
   const goProfile = () => {
-    navigate(`/stream/${post.author}/profile`);
+    navigate(`/stream/${getAuthorId(post.id)}/profile`);
   };
 
-  const goToLikesPage = () => {
-    navigate(`/stream/${post.author}/${post.id}/likes`);
-  };
 
   const submitComment = async (event) => {
     event.preventDefault();
@@ -124,11 +111,6 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
     return { __html: marked(post.content || "") };
   };
 
-  // const imageURL = post.image_content
-  //   ? post.image_content.startsWith("http")
-  //     ? post.image_content
-  //     : `http://localhost:8000${post.image_content}`
-  //   : null;
   const imageURL = post.image_url || null;
   const myProfile = cusFetch(`${apiUrl}authors/${authorIdInt}/`).then((response) => response.json())
 
@@ -210,9 +192,7 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
     }
   };
 
-  if (!canViewPost) {
-    return null;
-  }
+
 
   return (
     <div key={post.id} className="post-card" onClick={onClick} style={{ cursor: "pointer" }}>
@@ -224,9 +204,6 @@ export default function PostCards({ post, editable, isRepost, repostedBy, onClic
         <button className="btn-like" onClick={(e) => { e.stopPropagation(); handleLike(); }}>
           {liked ? "Liked" : "Like"} ({likes.length})
         </button>
-        {/* <button className="btn-show-likes" onClick={(e) => { e.stopPropagation(); goToLikesPage(); }}>
-          Show Likes
-        </button> */}
         {post.visibility === "public" && (
           <button className="btn-share" onClick={(e) => { e.stopPropagation(); handleShare(); }}>
             Share

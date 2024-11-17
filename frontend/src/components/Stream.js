@@ -4,6 +4,16 @@ import "../streamStyle.css";
 import PostCards from "./PostCards";
 import { cusFetch } from "./Login";
 
+export const getAuthorId = (url) => {
+    const authorMatch = url.match(/authors\/(\d+)/);
+    return authorMatch ? authorMatch[1] : null;       // Returns author ID or null if not found
+  }
+  
+export const getPostId = (url) => {
+    const postMatch = url.match(/posts\/(\d+)/);
+    return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
+  }
+
 /**
  * This is a component for displaying the personal stream page by using PostCards component.
  * Click Profile button => go to profile page
@@ -25,15 +35,6 @@ export default function Stream() {
   const follow_id = localStorage.getItem("follow_id");
   const [streamPosts, setstreamPosts] = useState([]);
 
-  function getAuthorId(url) {
-    const authorMatch = url.match(/authors\/(\d+)/);
-    return authorMatch ? authorMatch[1] : null;       // Returns author ID or null if not found
-  }
-  
-  function getPostId(url) {
-    const postMatch = url.match(/posts\/(\d+)/);
-    return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
-  }
 
   // Get the posts list
   useEffect(() => {
@@ -302,8 +303,6 @@ export default function Stream() {
                   : navigate(`/stream/${getAuthorId(post.id)}/${getAuthorId(post.id)}/edit`)
               }
               canShare={post.can_share}
-              isRepost={post.isRepost}
-              repostedBy={post.repostedBy}
               isFriend={isFriend(post)}
             />
             ))
@@ -325,8 +324,6 @@ export default function Stream() {
                   : navigate(`/stream/${getAuthorId(post.id)}/${getPostId(post.id)}/edit`)
               }
               canShare={post.can_share}
-              isRepost={post.isRepost}
-              repostedBy={post.repostedBy}
               isFriend={isFriend(post)}
             />
             ))

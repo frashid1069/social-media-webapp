@@ -130,6 +130,12 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+    # DATABASES = {
+    # 'default': {
+    # 'ENGINE': 'django.db.backends.sqlite3',
+    # 'NAME': BASE_DIR / 'db.sqlite3',
+    # }
+    # }
 
 
 # Password validation
@@ -166,6 +172,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = 'static/'
 
 # Default primary key field type

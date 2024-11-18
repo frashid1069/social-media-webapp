@@ -20,6 +20,8 @@ from author.serializers import AuthorSerializer
 from like.serializers import LikeSerializer
 from comment.serializer import CommentSerializer
 import urllib.parse
+import requests
+from rest_framework.exceptions import ValidationError
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
@@ -42,13 +44,13 @@ class Login(APIView):
             if not check_password(password, author.user.password):
                  return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
             
-            token = create_token({'id': author.user.id, 'username': author.user.username}, 100000)
+            token = create_token({'id': author.serial, 'username': author.username}, 100000)
 
             return Response({
                 'token': token,
                 'user': {
-                    'id': author.user.id,
-                    'username': author.user.username,
+                    'id': author.serial,
+                    'username': author.username,
                     'display_name': author.display_name,
                 }
             }, status=status.HTTP_200_OK)
@@ -61,23 +63,22 @@ class SignUp(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
-        serializer = serializers.SignUpSerializer(data=request.data)
-        
+        serializer = serializers.SignUpSerializer(data=request.data, context={'host': request.build_absolute_uri('/')})
         if serializer.is_valid():
             try:
                 author = serializer.save()
-                token = create_token({'id': author.user.id, 'username': author.user.username}, 100000000)
+                token = create_token({'id': author.serial, 'username': author.username}, 100000000)
                 return Response({
                     'message': 'User created successfully.',
                     'token': token,
                     'user': {
-                        'id': author.user.id,
-                        'username': author.user.username,
+                        'id': author.serial,
+                        'username': author.username,
                         'display_name': author.display_name,
                     }
                 }, status=status.HTTP_201_CREATED)
                 
-            except IntegrityError:
+            except:
                 return Response({'error': 'A user with that username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -246,19 +247,33 @@ def inbox(request, AUTHOR_SERIAL):
         
 
     elif type == 'comment':
-        post = request.data.get("post")
-        print(author.fqid)
-        if post is not None and author.fqid in post:
-            sender_host = request.data.get("author", {}).get("host")
-            post = get_object_or_404(Post, fqid=post)
-            if sender_host == author.host:
-                sender = get_object_or_404(Author, fqid=request.data.get("author", {}).get("id"))
-            # else:
-            # create an author
+        # check if post exists
+        post_fqid = request.data.get("post")
+        post_exists = Post.objects.filter(fqid=post_fqid, is_deleted=False).exists()
+        if not post_exists:
+            return Response({"detail": "post feild is required."}, status=status.HTTP_400_BAD_REQUEST)
+        post = get_object_or_404(Post, fqid=post_fqid)
         
-            serializer = CommentSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(author=sender, post=post)
+        # check if author exists, create copy if not
+        sender_fqid = request.data.get("author", {}).get("id")
+        author_exists = Author.objects.filter(fqid=sender_fqid, is_deleted=False).exists()
+        if author_exists:
+            sender = get_object_or_404(Author, fqid=sender_fqid)
+        else:
+            try:
+                serializer = AuthorSerializer(data=request.data.get("author", {}))
+                
+                if serializer.is_valid():
+                    sender = serializer.save(fqid=sender_fqid)
+                else:
+                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+            except ValidationError as e:
+                print(f"Validation Error: {e.detail}")
+                return Response({"error": e.detail}, status=400)
+        
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(post=post, author=sender)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         return Response({"error": "Post doesn't matched with AUTHOR_SERIAL"},status=status.HTTP_400_BAD_REQUEST)

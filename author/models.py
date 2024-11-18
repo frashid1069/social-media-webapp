@@ -8,17 +8,17 @@ from django.contrib.auth.models import User
 
 class Author(models.Model):
     username = models.CharField(max_length=20, unique=True)
-    display_name = models.CharField(max_length=20, unique=True)
+    display_name = models.CharField(max_length=20)
     bio = models.TextField(blank=True, null=True)
-    github_url = models.URLField(blank=True, null=True, max_length=200, unique=True)
+    github_url = models.URLField(blank=True, null=True, max_length=200)
     profile_image = models.ImageField(upload_to="profile_pics", blank=True, null=True) # From https://www.devhandbook.com/django/user-profile/
     # followers = models.ManyToManyField('self', symmetrical=False, related_name='following', blank=True)
     
     # READ ONLY
     type = models.CharField(max_length=10, default="author", editable=False)
-    user = models.OneToOneField(User, on_delete=models.CASCADE) # Link to Django's User model
+    user = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True) # Link to Django's User model
     #TODO: change id
-    serial = models.AutoField(primary_key=True)
+    serial = models.PositiveIntegerField(default=0)
     fqid = models.URLField(blank=True, null=True, max_length=200, unique=True)
     host = models.URLField(blank=True, null=True, max_length=200)
     post_count = models.PositiveIntegerField(default=0)
@@ -27,7 +27,35 @@ class Author(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
 
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            
+            if self.user:
+                self.serial = self.user.id
+        super().save(*args, **kwargs)
 
+# class Author(models.Model):
+#     username = models.CharField(max_length=20, unique=True)
+#     display_name = models.CharField(max_length=20, unique=True)
+#     bio = models.TextField(blank=True, null=True)
+#     github_url = models.URLField(blank=True, null=True, max_length=200, unique=True)
+#     profile_image = models.ImageField(upload_to="profile_pics", blank=True, null=True) # From https://www.devhandbook.com/django/user-profile/
+#     # followers = models.ManyToManyField('self', symmetrical=False, related_name='following', blank=True)
+    
+#     # READ ONLY
+#     type = models.CharField(max_length=10, default="author", editable=False)
+#     user = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True) # Link to Django's User model
+#     serial = models.PositiveIntegerField(default=0)
+#     fqid = models.URLField(blank=True, max_length=200, unique=True)
+#     host = models.URLField(blank=True, null=True, max_length=200)
+#     post_count = models.PositiveIntegerField(default=0)
+#     like_count = models.PositiveIntegerField(default=0)
+#     created_at = models.DateTimeField(default=timezone.now)
+#     updated_at = models.DateTimeField(default=timezone.now)
+#     is_deleted = models.BooleanField(default=False)
+    
+
+        
     
     def __str__(self):
         return self.display_name  # Simpler __str__ for clarity

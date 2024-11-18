@@ -16,6 +16,12 @@ export const getPostId = (url) => {
     return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
   }
 
+  let currentAuthorId = null;
+
+  export function getCurrentAuthorId() {
+    return currentAuthorId;
+  }
+
 /**
  * This is a component for displaying the personal stream page by using PostCards component.
  * Click Profile button => go to profile page
@@ -36,6 +42,7 @@ export default function Stream() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const follow_id = localStorage.getItem("follow_id");
   const [streamPosts, setstreamPosts] = useState([]);
+  currentAuthorId = authorId
 
 
   // Get the posts list
@@ -46,7 +53,7 @@ export default function Stream() {
         if (data && data.src && data.src.length > 0) {
           setstreamPosts(data.src);
         }
-      });
+      }, [currentAuthorId, streamPosts]);
 
     // const currentAuthor = getCurrentAuthor();
     // if (currentAuthor) {
@@ -64,7 +71,7 @@ export default function Stream() {
           setEditablePosts(data.src);
         }
       });
-  }, [authorIdInt]);
+  }, [authorIdInt, editablePosts]);
 
   // Fetch follow requests and get follower details
   // Fetch follow requests and get follower details

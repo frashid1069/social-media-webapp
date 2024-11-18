@@ -5,6 +5,7 @@ import "../streamStyle.css";
 import "../likes.css";
 import Comment from "./Comment";
 import { cusFetch } from './Login';
+import { getCurrentAuthorId } from "./Stream";
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function PostCards({ post, editable, onClick, isFriend }) {
@@ -14,6 +15,7 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
   const [newCommentContent, setNewCommentContent] = useState("");
   const [hasReposted, setHasReposted] = useState(false);
   const token = localStorage.getItem('token'); 
+  const currentAuthorId = getCurrentAuthorId()
 
   const authorId = getAuthorId(post.id)
   const postId = getPostId(post.id)
@@ -126,20 +128,31 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
   const handleShare = async () => {
     if (post.visibility === "public") {
       try {
-        const response = await cusFetch(`${apiUrl}authors/${authorId}/posts/`, {
+        const response = await cusFetch(`${apiUrl}authors/${currentAuthorId}/posts/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             token: `${localStorage.getItem("token")}`,
           },
+          body: JSON.stringify({
+            "title": post.title,
+            "content": post.content,
+            "contentType": post.contentType,
+            "visibility": post.visibility,
+            "description": post.description,
+          }),
         });
+  
         if (response.ok) {
           alert("Post shared successfully!");
         } else {
+          const errorData = await response.json();
+          console.error("Error sharing post:", errorData);
           alert("Failed to share post.");
         }
       } catch (error) {
         console.error("Error sharing post:", error);
+        alert("Failed to share post.");
       }
     }
   };
@@ -168,7 +181,7 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
           <img src={imageURL} alt="Post" className="post-image" />
         </div>
       )}
-      <p className="post-card-update-date">Updated at: {new Date(post.updated_at).toLocaleString()}</p>
+      <p className="post-card-update-date">Published at: {new Date(post.published).toLocaleString()}</p>
       <div className="comment-grid" onClick={(e) => e.stopPropagation()}>
         <h5 className="comment-title">Comments:</h5>
         {matchedComments.map((comment) => (

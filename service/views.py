@@ -247,15 +247,13 @@ def inbox(request, AUTHOR_SERIAL):
 
     elif type == 'comment':
         post = request.data.get("post")
-        print(author.fqid)
         if post is not None and author.fqid in post:
-            sender_host = request.data.get("author", {}).get("host")
+            sender_host = Author.objects.get(fqid = author.fqid).host
             post = get_object_or_404(Post, fqid=post)
             if sender_host == author.host:
-                sender = get_object_or_404(Author, fqid=request.data.get("author", {}).get("id"))
+                sender = get_object_or_404(Author, fqid=Author.objects.get(fqid = author.fqid).fqid)
             # else:
             # create an author
-        
             serializer = CommentSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save(author=sender, post=post)

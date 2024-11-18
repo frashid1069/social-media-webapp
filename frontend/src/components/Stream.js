@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../streamStyle.css";
 import PostCards from "./PostCards";
 import { cusFetch } from "./Login";
+import Author from "./Author";
+import { getCurrentAuthor } from "./Author";
 
 export const getAuthorId = (url) => {
     const authorMatch = url.match(/authors\/(\d+)/);
@@ -45,6 +47,12 @@ export default function Stream() {
           setstreamPosts(data.src);
         }
       });
+
+    // const currentAuthor = getCurrentAuthor();
+    // if (currentAuthor) {
+    //   console.log("Current logged-in author: ", currentAuthor);
+    // }
+    // else console.log("NO Current logged-in author found!");
   });
   
   // get the posts owned by the current user

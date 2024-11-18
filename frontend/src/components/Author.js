@@ -1,14 +1,14 @@
 import { getAuthorId } from "./Stream";
 
 export default class Author {
-    constructor({ author }) {
+    constructor(author) {
       this.type = "author";
       this.id = author.id;
       this.displayName = author.displayName;
       this.github = author.github || null;
       this.profileImage = author.profileImage || null;
       this.host = author.host;
-      this.page = `${this.host}authors/${this.getAuthorId(this.id)}`; // Generating the page URL
+      this.page = `${author.host}authors/${getAuthorId(author.id)}`; // Generating the page URL
     }
 
     toJSON() {

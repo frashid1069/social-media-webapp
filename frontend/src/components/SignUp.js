@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../loginStyles.css";
+import Author from "./Author";
 /**
  * This a component for displaying the sign up page
  ***************************** NOT WORKING *******************************
@@ -165,6 +166,10 @@ const handleSubmit = async (event) => {
       .then((data) => console.log(data));
 
     if (response.ok) {
+      // const data = await response.json();
+      // console.log("SignUp data: ", data);
+      // const author = new Author(data);    // Create an Author instance as current author
+      // localStorage.setItem("currentAuthor", JSON.stringify(author.toJSON()));   // Save to local storage
       window.location.href = "/login"; // Redirect after saving
     } 
   } 

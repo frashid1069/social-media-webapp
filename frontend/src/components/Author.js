@@ -1,6 +1,6 @@
 import { getAuthorId } from "./Stream";
 
-class Author {
+export default class Author {
     constructor({ author }) {
       this.type = "author";
       this.id = author.id;
@@ -24,4 +24,14 @@ class Author {
         };
       }
   }
+
+
+export const getCurrentAuthor = () => {
+    const storedAuthor = localStorage.getItem("currentAuthor");
+    if (storedAuthor) {
+      const authorData = JSON.parse(storedAuthor);
+      return new Author({ author: authorData });
+    }
+    return null;
+  };
   

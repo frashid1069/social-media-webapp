@@ -253,9 +253,9 @@ def inbox(request, AUTHOR_SERIAL):
         if not post_exists:
             return Response({"detail": "post feild is required."}, status=status.HTTP_400_BAD_REQUEST)
         post = get_object_or_404(Post, fqid=post_fqid)
-        
+
         # check if author exists, create copy if not
-        sender_fqid = request.data.get("author", {}).get("id")
+        sender_fqid = request.data.get("author")
         author_exists = Author.objects.filter(fqid=sender_fqid, is_deleted=False).exists()
         if author_exists:
             sender = get_object_or_404(Author, fqid=sender_fqid)

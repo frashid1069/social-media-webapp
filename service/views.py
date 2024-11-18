@@ -19,6 +19,7 @@ from rest_framework.permissions import AllowAny
 from author.serializers import AuthorSerializer
 from like.serializers import LikeSerializer
 from comment.serializer import CommentSerializer
+from post.serializers import PostSerializer
 import urllib.parse
 import requests
 from rest_framework.exceptions import ValidationError
@@ -298,9 +299,43 @@ def inbox(request, AUTHOR_SERIAL):
         return Response({"error": "Post doesn't matched with AUTHOR_SERIAL"},status=status.HTTP_400_BAD_REQUEST)
     
     elif type == 'post':
-        sender = request.data.get("author", {}).get("displayName")
+        sender_fqid = request.data.get("author", {}).get("id")
+        author_exists = Author.objects.filter(fqid=sender_fqid, is_deleted=False).exists()
+        if author_exists:
+            sender = get_object_or_404(Author, fqid=sender_fqid)
+        else:
+            try:
+                serializer = AuthorSerializer(data=request.data.get("author", {}))
+                
+                if serializer.is_valid():
+                    sender = serializer.save(fqid=sender_fqid)
+                else:
+                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+            except ValidationError as e:
+                print(f"Validation Error: {e.detail}")
+                return Response({"error": e.detail}, status=400)
+        
+        # check if post exists
+        post_fqid = request.data.get("id")
+        post_exists = Post.objects.filter(fqid=post_fqid, is_deleted=False).exists()
+        if not post_exists:
+            try:
+                serializer = PostSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save(author=sender)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+            except ValidationError as e:
+                print(f"Validation Error: {e.detail}")
+                return Response({"error": e.detail}, status=400)
+        else:
+            post = get_object_or_404(Post, fqid=post_fqid)
+        
+        
+        
         print(f"Received a new post from {sender}")
-        return Response(status=status.HTTP_200_OK)
+        
         
     
     return Response({"error": "Nothing matched"},status=status.HTTP_400_BAD_REQUEST)

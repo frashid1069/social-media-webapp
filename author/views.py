@@ -6,6 +6,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 class AuthorPagination(PageNumberPagination):
     page_size = 5  
@@ -24,6 +25,14 @@ class AuthorView(ModelViewSet):
     serializer_class = serializers.AuthorSerializer
     pagination_class = AuthorPagination
     http_method_names = ['get', 'put']
+    permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        elif self.request.method == 'PUT':
+            return [IsAuthenticated()]
+        return super().get_permissions()
     
     @extend_schema(
         summary="Retrieve a list of authors",

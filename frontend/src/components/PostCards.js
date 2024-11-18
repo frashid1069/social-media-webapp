@@ -72,7 +72,6 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
 
   const submitComment = async (event) => {
     event.preventDefault();
-    alert(post.id)
     const response = await cusFetch(`${apiUrl}authors/${authorId}/inbox`, {
       method: "POST",
       headers: {
@@ -83,6 +82,7 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
         comment: newCommentContent,
         contentType: "text/markdown",
         post: post.id,
+        author: post.author.id
       }),
     });
 

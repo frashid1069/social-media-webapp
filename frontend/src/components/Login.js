@@ -84,8 +84,9 @@ export default function Login() {
         localStorage.setItem("logged_in_id", data.user.id);
         navigate(`/stream/${data.user.id}`);
       } else {
-        const data = await response.json();
-        navigate(`${data.error}`);
+        //const data = await response.json();
+        //navigate(`${data.error}`);
+        setErrorMessage("An error occurred during login.");
       }
     } catch (error) {
       console.error("Login error:", error);

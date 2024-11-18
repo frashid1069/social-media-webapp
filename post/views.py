@@ -25,7 +25,7 @@ class PostPagination(PageNumberPagination):
     # sorting
     def paginate_queryset(self, queryset, request, view=None):
         if not queryset.ordered:
-            queryset = queryset.order_by('updated_at')
+            queryset = queryset.order_by('updated_at').filter(is_deleted=False)
         return super().paginate_queryset(queryset, request, view=view)
     
     def get_paginated_response(self, data, count):
@@ -259,15 +259,19 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
     else:
         return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
     
+    if post.is_deleted == True:
+        return Response({"detail": "This post is already deleted."}, status=status.HTTP_404_NOT_FOUND)
     
     if request.method == 'GET':
+        
+        
         serializer = PostSerializer(post)
         if serializer.data.get("visibility") == "friends-only":
             if check_friend(author, request.user.author) or request.user.author == author:
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response({"detail": "You are not authorized to get this post."}, status=status.HTTP_403_FORBIDDEN)
-               
+            
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     elif request.method == 'PUT':
@@ -290,6 +294,33 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
         post.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+@api_view(['GET'])
+def fqid_post_detail(request, POST_FQID=None):
+    """
+    URL: ://service/api/posts/{POST_FQID}
+        GET [local] get the public post whose URL is POST_FQID
+            friends-only posts: must be authenticated
+    """
+    if POST_FQID is None:
+        return Response({"detail": "Post not found with POST_FQID."}, status=status.HTTP_404_NOT_FOUND)
+    
+    post = get_object_or_404(Post, fqid=POST_FQID)
+    if post.is_deleted == True:
+        return Response({"detail": "This post is already deleted."}, status=status.HTTP_404_NOT_FOUND)
+        
+    
+    serializer = PostSerializer(post)
+    if serializer.data.get("visibility") == "friends-only":
+        author = post.author
+        if check_friend(author, request.user.author) or request.user.author == author:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "You are not authorized to get this post."}, status=status.HTTP_403_FORBIDDEN)
+        
+    return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+    
 @api_view(['POST', 'GET'])
 def post_list(request, AUTHOR_SERIAL):
     """

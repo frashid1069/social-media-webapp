@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../loginStyles.css";
+import Author from "./Author";
 const apiUrl = process.env.REACT_APP_API_URL
 /**
  * This is a component for displaying the login page
@@ -76,14 +77,16 @@ export default function Login() {
         //{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJpZCI6NiwidXNlcm5hbWUiOiJkZCIsImV4cCI6MTczNTgyNjEyNX0.TtEw79FiozqpvXogephO_-IpfCNZQku97rJ7V-1vOcc",
         //"user":{"id":6,"username":"dd","display_name":"dd"}}
         const data = await response.json();
-        const token = data.token;
-
+        const token = data.token;        
+        // const author = new Author(data);    // Create an Author instance for the logged-in user
+        // localStorage.setItem("currentAuthor", JSON.stringify(author.toJSON()));  // Save the logged-in user to local storage
         localStorage.setItem("token", token);
         localStorage.setItem("logged_in_id", data.user.id);
         navigate(`/stream/${data.user.id}`);
       } else {
-        const data = await response.json();
-        navigate(`${data.error}`);
+        //const data = await response.json();
+        //navigate(`${data.error}`);
+        setErrorMessage("An error occurred during login.");
       }
     } catch (error) {
       console.error("Login error:", error);

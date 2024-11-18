@@ -3,12 +3,36 @@ from rest_framework.viewsets import ModelViewSet
 from . import models, serializers
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
+class AuthorPagination(PageNumberPagination):
+    page_size = 5  
+    page_size_query_param = 'size'
+    page_query_param = 'page'  
+    
+    def get_paginated_response(self, data):
+        response_data = {
+            "type": "authors",
+            "authors": data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
-# Create your views here.
 class AuthorView(ModelViewSet):
     queryset = models.Author.objects
     serializer_class = serializers.AuthorSerializer
+    pagination_class = AuthorPagination
+    http_method_names = ['get', 'put']
+    permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        elif self.request.method == 'PUT':
+            return [IsAuthenticated()]
+        return super().get_permissions()
     
     @extend_schema(
         summary="Retrieve a list of authors",
@@ -20,7 +44,20 @@ class AuthorView(ModelViewSet):
         ],
     )
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        """
+        URL: ://service/api/authors/
+        eg. http://localhost:8000/api/authors?page=3&size=1
+            GET [local, remote]: retrieve all profiles on the node (paginated)
+                page: how many pages
+                size: how big is a page
+        """
+        queryset = super().get_queryset().filter(is_deleted=False)
+        paged_queryset = self.paginate_queryset(queryset)
+        if paged_queryset is not None:
+            serializer = self.get_serializer(paged_queryset, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+
     
     @extend_schema(
         summary="Retrieve a single author",
@@ -28,16 +65,17 @@ class AuthorView(ModelViewSet):
         responses={200: serializers.AuthorSerializer, 404: "Not Found"},
     )
     def retrieve(self, request, *args, **kwargs):
+        """
+        URL: ://service/api/authors/{AUTHOR_SERIAL}/
+        eg. http://localhost:8000/api/authors/1/
+            GET [local, remote]: retrieve AUTHOR_SERIAL's profile
+            PUT [local]: update AUTHOR_SERIAL's profile
+        URL: ://service/api/authors/{AUTHOR_FQID}/
+            GET [local]: retrieve AUTHOR_FQID's profile
+        """
         return super().retrieve(request, *args, **kwargs)
     
-    @extend_schema(
-        summary="Create a new author",
-        description="Register a new author with the required details.",
-        request=serializers.AuthorSerializer,
-        responses={201: serializers.AuthorSerializer, 400: "Bad Request"},
-    )
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+    
     
     @extend_schema(
         summary="Update an author",
@@ -51,14 +89,3 @@ class AuthorView(ModelViewSet):
             raise PermissionDenied("You do not have permission to edit this profile.")
         return super().update(request, *args, **kwargs)
     
-    @extend_schema(
-        summary="Delete an author",
-        description="Soft-delete or permanently delete an author by ID.",
-        responses={204: None, 404: "Not Found"},
-    )
-    def destroy(self, request, *args, **kwargs):
-        author = self.get_object()
-        if author.user != request.user:
-            print(author.user, request.user)
-            raise PermissionDenied("You do not have permission to delete this profile.")
-        return super().destroy(request, *args, **kwargs)

@@ -12,14 +12,9 @@ function EditProfile() {
     The formData state variable is used to store the data that the author will input. 
   */
   const [formData, setFormData] = useState({
-    user: null,
-    id: null,
-    username: '',
-    display_name: '',
-    bio: '',
-    github_url: '',
-    profile_image: null,
-    created_at: '',
+    displayName: '',
+    github: '',
+    profile_image: null
   });
 
   const token = localStorage.getItem('token');  
@@ -37,7 +32,7 @@ function EditProfile() {
   */
   useEffect(() => {
     // Fetch the current profile data and set it to formData
-    fetch(`${apiUrl}author/${authorId}/`, {
+    fetch(`${apiUrl}authors/${authorId}/`, {
       method: 'GET',
       headers: {
         "token": `${token}`,
@@ -93,7 +88,7 @@ function EditProfile() {
     //update upated_at to current time
     formDataToSend.append('updated_at', new Date().toISOString());
   
-    fetch(`${apiUrl}author/${authorId}/`, {
+    fetch(`${apiUrl}authors/${authorId}/`, {
       method: 'PUT',
       headers: {
         "token": `${token}`,
@@ -111,37 +106,20 @@ function EditProfile() {
   return (
     <form onSubmit={handleSubmit}>
       <div>
-        <label>Username:</label>
-        <input 
-          type="text" 
-          name="username" 
-          value={formData.username} 
-          onChange={handleChange} 
-        />
-      </div>
-      <div>
         <label>Display Name:</label>
         <input 
           type="text" 
-          name="display_name" 
-          value={formData.display_name} 
+          name="displayName" 
+          value={formData.displayName} 
           onChange={handleChange} 
         />
-      </div>
-      <div>
-        <label>Bio:</label>
-        <textarea 
-          name="bio" 
-          value={formData.bio} 
-          onChange={handleChange}
-        ></textarea>
       </div>
       <div>
         <label>GitHub URL:</label>
         <input 
           type="url" 
-          name="github_url" 
-          value={formData.github_url} 
+          name="github" 
+          value={formData.github} 
           onChange={handleChange} 
         />
       </div>
@@ -149,7 +127,7 @@ function EditProfile() {
         <label>Profile Image:</label>
         <input 
           type="file" 
-          name="profile_image" 
+          name="profileImage" 
           onChange={handleFileChange} 
         />
       </div>

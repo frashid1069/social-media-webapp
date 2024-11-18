@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import Author, Post, Like
+from .models import Author, Post
 from service import models
 
 # class for set up testcase
@@ -21,6 +21,7 @@ class BaseAPITestCase(APITestCase):
         users = User.objects.all()
         user = User.objects.create_user(username=f"testuser{len(users)}", password="password")
         author = Author.objects.create(user=user, username=f"testauthor{len(users)}", display_name=f"Test Author {len(users)}")
+        author.fqid = f"http://testserver/api/authors/{author.serial}"
         return user, author
 
     def login_and_get_token(self):
@@ -145,42 +146,7 @@ class FollowViewTest(BaseAPITestCase):
         response = self.client.delete(reverse("follow-detail", args=["1"]), format="json")
         self.assertEqual(response.status_code, 204)
 
-class LikeViewTest(BaseAPITestCase):
 
-    def setUp(self):
-        super().setUp()
-        # Create a sample post for testing likes
-        self.post = Post.objects.create(author=self.author1, title="Test Post", content="This is a test post.")
-        # Define the URL for creating a like, so it can be used across tests
-        self.like_url = reverse("like-list")
-
-    def test_create_like(self):
-        """
-        Tests that a like can be created for a post by an author.
-        """
-        data = {
-            "author": self.author1.id,
-            "post": self.post.id
-        }
-        response = self.client.post(self.like_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Like.objects.count(), 1)
-        self.assertEqual(response.data["author"], self.author1.id)
-        self.assertEqual(response.data["post"], self.post.id)
-
-    def test_create_duplicate_like(self):
-        """
-        Tests that creating a duplicate like does not create a new entry.
-        """
-        # First like creation
-        data = {
-            "author": self.author1.id,
-            "post": self.post.id
-        }
-
-        # Attempt to create a duplicate like
-        response = self.client.post(self.like_url, data, format="json")
-        self.assertEqual(Like.objects.count(), 1)   # only one like object should still remain
         
         
 class EditProfileTest(APITestCase):

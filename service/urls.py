@@ -17,15 +17,16 @@ router = routers.DefaultRouter()
 #router.register('author', views.AuthorView)
 #router.register('post', views.PostView)
 #router.register('comment', views.CommentView)
-router.register('like', views.LikeView)
 router.register('follow', views.FollowView)
-router.register('inbox', views.InboxView)
 
 urlpatterns = [
     path("", views.index, name="index"),
     path("login/",views.Login.as_view(), name="login"), 
     path("signup/",views.SignUp.as_view(), name="signup"),
     path('stream/<int:author_id>/editProfile', views.edit_profile, name='edit_profile'),
+    path('authors/<int:AUTHOR_SERIAL>/followers', views.get_followers, name='get_followers'),
+    path('authors/<int:AUTHOR_SERIAL>/followers/<path:FOREIGN_AUTHOR_FQID>', views.foreign_followers, name='foreign_followers'),
+    path('authors/<int:AUTHOR_SERIAL>/inbox', views.inbox, name='inbox')
 ]
 
 urlpatterns += router.urls

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -17,6 +17,12 @@ from post.models import Post
 from service.models import Follow
 from rest_framework.permissions import AllowAny
 from author.serializers import AuthorSerializer
+from like.serializers import LikeSerializer
+from comment.serializer import CommentSerializer
+from post.serializers import PostSerializer
+import urllib.parse
+import requests
+from rest_framework.exceptions import ValidationError
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
@@ -39,13 +45,13 @@ class Login(APIView):
             if not check_password(password, author.user.password):
                  return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
             
-            token = create_token({'id': author.user.id, 'username': author.user.username}, 100000)
+            token = create_token({'id': author.serial, 'username': author.username}, 100000)
 
             return Response({
                 'token': token,
                 'user': {
-                    'id': author.user.id,
-                    'username': author.user.username,
+                    'id': author.serial,
+                    'username': author.username,
                     'display_name': author.display_name,
                 }
             }, status=status.HTTP_200_OK)
@@ -58,107 +64,30 @@ class SignUp(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
-        serializer = serializers.SignUpSerializer(data=request.data)
-        
+        serializer = serializers.SignUpSerializer(data=request.data, context={'host': request.build_absolute_uri('/')})
         if serializer.is_valid():
             try:
                 author = serializer.save()
-                token = create_token({'id': author.user.id, 'username': author.user.username}, 100000000)
+                token = create_token({'id': author.serial, 'username': author.username}, 100000000)
                 return Response({
                     'message': 'User created successfully.',
                     'token': token,
                     'user': {
-                        'id': author.user.id,
-                        'username': author.user.username,
+                        'id': author.serial,
+                        'username': author.username,
                         'display_name': author.display_name,
                     }
                 }, status=status.HTTP_201_CREATED)
                 
-            except IntegrityError:
+            except:
                 return Response({'error': 'A user with that username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    
-        # If the data is invalid, return the serializer errors
         else:
             return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-        
-class LikeView(ModelViewSet):
-    queryset = models.Like.objects
-    serializer_class = serializers.LikeSerializer
-
-    @extend_schema(
-        summary="Retrieve a list of likes",
-        description="""
-        Retrieve a list of likes, with optional filtering.
-        - If `author_id` and `post_id` are provided, returns likes for a particular post made by the specified author.
-        - If `author_id` is provided, returns all likes made by that author.
-        - If `post_id` is provided, returns all likes for the specified post.
-        """,
-        parameters=[
-            OpenApiParameter(name="author_id", description="Filter likes by the author's ID", required=False, type=OpenApiTypes.INT),
-            OpenApiParameter(name="post_id", description="Filter likes by the post's ID", required=False, type=OpenApiTypes.INT),
-        ],
-        responses={200: serializers.LikeSerializer(many=True), 400: "Bad Request"},
-    )
-    def get_queryset(self):
-        # Get the base queryset from the parent class
-        queryset = super().get_queryset()
-        # Extract query parameters from the request
-        post_id = self.request.query_params.get('post_id')
-        author_id = self.request.query_params.get('author_id')
-
-        # If both 'author_id' and 'post_id' are provided in the request query parameters:
-        # Filter the queryset to return likes where both the author ID and post ID match
-        # i.e., likes made by a specific author on a specific post.
-        # ~post/?author_id=<pk>&post_id=<pk> (likes for a particular post made by a particular author)
-        if author_id and post_id:
-            queryset = queryset.filter(author__id=author_id, post__id=post_id)
-
-        # If only 'author_id' is provided in the query parameters:
-        # Filter the queryset to return all likes made by that specific author.
-        # ~post/?author_id=<pk> (all likes made by a particular author)
-        elif author_id:
-            queryset = queryset.filter(author__id=author_id)
-        
-        # If only 'post_id' is provided in the query parameters:
-        # Filter the queryset to return all likes for the specified post.
-        # ~post/?post_id=<pk> (all likes for a particular post)
-        elif post_id:
-            queryset = queryset.filter(post__id=post_id)
-
-        return queryset.order_by("created_at") # return the filtered queryset
-    
-    @extend_schema(
-        summary="Create a new like",
-        description="Create a new like for a post by an author.",
-        request=serializers.LikeSerializer,
-        responses={201: serializers.LikeSerializer, 400: "Bad Request"},
-    )
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-    
-    @extend_schema(
-        summary="Retrieve a single like",
-        description="Fetch the details of a like by its ID.",
-        responses={200: serializers.LikeSerializer, 404: "Not Found"},
-    )
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
-    
-    @extend_schema(
-        summary="Delete a like",
-        description="Delete a like by its ID.",
-        responses={204: None, 404: "Not Found"},
-    )
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
     
 class FollowView(ModelViewSet):
     queryset = models.Follow.objects
     serializer_class = serializers.FollowSerializer
-
+    
     def get_queryset(self):
         queryset = super().get_queryset()
         author_id = self.request.query_params.get('author_id')
@@ -171,9 +100,246 @@ class FollowView(ModelViewSet):
             queryset = queryset.filter(followed=author_id, follower=follower)
         return queryset
     
-class InboxView(ModelViewSet):
-    queryset = models.Inbox.objects
-    serializer_class = serializers.LikeSerializer
+
+@api_view(['GET'])
+def get_followers(request, AUTHOR_SERIAL=None):
+    '''
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/followers
+    eg. http://localhost:8000/api/authors/2/followers
+        GET [local, remote]: get a list of authors who are AUTHOR_SERIAL's followers
+    '''
+    try:
+        author =  get_object_or_404(Author, serial=AUTHOR_SERIAL)
+        followers = author.followers.all()
+
+        authors = [follow.follower for follow in followers]
+        serialized_followers = AuthorSerializer(authors, many=True)
+        return Response({
+            "type": "followers",
+            "followers": serialized_followers.data
+        })
+    except Author.DoesNotExist:
+        return Response({"detail": "Author not found."}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET','PUT','DELETE'])
+def foreign_followers(request, AUTHOR_SERIAL=None, FOREIGN_AUTHOR_FQID=None):
+    """
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/followers/{FOREIGN_AUTHOR_FQID}
+    eg. http://localhost:8000/api/authors/1/followers/http%3A%2F%2F127.0.0.1%3A8000%2Fapi%2Fauthors%2F3
+        Note: foreign author ID should be a percent encoded URL of the foreign author. An example URL would be:
+            http://example-node-1/api/authors/178aba49-ca39-4741-b227-f40d072b1222/followers/http%3A%2F%2Fexample-node-2%2Fauthors%2F5f57808f-0bc9-4b3d-bdd1-bb07c976d12d
+        DELETE [local]: remove FOREIGN_AUTHOR_FQID as a follower of AUTHOR_SERIAL (must be authenticated)
+        PUT [local]: Add FOREIGN_AUTHOR_FQID as a follower of AUTHOR_SERIAL (must be authenticated)
+        GET [local, remote] check if FOREIGN_AUTHOR_FQID is a follower of AUTHOR_SERIAL
+            Should return 404 if they're not
+            This is how you can check if follow request is accepted
+    """
+    foreign_author_fqid = urllib.parse.unquote(FOREIGN_AUTHOR_FQID)
+    foreign_author = get_object_or_404(Author, fqid=foreign_author_fqid)
+
+    author =  get_object_or_404(Author, serial=AUTHOR_SERIAL)
+    follow_objects = author.followers.all()
+    follow_object = None
+    for follow in follow_objects:
+        if foreign_author.fqid == follow.follower.fqid:
+            follow_object = follow
+            
+    if request.method == "GET":
+        if follow_object and follow_object.pending == 'no':
+                serializer = AuthorSerializer(foreign_author)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response({"detail": f"You are not a follower of {AUTHOR_SERIAL}."}, status=status.HTTP_404_NOT_FOUND)
+            
+    elif request.method == "PUT":
+        if request.user.author == author:
+            if follow_object and follow_object.pending == 'yes':
+                follow_object.pending = 'no'
+                serializer = AuthorSerializer(foreign_author)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+            return Response({"detail": f"You are already a follower of {AUTHOR_SERIAL}."}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response({"detail": f"Must be authenticated {AUTHOR_SERIAL}."}, status=status.HTTP_403_FORBIDDEN)
+            
+    elif request.method == "DELETE":
+        if request.user.author == author:
+            if follow_object and follow_object.pending == 'no':
+                follow_object.delete()
+                serializer = AuthorSerializer(foreign_author)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            return Response({"detail": f"You are not a follower of {AUTHOR_SERIAL}."}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response({"detail": f"Must be authenticated {AUTHOR_SERIAL}."}, status=status.HTTP_403_FORBIDDEN)
+    
+ 
+@api_view(['POST'])
+def inbox(request, AUTHOR_SERIAL):
+    """
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/inbox
+    1) POST [remote]: send a like object to AUTHOR_SERIAL}
+    Body is like object
+    2) POST [remote]: comment on a post by AUTHOR_SERIAL
+    Body is a comment object
+    3) POST [remote]: send a follow request to AUTHOR_SERIAL
+    AUTHOR_SERIAL will be the object below
+    4) receives all the new posts from who you follow
+    """
+    
+    author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
+    try: 
+        type = request.data.get('type')
+    except:
+        return Response({"error": "Type is not found in the feild."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if type == 'like':
+        object = request.data.get("object")
+        if object is not None and str(author.host) in object:
+            sender_host = request.data.get("author", {}).get("host")
+            if sender_host == author.host:
+                sender = get_object_or_404(Author, fqid=request.data.get("author", {}).get("id"))
+
+            # else:
+            # create an author
+        
+            serializer = LikeSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(author=sender)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response({"error": "Object doesn't matched with AUTHOR_SERIAL"},status=status.HTTP_400_BAD_REQUEST)
+    
+    elif type == 'follow':
+        """
+        URL: ://service/api/authors/{AUTHOR_SERIAL}/inbox
+            POST [remote]: send a follow request to AUTHOR_SERIAL
+                AUTHOR_SERIAL will be the object below
+        """
+       
+        object_author = author    
+        try:
+            actor_fqid = request.data.get("actor", {}).get("id")
+            actor_exists = Author.objects.filter(fqid=actor_fqid, is_deleted=False).exists()
+            if actor_exists:
+                actor = get_object_or_404(Author, fqid=actor_fqid)
+            else:
+                try:
+                    serializer = AuthorSerializer(data=request.data.get("actor", {}))
+                    
+                    if serializer.is_valid():
+                        actor = serializer.save(fqid=actor_fqid)
+                    else:
+                        return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+                except ValidationError as e:
+                    print(f"Validation Error: {e.detail}")
+                    return Response({"error": e.detail}, status=400)
+            
+        except Author.DoesNotExist:
+            return Response({"detail": "Actor author not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        follow_exists = Follow.objects.filter(follower=actor, followed=object_author).exists() # already followed
+        mutual_follow = Follow.objects.filter(follower=object_author, followed=actor).exists() # becomes friend if object author followed actor
+
+        if follow_exists and mutual_follow:
+            return Response({"detail": "Authors are already friends."}, status=status.HTTP_200_OK)
+        elif follow_exists:
+            return Response({"detail": "Follow request already exists."}, status=status.HTTP_409_CONFLICT)
+        elif mutual_follow:
+            try:
+                Follow.objects.create(follower=actor, followed=object_author, pending='no')
+            except ValidationError as e:
+                print(f"Validation Error: {e.detail}")
+                return Response({"error": e.detail}, status=400)
+            return Response({"detail": f"You are now friends of {object_author.display_name}"}, status=status.HTTP_201_CREATED)
+
+        Follow.objects.create(follower=actor, followed=object_author, pending='yes')
+
+        response_data = {
+            "type": "follow",
+            "summary": f"{actor.display_name} wants to follow {object_author.display_name}",
+            "actor": AuthorSerializer(actor).data,
+            "object": AuthorSerializer(object_author).data,
+        }
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+        
+
+    elif type == 'comment':
+        # check if post exists
+        post_fqid = request.data.get("post")
+        post_exists = Post.objects.filter(fqid=post_fqid, is_deleted=False).exists()
+        if not post_exists:
+            return Response({"detail": "post feild is required."}, status=status.HTTP_400_BAD_REQUEST)
+        post = get_object_or_404(Post, fqid=post_fqid)
+
+        # check if author exists, create copy if not
+        sender_fqid = request.data.get("author")
+        author_exists = Author.objects.filter(fqid=sender_fqid, is_deleted=False).exists()
+        if author_exists:
+            sender = get_object_or_404(Author, fqid=sender_fqid)
+        else:
+            try:
+                serializer = AuthorSerializer(data=request.data.get("author", {}))
+                
+                if serializer.is_valid():
+                    sender = serializer.save(fqid=sender_fqid)
+                else:
+                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+            except ValidationError as e:
+                print(f"Validation Error: {e.detail}")
+                return Response({"error": e.detail}, status=400)
+        
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(post=post, author=sender)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response({"error": "Post doesn't matched with AUTHOR_SERIAL"},status=status.HTTP_400_BAD_REQUEST)
+    
+    elif type == 'post':
+        sender_fqid = request.data.get("author", {}).get("id")
+        author_exists = Author.objects.filter(fqid=sender_fqid, is_deleted=False).exists()
+        if author_exists:
+            sender = get_object_or_404(Author, fqid=sender_fqid)
+        else:
+            try:
+                serializer = AuthorSerializer(data=request.data.get("author", {}))
+                
+                if serializer.is_valid():
+                    sender = serializer.save(fqid=sender_fqid)
+                else:
+                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+            except ValidationError as e:
+                print(f"Validation Error: {e.detail}")
+                return Response({"error": e.detail}, status=400)
+        
+        # check if post exists
+        post_fqid = request.data.get("id")
+        post_exists = Post.objects.filter(fqid=post_fqid, is_deleted=False).exists()
+        if not post_exists:
+            try:
+                serializer = PostSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save(author=sender)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+            except ValidationError as e:
+                print(f"Validation Error: {e.detail}")
+                return Response({"error": e.detail}, status=400)
+        else:
+            post = get_object_or_404(Post, fqid=post_fqid)
+        
+        
+        
+        print(f"Received a new post from {sender}")
+        
+        
+    
+    return Response({"error": "Nothing matched"},status=status.HTTP_400_BAD_REQUEST)
+
 
 """
 Creates a post and saves it in the database
@@ -347,6 +513,8 @@ def edit_profile(request, author_id):
         return Response(serializer.data)
     # Return to ui
     return
+
+    # test comment
 
 
     

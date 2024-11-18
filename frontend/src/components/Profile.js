@@ -13,8 +13,7 @@ const apiUrl = process.env.REACT_APP_API_URL
 export default function Profile() {
   const [author, setAuthor] = useState([]);
   const [posts, setPosts] = useState([]);
-  const [follows, setFollows] = useState([]);
-  const [authorList, setAuthorList] = useState([]);
+  const [followers, setFollowers] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const { authorId } = useParams();
   const token = localStorage.getItem("token");
@@ -30,47 +29,31 @@ export default function Profile() {
 
   // get the author info
   useEffect(() => {
-    cusFetch(`${apiUrl}author/${authorId}`)
+    cusFetch(`${apiUrl}authors/${authorId}/`)
       .then((response) => response.json())
       .then((data) => setAuthor(data));
   }, [authorId]);
-  // get the posts list
+  // get the posts owned by the current user
   useEffect(() => {
-    cusFetch(`${apiUrl}post/`)
+    cusFetch(`${apiUrl}authors/${authorIdInt}/posts/`)
       .then((response) => response.json())
-      .then((data) => setPosts(data));
+      .then((data) => setPosts(data.src));
+  }, [authorIdInt]);
+
+  // get the follower list
+  useEffect(() => {
+    cusFetch(`${apiUrl}authors/${authorIdInt}/followers`)
+      .then((response) => response.json())
+      .then((data) => setFollowers(data.followers));
   }, []);
 
-  // get the author list
-  useEffect(() => {
-    cusFetch(`${apiUrl}author/`)
-      .then((response) => response.json())
-      .then((data) => setAuthorList(data));
-  }, []);
-  // get the follow list
-  useEffect(() => {
-    cusFetch(`${apiUrl}follow/`)
-      .then((response) => response.json())
-      .then((data) => setFollows(data));
-  }, []);
-  // get the follower list of current user (authors' id who are following the current user)
-  const followerAuthorsId = [];
-  follows.forEach(getFollowerAuthor);
+  // get the followers' display name of current user
+  const followerAuthors = [];
+  followers.forEach(getFollowerAuthor);
   function getFollowerAuthor(f) {
-    if (f.followed === authorIdInt && f.pending == "no"){
-      followerAuthorsId.push(f.follower)
-    }
+    followerAuthors.push(f.displayName)
   };
-  // match the display name of followers
-  const followerList = [];
-  followerAuthorsId.forEach(getFollowerName);
-  function getFollowerName(fId) {
-    authorList.forEach((a)=>{
-      if (a.id === fId){
-        followerList.push(a.display_name)
-      }
-    })
-  };
+  
 
   useEffect(() => {
     checkFollowingStatus();
@@ -99,14 +82,6 @@ export default function Profile() {
     }
   };
 
-
-  // check if the post is from current user
-  const matchesAuthor = (post, id) => {
-    return post.author === id;
-  };
-  const matchesPublic = (post) => {
-    return post.visibility.toLowerCase() === "public";
-  };
 
   // navigate to the edit profile page
   const handleEditProfile = () => {
@@ -158,30 +133,13 @@ export default function Profile() {
     }
   };
 
-  // // get posts that belong to the current user
-  // const visiblePosts = posts.filter(
-  //   (post) => matchesAuthor(post, authorIdInt) && matchesPublic(post)
-  // );
 
-  // Get all posts authored by the profile owner (authorIdInt) without filtering by visibility
-  const visiblePosts = posts.filter(
-      (post) => matchesAuthor(post, authorIdInt)  // Show all posts by the profile owner
-  );
-
-
-
-  // sort visible posts so that the most recent updated posts appear at the top
-  const sortedPosts = visiblePosts
-    .sort((a, b) => {
-      return (
-        new Date(a.scheduled_for).getTime() -
-        new Date(b.scheduled_for).getTime()
-      );
-    })
-    .reverse();
   const ownProfile = () => {
     if(authorId == localStorage.getItem("logged_in_id")) {
       document.getElementById("followButton").hidden = true;
+    };
+    if(authorId !== localStorage.getItem("logged_in_id")) {
+      document.getElementById("editButton").hidden = true;
     };
   };
   return (
@@ -191,21 +149,19 @@ export default function Profile() {
         Back To Stream
       </button>
       <h4 className="profile-txt">Name: </h4>
-      <p className="profile-name">{author.display_name}</p>
-      <h4 className="profile-txt">Bio: </h4>
-      <p className="profile-bio">{author.bio}</p>
+      <p className="profile-name">{author.displayName}</p>
       <h4 className="profile-txt">Github URL: </h4>
-      <p className="profile-git">{author.github_url}</p>
+      <p className="profile-git">{author.github}</p>
       <h4 className="profile-txt">Followers: </h4>
-      {followerList.map((f)=> (<p>{f}</p>))}
-      <button onClick={handleEditProfile}>Edit Profile</button>
+      {followerAuthors.map((f)=> (<p>{f}</p>))}
+      <button id = "editButton" onClick={handleEditProfile}>Edit Profile</button>
       {isFollowing ? (
         <button id="unfollowButton" onClick={handleUnfollow}>Unfollow</button>
       ) : (
         <button id="followButton" onClick={handleFollow}>Follow</button>
       )}
       <div className="post-grid">
-        {sortedPosts.map((post) => (
+        {posts.map((post) => (
           <PostCards post={post} key={post.id} editable={false}></PostCards>
         ))}
 

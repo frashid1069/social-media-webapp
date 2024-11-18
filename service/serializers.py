@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import Author, Post, Comment, Like, Follow, Inbox
+from .models import Post, Comment, Follow
+from author.serializers import Author, AuthorSerializer
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.urls import reverse
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -35,23 +36,27 @@ class SignUpSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(username=username, password=password)
         # User is inactive until approved by the admin
         user.is_active = False
-        user.save()
-        author = Author.objects.create(user=user, username=username, **validated_data)
+    
         
+        #host = f"{self.context['request'].scheme}://{self.context['request'].get_host()}{reverse('author-list')}"
+    
+        host = self.context.get('host', 'http://test') + 'api/'
+        fqid = f'{host}authors/{user.id}'
+        author = Author.objects.create(user=user, 
+                                       username=username,
+                                       host=host,
+                                       fqid=fqid,
+                                       **validated_data)
         return author
 
         
-class LikeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Like
-        fields = "__all__"
+# class LikeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Like
+#         fields = "__all__"
 
 class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
         fields = "__all__"
         
-class InboxSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Inbox
-        fields = "__all__"

@@ -102,7 +102,7 @@ button {
     cursor: pointer;        /* Change cursor on hover */
 }
 
-.save-btn {
+.save-btn, .edit-btn {
     padding: 12px;
     background-color: #007BFF;
     color: white;
@@ -115,7 +115,7 @@ button {
     margin-left: 60px;
 }
 
-.save-btn:hover {
+.save-btn:hover, .edit-btn:hover {
     background-color: #0056b3;
 }
 

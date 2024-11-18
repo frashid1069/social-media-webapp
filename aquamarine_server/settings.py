@@ -26,16 +26,19 @@ SECRET_KEY = 'django-insecure-5mbcvr_@qaxbenyqqp)1+1n3zx05h#fp^9s__oj5r4a%k@b*ll
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-# ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
+STATIC_ROOT = BASE_DIR / "staticfiles" 
+STATIC_URL = "/static/"
 
 # Application definition
 
 INSTALLED_APPS = [
     'author',                      # install app service
     'post',                      # install app service
-    'comment',                      # install app service          
+    'comment',                      # install app service  
+    'like',        
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -66,9 +69,11 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'service.authentication.JwtQueryParamsAuthentication',  # authentication
+        # TODO: basic authentication
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
 }
 
@@ -127,6 +132,12 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+    # DATABASES = {
+    # 'default': {
+    # 'ENGINE': 'django.db.backends.sqlite3',
+    # 'NAME': BASE_DIR / 'db.sqlite3',
+    # }
+    # }
 
 
 # Password validation
@@ -163,6 +174,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = 'static/'
 
 # Default primary key field type
@@ -196,10 +208,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # # include manifest.json and index.html
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'frontend/build/static'),
-#     os.path.join(BASE_DIR, 'frontend/build/'),
-# ]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend/build/static'),
+    os.path.join(BASE_DIR, 'frontend/build/'),
+]
 
 # change the default templates folder directory
 TEMPLATES = [

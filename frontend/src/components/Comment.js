@@ -9,27 +9,11 @@ const apiUrl = process.env.REACT_APP_API_URL
  *
  */
 export default function Comment({ comment }) {
-  const [authors, setAuthors] = useState([]);
-  const navigate = useNavigate();
 
-  // get the author list
-  useEffect(() => {
-    cusFetch(`${apiUrl}author/`)
-      .then((response) => response.json())
-      .then((data) => setAuthors(data));
-  }, []);
-  // find the corresponding author's name for the comment
-  const matchAuthor = () => {
-    for (const author of authors) {
-      if (author.id === comment.author) {
-        return author.display_name;
-      }
-    }
-  };
   return (
     <div key={comment.id} className="comment">
-      <p className="comment-content">{comment.content}</p>
-      <p className="comment-author">{matchAuthor()}</p>
+      <p className="comment-content">{comment.comment}</p>
+      <p className="comment-author">{comment.author.displayName}</p>
     </div>
   );
 }

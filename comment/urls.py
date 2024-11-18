@@ -12,7 +12,6 @@ router.register('comment', views.CommentView)
 urlpatterns = [
     path('', include(router.urls)),
     # Comments API
-    path('authors/<int:AUTHOR_SERIAL>/inbox', views.create_comment, name='create_comment'),
     path('authors/<int:AUTHOR_SERIAL>/posts/<int:POST_SERIAL>/comments', views.comment_list, name='comment_list'),
     path('posts/<path:POST_FQID>/comments', views.comment_list, name='fqid_comment_list'),
     path('authors/<int:AUTHOR_SERIAL>/post/<int:POST_SERIAL>/comment/<path:REMOTE_COMMENT_FQID>', views.comment_detail, name='comment_detail'),

@@ -25,4 +25,5 @@ class Like(models.Model):
             self.author.save(update_fields=['like_count']) 
             # for fqid
             self.fqid = self.author.fqid + "/liked/" + str(self.serial)
+        super().save(*args, **kwargs)
     

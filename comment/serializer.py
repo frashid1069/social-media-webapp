@@ -11,9 +11,9 @@ class CommentSerializer(serializers.ModelSerializer):
     contentType = serializers.CharField(source='content_type', required=True)
     comment = serializers.CharField(source='content', required=True)
     author = AuthorSerializer(read_only=True)
-    likes = serializers.SerializerMethodField(read_only=True)
     published = serializers.DateTimeField(source='created_at', read_only=True)
     post = serializers.URLField(source="post.fqid", read_only=True)
+    likes = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = Comment
@@ -31,3 +31,9 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_likes(self, obj):
         likes = Like.objects.filter(object=obj.fqid)
         return LikeSerializer(likes, many=True).data
+    
+    # def create(self, validated_data):
+    #     comment = Comment.objects.create(validated_data)
+        
+        
+    #     return comment

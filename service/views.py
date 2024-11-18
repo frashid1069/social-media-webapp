@@ -218,27 +218,46 @@ def inbox(request, AUTHOR_SERIAL):
        
         object_author = author    
         try:
-            actor_author = request.user.author
+            actor_fqid = request.data.get("actor", {}).get("id")
+            actor_exists = Author.objects.filter(fqid=actor_fqid, is_deleted=False).exists()
+            if actor_exists:
+                actor = get_object_or_404(Author, fqid=actor_fqid)
+            else:
+                try:
+                    serializer = AuthorSerializer(data=request.data.get("actor", {}))
+                    
+                    if serializer.is_valid():
+                        actor = serializer.save(fqid=actor_fqid)
+                    else:
+                        return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+                except ValidationError as e:
+                    print(f"Validation Error: {e.detail}")
+                    return Response({"error": e.detail}, status=400)
+            
         except Author.DoesNotExist:
             return Response({"detail": "Actor author not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        follow_exists = Follow.objects.filter(follower=actor_author, followed=object_author).exists() # already followed
-        mutual_follow = Follow.objects.filter(follower=object_author, followed=actor_author).exists() # becomes friend if object author followed actor
+        follow_exists = Follow.objects.filter(follower=actor, followed=object_author).exists() # already followed
+        mutual_follow = Follow.objects.filter(follower=object_author, followed=actor).exists() # becomes friend if object author followed actor
 
         if follow_exists and mutual_follow:
             return Response({"detail": "Authors are already friends."}, status=status.HTTP_200_OK)
         elif follow_exists:
             return Response({"detail": "Follow request already exists."}, status=status.HTTP_409_CONFLICT)
         elif mutual_follow:
-            Follow.objects.create(follower=actor_author, followed=object_author, pending='no')
+            try:
+                Follow.objects.create(follower=actor, followed=object_author, pending='no')
+            except ValidationError as e:
+                print(f"Validation Error: {e.detail}")
+                return Response({"error": e.detail}, status=400)
             return Response({"detail": f"You are now friends of {object_author.display_name}"}, status=status.HTTP_201_CREATED)
 
-        Follow.objects.create(follower=actor_author, followed=object_author, pending='yes')
+        Follow.objects.create(follower=actor, followed=object_author, pending='yes')
 
         response_data = {
             "type": "follow",
-            "summary": f"{actor_author.display_name} wants to follow {object_author.display_name}",
-            "actor": AuthorSerializer(actor_author).data,
+            "summary": f"{actor.display_name} wants to follow {object_author.display_name}",
+            "actor": AuthorSerializer(actor).data,
             "object": AuthorSerializer(object_author).data,
         }
 

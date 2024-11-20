@@ -16,11 +16,10 @@ export const getPostId = (url) => {
     return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
   }
 
-  let currentAuthorId = null;
 
-  export function getCurrentAuthorId() {
-    return currentAuthorId;
-  }
+// export function getCurrentAuthorId() {
+//   return currentAuthorId;
+// }
 
 /**
  * This is a component for displaying the personal stream page by using PostCards component.
@@ -42,7 +41,7 @@ export default function Stream() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const follow_id = localStorage.getItem("follow_id");
   const [streamPosts, setstreamPosts] = useState([]);
-  currentAuthorId = authorId
+  const currentAuthorId = authorId
 
 
   // Get the posts list
@@ -200,6 +199,10 @@ export default function Stream() {
   const goCreatePost = () => {
     navigate(`/stream/${authorId}/createPost`);
   };
+
+  const goShowAuthors = () => {
+    navigate(`/stream/${currentAuthorId}/authors`);
+  }
   const matchId = (follow) => {
     return follow.followed.toString() === localStorage.getItem("logged_in_id");
   };
@@ -214,6 +217,9 @@ export default function Stream() {
       <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
 
       <div className="button-container">
+      <button className="show-authors" onClick={goShowAuthors}>
+          Show All Authors
+        </button>
         <button className="edit-profile-btn" onClick={goEditableProfile}>
           Profile
         </button>

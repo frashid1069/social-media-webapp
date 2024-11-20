@@ -5,7 +5,7 @@ import "../streamStyle.css";
 import "../likes.css";
 import Comment from "./Comment";
 import { cusFetch } from './Login';
-import { getCurrentAuthorId } from "./Stream";
+import Stream from "./Stream";
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function PostCards({ post, editable, onClick, isFriend }) {
@@ -15,7 +15,7 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
   const [newCommentContent, setNewCommentContent] = useState("");
   const [hasReposted, setHasReposted] = useState(false);
   const token = localStorage.getItem('token'); 
-  const currentAuthorId = getCurrentAuthorId()
+  const currentAuthorId = Stream.currentAuthorId;
 
   const authorId = getAuthorId(post.id)
   const postId = getPostId(post.id)

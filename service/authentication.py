@@ -51,7 +51,7 @@ class BackendAuthentication(BaseAuthentication):
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith("Basic "):
             return None
-        salt = print(f"{request.scheme}://{request.get_host()}/api/")
+        salt = f"{request.scheme}://{request.get_host()}/api/"
         
         try:
             payload = jwt.decode(token, salt, algorithms="HS256")

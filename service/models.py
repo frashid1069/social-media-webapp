@@ -1,23 +1,12 @@
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import User
 from author.models import Author
-from post.models import Post
-from comment.models import Comment
 
-# Create your models here.
-
-# class Like(models.Model):
-#     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='likes')
-#     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
-    
-#     created_at = models.DateTimeField(default=timezone.now)
-
-#     def __str__(self):
-#         return f"Like by {self.author} on {self.post}"
 
 class Node(models.Model):
     url = models.URLField(max_length = 100, editable = True)
+    username = models.CharField(max_length=20, editable = True, blank=True, null=True)
+    password = models.CharField(max_length=20, editable = True, blank=True, null=True)
     is_allowed = models.BooleanField(default = False)
 
 class Follow(models.Model):
@@ -43,15 +32,5 @@ class Follow(models.Model):
         return self.follower
     
 
-# Inbox Model
-# class Inbox(models.Model):
-#     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='inbox')
-#     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-#     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
-#     like = models.ForeignKey(Like, on_delete=models.CASCADE)
-#     created_at = models.DateTimeField(default=timezone.now)
 
-#     def __str__(self):
-#         return f"Inbox for {self.author}"
-    
     

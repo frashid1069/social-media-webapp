@@ -18,7 +18,6 @@ def create_token(payload, timeout=60):
 
 def create_server_token(payload, timeout=60, host=None):
     salt = host
-    
     headers = {
         'typ':'jwt',
         'alg':'HS256'

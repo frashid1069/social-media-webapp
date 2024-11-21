@@ -5,12 +5,13 @@ import jwt
 from django.conf import settings
 from rest_framework import exceptions
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
 
 
 class JwtQueryParamsAuthentication(BaseAuthentication):
     
     def authenticate(self, request):
-        
+        token = None
         auth_header = request.headers.get('Authorization')
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header.split("Bearer ")[1]
@@ -19,33 +20,43 @@ class JwtQueryParamsAuthentication(BaseAuthentication):
         
         if not token:
             return None
-        print()
-        salt = settings.SECRET_KEY
         
+        salts = [settings.SECRET_KEY,
+                f"{request.scheme}://{request.get_host()}/api/"
+                ]
         try:
-            payload = jwt.decode(token, salt, algorithms="HS256")
-            #print(payload)
+            payload = self.decode_token_with_multiple_salts(token, salts)
+            #payload = jwt.decode(token, salt, algorithms="HS256")
+            
         except Exception:
             raise exceptions.AuthenticationFailed('Invalid token')
 
         try:
-            user = User.objects.get(id=payload['id'], username=payload['username'])
+            if 'id' in payload and 'username' in payload:
+                user = User.objects.get(id=payload['id'], username=payload['username'])
+            elif 'password' in payload and 'username' in payload:
+                print(payload)
+                user = User.objects.get(username=payload['username'])
+                if check_password(payload['password'], user.password):
+                    return (user, token)
+                else:
+                    raise exceptions.AuthenticationFailed('Invalid password!')
         except User.DoesNotExist:
             raise exceptions.AuthenticationFailed('No such user')
 
         return (user, token)
     
-class BackendUser:
-    """A simple user-like object for backend authentication."""
-    def __init__(self, backend_name):
-        self.backend_name = backend_name
-
-    @property
-    def is_authenticated(self):
-        return True 
-
-    def __str__(self):
-        return self.backend_name
+    def decode_token_with_multiple_salts(self, token, salts):
+        """Attempt to decode the token using multiple salts."""
+        for salt in salts:
+            try:
+                return jwt.decode(token, salt, algorithms="HS256")
+            except jwt.ExpiredSignatureError:
+                raise AuthenticationFailed('Token has expired')
+            except jwt.InvalidTokenError:
+                continue  
+        raise AuthenticationFailed('Invalid token for all salts')
+    
     
 class BackendAuthentication(BaseAuthentication):
     """
@@ -54,13 +65,14 @@ class BackendAuthentication(BaseAuthentication):
     """
 
     def authenticate(self, request):
+        token = None
         auth_header = request.headers.get('Authorization')
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header.split("Bearer ")[1]
         if not token:
             return None
-        salt = print(f"{request.scheme}://{request.get_host()}/api/")
-        
+        salt = f"{request.scheme}://{request.get_host()}/api/"
+        print(salt, token)
         try:
             payload = jwt.decode(token, salt, algorithms="HS256")
             print(payload)

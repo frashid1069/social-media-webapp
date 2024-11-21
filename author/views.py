@@ -64,6 +64,7 @@ class AuthorView(ModelViewSet):
             for node in allowed_nodes:
                 print(node.username,node.password)
                 token = create_server_token({'username': node.username, 'password': node.password}, 100000, node.url)
+                print(token)
                 headers = {
                     "Authorization": f"Bearer {token}" 
                 }

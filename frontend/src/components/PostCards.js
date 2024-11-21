@@ -34,7 +34,7 @@ export default function PostCards({ post, editable, onClick }) {
 
   // Fetch likes for the post
   const cusFetchLikes = () => {
-    cusFetch(`${apiUrl}authors/${authorId}/posts/${postId}/likes/`)
+    cusFetch(`${apiUrl}authors/${authorId}/posts/${postId}/likes`)
       .then((response) => response.json())
       .then((data) => {
         const postLikes = [];

@@ -12,5 +12,5 @@ author_detail = AuthorView.as_view({
 
 urlpatterns = [
     path('authors/', author_list, name='author-list'),
-    path('authors/<int:pk>/', author_detail, name='author-detail'),
+    path('authors/<int:AUTHOR_SERIAL>/', author_detail, name='author-detail'),
 ]

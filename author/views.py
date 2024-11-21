@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 import requests
 from service.utils.jwt_auth import create_server_token
+from django.shortcuts import get_object_or_404
 
 class AuthorPagination(PageNumberPagination):
     page_size = 100  
@@ -124,6 +125,12 @@ class AuthorView(ModelViewSet):
         URL: ://service/api/authors/{AUTHOR_FQID}/
             GET [local]: retrieve AUTHOR_FQID's profile
         """
+        serial = kwargs.get('AUTHOR_SERIAL')
+        if serial:
+            instance = get_object_or_404(Author, serial=serial, is_deleted=False, user__isnull=False)
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        
         return super().retrieve(request, *args, **kwargs)
         
     @extend_schema(

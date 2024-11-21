@@ -23,6 +23,8 @@ from post.serializers import PostSerializer
 import urllib.parse
 import requests
 from rest_framework.exceptions import ValidationError
+from service.models import Node
+from service.utils.jwt_auth import create_server_token
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
@@ -99,6 +101,95 @@ class FollowView(ModelViewSet):
         if author_id and follower:
             queryset = queryset.filter(followed=author_id, follower=follower)
         return queryset
+    
+@api_view(['POST'])
+def forward_follow_request(request):
+    if request.user.is_staff:
+        return Response({"error": "Local api only"}, status=status.HTTP_403_FORBIDDEN)
+    
+    actor = request.user.author
+    try: 
+        type = request.data.get('type')
+    except:
+        return Response({"error": "Type is not found in the feild."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if type == 'follow':
+        object_fqid = request.data.get("object", {}).get("id")
+        object_exists = Author.objects.filter(fqid=object_fqid, is_deleted=False).exists()
+        if object_exists:
+            object = get_object_or_404(Author, fqid=object_fqid)
+        else:
+            try:
+                serializer = AuthorSerializer(data=request.data.get("object", {}))
+                
+                if serializer.is_valid():
+                    object = serializer.save(fqid=object_fqid)
+                else:
+                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+            except ValidationError as e:
+                print(f"Validation Error: {e.detail}")
+                return Response({"error": e.detail}, status=400)
+        
+        follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='no').exists() # already followed
+        accepted_follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='yes').exists()
+        mutual_follow = Follow.objects.filter(follower=object, followed=actor).exists() # becomes friend if object author followed actor
+
+        if follow_exists and mutual_follow:
+            return Response({"detail": "Authors are already friends."}, status=status.HTTP_200_OK)
+        elif follow_exists:
+            return Response({"detail": "Already following."}, status=status.HTTP_409_CONFLICT)
+        elif accepted_follow_exists:
+            return Response({"detail": "Follow request already exists."}, status=status.HTTP_409_CONFLICT)
+        elif mutual_follow:
+            try:
+                Follow.objects.create(follower=actor, followed=object, pending='no')
+            except ValidationError as e:
+                print(f"Validation Error: {e.detail}")
+                return Response({"error": e.detail}, status=400)
+            return Response({"detail": f"You are now friends of {object.display_name}"}, status=status.HTTP_201_CREATED)
+
+        Follow.objects.create(follower=actor, followed=object, pending='yes')
+
+        response_data = {
+            "type": "follow",
+            "summary": f"{actor.display_name} wants to follow {object.display_name}",
+            "actor": AuthorSerializer(actor).data,
+            "object": AuthorSerializer(object).data,
+        }
+        
+        if object.host != actor.host:            
+            nodes_exists = Node.objects.filter(is_allowed=True, url=object.host).exists()
+            if nodes_exists:
+                node = Node.objects.filter(is_allowed=True, url=object.host)
+                print(node.username,node.password)
+                token = create_server_token({'username': node.username, 'password': node.password}, 100000, node.url)
+                print(token)
+                headers = {
+                    "Authorization": f"Bearer {token}" 
+                }
+                try:
+                    response = requests.get(f"{object.fqid}/inbox", headers=headers)
+                    
+                    if response.status_code == 200:
+                        try:
+                            response_data = response.json()
+                            
+                        except ValidationError as e:
+                            print(f"Validation Error: {e.detail}")
+                            return Response({"error": e.detail},  status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        print(f"Failed to fetch authors from {node.url}: {response.status_code}")
+                        return Response(f"Failed to fetch authors from {node.url}: {response.status_code}", status=status.HTTP_400_BAD_REQUEST)
+                        
+                except requests.RequestException as e:
+                    print(f"Error fetching authors from {node.url}: {e}")
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    
+    return Response({"error": "Type is not follow."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    
     
 
 @api_view(['GET'])
@@ -237,7 +328,7 @@ def inbox(request, AUTHOR_SERIAL):
             
         except Author.DoesNotExist:
             return Response({"detail": "Actor author not found."}, status=status.HTTP_404_NOT_FOUND)
-
+        # TODO: pendding condition
         follow_exists = Follow.objects.filter(follower=actor, followed=object_author).exists() # already followed
         mutual_follow = Follow.objects.filter(follower=object_author, followed=actor).exists() # becomes friend if object author followed actor
 

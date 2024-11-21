@@ -51,7 +51,9 @@ export default function AuthorsPage() {
         const actor = await actorResponse.json();
       
         // Fetch the author to follow's details
+        // const objectResponse = await cusFetch(`${apiUrl}forward/${apiUrl}authors/${authorID}/`, {
         const objectResponse = await cusFetch(`${apiUrl}authors/${authorID}/`, {
+
           method: "GET",
           headers: {
             token: `${token}`,
@@ -91,7 +93,7 @@ export default function AuthorsPage() {
         });
       
         if (response.ok) {
-          alert(`You have followed this author`);
+          alert(`You have sent a follow request to this author`);
           setIsFollowing((prev) => ({ ...prev, [authorID]: true })); // Mark this author as followed
         } else {
           alert("Failed to follow the author.");

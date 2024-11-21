@@ -228,16 +228,6 @@ select {
 #unfollowButton {
     background-color: red;
 }
-
-/* .author-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-  
-  .author-name {
-    font-size: 16px;
-    font-weight: bold;
-    margin-right: 10px;
-  } */
+.logout-btn{
+    background-color: red;
+}

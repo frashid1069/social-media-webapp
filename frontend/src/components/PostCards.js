@@ -8,14 +8,11 @@ import { cusFetch } from './Login';
 import Stream from "./Stream";
 const apiUrl = process.env.REACT_APP_API_URL;
 
-export default function PostCards({ post, editable, onClick, isFriend }) {
-  const [comments, setComments] = useState([]);
+export default function PostCards({ post, editable, onClick }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState("");
-  const [hasReposted, setHasReposted] = useState(false);
-  const token = localStorage.getItem('token'); 
-  const currentAuthorId = Stream.currentAuthorId;
+  const currentAuthorId = getCurrentAuthorId()
 
   const authorId = getAuthorId(post.id)
   const postId = getPostId(post.id)
@@ -52,7 +49,7 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
 
   useEffect(() => {
     cusFetchLikes();
-  }, [hasReposted]);
+  }, []);
 
 
   // get the author's display name for the post

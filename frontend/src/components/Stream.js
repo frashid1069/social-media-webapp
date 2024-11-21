@@ -49,28 +49,18 @@ export default function Stream() {
     cusFetch(`${apiUrl}posts/`)
       .then((response) => response.json())
       .then((data) => {
-        if (data && data.src && data.src.length > 0) {
           setstreamPosts(data.src);
-        }
-      }, [currentAuthorId, streamPosts]);
-
-    // const currentAuthor = getCurrentAuthor();
-    // if (currentAuthor) {
-    //   console.log("Current logged-in author: ", currentAuthor);
-    // }
-    // else console.log("NO Current logged-in author found!");
-  });
+      });
+  }, []);
   
   // get the posts owned by the current user
   useEffect(() => {
     cusFetch(`${apiUrl}authors/${authorId}/posts/`)
       .then((response) => response.json())
       .then((data) => {
-        if (data && data.src && data.src.length > 0) {
           setEditablePosts(data.src);
-        }
       });
-  }, [authorIdInt, editablePosts]);
+  }, []);
 
   // Fetch follow requests and get follower details
   // Fetch follow requests and get follower details
@@ -169,39 +159,18 @@ export default function Stream() {
       console.error("Error declining follow request:", error);
     }
   };
-
-  // Determine mutual friends for friend-only posts
-  const followingAuthorsId = follows
-    .filter((f) => f.follower === authorIdInt)
-    .map((f) => f.followed);
-
-  const friendsAuthorsId = followingAuthorsId.filter((id) =>
-    follows.some((f) => f.follower === id && f.followed === authorIdInt)
-  );
-
-  // Check if the post is from a friend or the author themselves
-  const isFriend = (post) =>
-    friendsAuthorsId.includes(post.author) || post.author === authorIdInt;
-
-  const matchesAuthor = (post, id) => post.author === id;
-
-  const sortedPosts = streamPosts.length > 0 ? 
-    streamPosts.sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime()) : null;
-
-
-  const sortedEditablePosts = editablePosts.length > 0 ? 
-    editablePosts.sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime()) : null;
-
+  // go to profile page
   const goEditableProfile = () => {
     navigate(`/stream/${authorId}/profile`);
   };
-
+  // go to create post page
   const goCreatePost = () => {
     navigate(`/stream/${authorId}/createPost`);
   };
-
-  const goShowAuthors = () => {
-    navigate(`/stream/${currentAuthorId}/authors`);
+  // log out the current user
+  const goLogout = () => {
+    localStorage.setItem("token", '');
+    navigate("/login")
   }
   const matchId = (follow) => {
     return follow.followed.toString() === localStorage.getItem("logged_in_id");
@@ -232,6 +201,7 @@ export default function Stream() {
         >
           {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
         </button>
+        <button className="logout-btn" onClick={goLogout}>Logout</button>
         {/* Custom dropdown for follow requests 
             CHAT GPT: Prompt help me create a custom dropdown that shows the follow requestsindividually and along with
             options to accept or decline. Date: NOV 2, 2024*/}
@@ -267,9 +237,9 @@ export default function Stream() {
 
       {isVisible && (
         <div className="post-grid">
-          {!sortedPosts && <p>Loading posts...</p>}
-          {sortedPosts && sortedPosts.length === 0 && <p>No posts available.</p>}
-          {sortedPosts && sortedPosts.length > 0 && sortedPosts.map((post) => (
+          {!streamPosts && <p>Loading posts...</p>}
+          {streamPosts && streamPosts.length === 0 && <p>No posts available.</p>}
+          {streamPosts && streamPosts.length > 0 && streamPosts.map((post) => (
             <PostCards
               post={post}
               key={post.id}
@@ -280,7 +250,6 @@ export default function Stream() {
                   : navigate(`/stream/${getAuthorId(post.id)}/${getAuthorId(post.id)}/edit`)
               }
               canShare={post.can_share}
-              isFriend={isFriend(post)}
             />
             ))
           }
@@ -288,9 +257,9 @@ export default function Stream() {
       )}
       {!isVisible && (
         <div>
-          {!sortedEditablePosts && <p>Loading posts...</p>} 
-          {sortedEditablePosts && sortedEditablePosts.length === 0 && <p>No posts available.</p>} 
-          {sortedEditablePosts && sortedEditablePosts.length > 0 && sortedEditablePosts.map((post) => (
+          {!editablePosts && <p>Loading posts...</p>} 
+          {editablePosts && editablePosts.length === 0 && <p>No posts available.</p>} 
+          {editablePosts && editablePosts.length > 0 && editablePosts.map((post) => (
             <PostCards
               post={post}
               key={post.id}
@@ -301,7 +270,6 @@ export default function Stream() {
                   : navigate(`/stream/${getAuthorId(post.id)}/${getPostId(post.id)}/edit`)
               }
               canShare={post.can_share}
-              isFriend={isFriend(post)}
             />
             ))
           } 

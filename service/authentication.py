@@ -47,6 +47,7 @@ class BackendAuthentication(BaseAuthentication):
     """
 
     def authenticate(self, request):
+        token = None
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith("Basic "):
             return None

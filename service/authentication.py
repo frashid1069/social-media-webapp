@@ -51,16 +51,14 @@ class BackendAuthentication(BaseAuthentication):
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith("Basic "):
             return None
-         # Extract the Base64-encoded part and decode it
+        salt = f"{request.scheme}://{request.get_host()}/api/"
+        
         try:
-            base64_credentials = auth_header.split("Basic ")[1]
-            decoded_credentials = base64.b64decode(base64_credentials).decode("utf-8")
-            username, password = decoded_credentials.split(":", 1)  # Split into username and password
-            print(username, password)
-        except (IndexError, ValueError, base64.binascii.Error):
-            raise exceptions.AuthenticationFailed("Invalid Basic Auth header")
-        
-        
+            payload = jwt.decode(token, salt, algorithms="HS256")
+            print(payload)
+        except Exception:
+            raise exceptions.AuthenticationFailed('Invalid token')
+
         try:
             user = User.objects.get(username=username)
             

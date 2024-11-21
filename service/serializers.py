@@ -1,8 +1,7 @@
 from rest_framework import serializers
-from .models import Post, Comment, Follow
-from author.serializers import Author, AuthorSerializer
+from .models import Follow
+from author.serializers import Author
 from django.contrib.auth.models import User
-from django.urls import reverse
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -36,25 +35,17 @@ class SignUpSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(username=username, password=password)
         # User is inactive until approved by the admin
         user.is_active = False
-    
-        
-        #host = f"{self.context['request'].scheme}://{self.context['request'].get_host()}{reverse('author-list')}"
+        user.save()
     
         host = self.context.get('host', 'http://test') + 'api/'
         fqid = f'{host}authors/{user.id}'
         author = Author.objects.create(user=user, 
-                                       username=username,
                                        host=host,
                                        fqid=fqid,
                                        **validated_data)
         return author
 
         
-# class LikeSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Like
-#         fields = "__all__"
-
 class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow

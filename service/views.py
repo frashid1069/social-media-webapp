@@ -36,23 +36,23 @@ class Login(APIView):
         username = request.data.get("username")
         password = request.data.get("password")
         try:
-            author = Author.objects.get(username=username)
+            user = User.objects.get(username=username)
             
             # registered author without approval
-            if not author.user.is_active:
+            if not user.is_active:
                 return Response({'error': 'Your account is inactive. Please wait for admin approval.'}, status=status.HTTP_403_FORBIDDEN)
             
-            if not check_password(password, author.user.password):
+            if not check_password(password, user.password):
                  return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
             
-            token = create_token({'id': author.serial, 'username': author.username}, 100000)
+            token = create_token({'id': user.author.serial, 'username': user.username}, 100000)
 
             return Response({
                 'token': token,
                 'user': {
-                    'id': author.serial,
-                    'username': author.username,
-                    'display_name': author.display_name,
+                    'id': user.author.serial,
+                    'username': user.username,
+                    'display_name': user.author.display_name,
                 }
             }, status=status.HTTP_200_OK)
 
@@ -68,19 +68,19 @@ class SignUp(APIView):
         if serializer.is_valid():
             try:
                 author = serializer.save()
-                token = create_token({'id': author.serial, 'username': author.username}, 100000000)
+                token = create_token({'id': author.serial, 'username': author.user.username}, 100000000)
                 return Response({
                     'message': 'User created successfully.',
                     'token': token,
                     'user': {
                         'id': author.serial,
-                        'username': author.username,
+                        'username': author.user.username,
                         'display_name': author.display_name,
                     }
                 }, status=status.HTTP_201_CREATED)
                 
-            except:
-                return Response({'error': 'A user with that username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+            except ValidationError as e:
+                return Response({'error': e.detail}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     

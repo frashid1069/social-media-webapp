@@ -167,6 +167,9 @@ export default function Stream() {
   const goCreatePost = () => {
     navigate(`/stream/${authorId}/createPost`);
   };
+  const goShowAuthors = () => {
+    navigate(`/stream/${currentAuthorId}/authors`);
+  }
   // log out the current user
   const goLogout = () => {
     localStorage.setItem("token", '');

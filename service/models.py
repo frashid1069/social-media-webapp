@@ -31,6 +31,33 @@ class Follow(models.Model):
     def get_follower(self):
         return self.follower
     
+    def accept(self):
+        """
+        Set the pending status to 'no' to activate the follow relationship.
+        """
+        self.pending = 'no'
+        self.save(update_fields=['pending'])
+
+    def reject(self):
+        """
+        Reject the follow request by deleting the object.
+        """
+        self.delete()
+    
+    @property
+    def is_active(self):
+        """
+        Returns True if the follow relationship is active (pending = 'no').
+        """
+        return self.pending == 'no'
+    
+class FollowManager(models.Manager):
+    def active(self):
+        """
+        Returns all active follow relationships (pending = 'no').
+        """
+        return self.filter(pending='no')
+    
 
 
     

@@ -179,6 +179,8 @@ def forward_follow_request(request):
                         
                 except requests.RequestException as e:
                     print(f"Error forward follow request to {node.url}: {e}")
+            else:
+                print(f"Error fetching from {node.url}")
 
         return Response(response_data, status=status.HTTP_201_CREATED)
     
@@ -273,7 +275,6 @@ def inbox(request, AUTHOR_SERIAL):
     AUTHOR_SERIAL will be the object below
     4) receives all the new posts from who you follow
     """
-    
     author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
     try: 
         type = request.data.get('type')
@@ -396,6 +397,7 @@ def inbox(request, AUTHOR_SERIAL):
                 
                 if serializer.is_valid():
                     sender = serializer.save(fqid=sender_fqid)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
                 else:
                     return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
             except ValidationError as e:
@@ -419,9 +421,11 @@ def inbox(request, AUTHOR_SERIAL):
         else:
             post = get_object_or_404(Post, fqid=post_fqid)
         
-        
-        
-        print(f"Received a new post from {sender}")
+        print(f"{author} received a new post from {sender}")
+        return Response(
+            {"detail": f"Post already exists with fqid {post_fqid}.", "post": PostSerializer(post).data},
+            status=status.HTTP_200_OK,
+        )
         
         
     

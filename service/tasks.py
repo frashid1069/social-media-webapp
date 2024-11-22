@@ -2,7 +2,8 @@
 from background_task import background
 import requests
 from django.utils import timezone
-from .models import Author, Post
+from .models import Author
+from post.models import Post
 import logging
 
 logger = logging.getLogger(__name__)

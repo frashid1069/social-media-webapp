@@ -9,7 +9,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 import requests
-from service.utils.jwt_auth import create_server_token
+from service.utils.jwt_auth import create_hearders
 from django.shortcuts import get_object_or_404
 
 class AuthorPagination(PageNumberPagination):
@@ -62,12 +62,7 @@ class AuthorView(ModelViewSet):
             allowed_nodes = Node.objects.filter(is_allowed=True)
             
             for node in allowed_nodes:
-                print(node.username,node.password)
-                token = create_server_token({'username': node.username, 'password': node.password}, 100000, node.url)
-                print(token)
-                headers = {
-                    "Authorization": f"Bearer {token}" 
-                }
+                headers = create_hearders(node)
                 try:
                     response = requests.get(f"{node.url}authors/", headers=headers)
                     

@@ -50,7 +50,6 @@ const EditPost = () => {
         formData.append("description", postDescription);
         formData.append("contentType", postContentType);
         formData.append("visibility", visibility);
-        formData.append("published", new Date().toISOString());
 
         if (postContentType === "text/markdown") {
             formData.append("content", postContent);

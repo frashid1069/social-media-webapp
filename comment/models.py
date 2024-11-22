@@ -25,6 +25,8 @@ class Comment(models.Model):
             self.post.save(update_fields=['comment_count']) 
             # for fqid
             self.fqid = self.author.fqid + "/commented/" + str(self.serial)
+        else:
+            self.updated_at = timezone.now()
         super().save(*args, **kwargs)
         
     

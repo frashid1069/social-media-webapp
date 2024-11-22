@@ -60,6 +60,21 @@
         }
     },
     {
+        "model": "auth.user",
+        "pk": 5,
+        "fields": {
+            "username": "rexlocal3",
+            "first_name": "Rex",
+            "last_name": "",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$s63pXH4wNa4jzMApQ5vc69$GtOp8UxYwwFfHGVKXNeWdhMD2D3rPk40Ar+pwc/KiRA=", 
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true, 
+            "date_joined": "2024-11-22 06:28:58"
+        }
+    },
+    {
         "model": "author.author",
         "pk": 1,
         "fields": {
@@ -85,6 +100,22 @@
             "serial": 4,
             "display_name": "rexlocal2",
             "bio": "rexlocal2",
+            "github_url": "https://github.com/yongxin12",
+            "profile_image": null,
+            "created_at": "2024-11-22 06:28:58.656257",
+            "updated_at": "2024-11-22 06:28:58.656261"
+        }
+    },
+    {
+        "model": "author.author",
+        "pk": 3,
+        "fields": {
+            "user": 5,
+            "fqid": "http://localhost:8000/api/authors/5",
+            "host": "http://localhost:8000/api/",
+            "serial": 5,
+            "display_name": "rexlocal3",
+            "bio": "rexlocal3",
             "github_url": "https://github.com/yongxin12",
             "profile_image": null,
             "created_at": "2024-11-22 06:28:58.656257",

@@ -65,7 +65,7 @@ class AuthorView(ModelViewSet):
             for node in allowed_nodes:
                 headers = create_hearders(node)
                 try:
-                    response = requests.get(f"{node.url}authors/", headers=headers)
+                    response = requests.get(f"{node.url}authors/", headers=headers, timeout=10)
                     
                     if response.status_code == 200:
                         try:
@@ -80,17 +80,17 @@ class AuthorView(ModelViewSet):
                                 if serializer.is_valid():
                                     serializer.save()   
                                 else:
-                                    return Response({'errors': f"Author validation failed on host:{node.url}:{serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+                                    print(f"errorsAuthor validation failed on host:{node.url}:{serializer.errors}")
                             
                         except ValidationError as e:
                             print(f"Validation Error: {e.detail}")
                             return Response({"error": e.detail},  status=status.HTTP_400_BAD_REQUEST)
                     else:
                         print(f"Failed to fetch authors from {node.url}: {response.status_code}")
-                        Response(f"Failed to fetch authors from {node.url}: {response.status_code}", status=status.HTTP_400_BAD_REQUEST)
                         
                 except requests.RequestException as e:
                     print(f"Error fetching authors from {node.url}: {e}")
+                    return Response(f"Error fetching authors from {node.url}: {e}")
                     
             queryset = self.get_queryset()      
             paged_queryset = self.paginate_queryset(queryset)

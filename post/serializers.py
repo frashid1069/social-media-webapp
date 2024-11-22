@@ -7,9 +7,9 @@ from comment.serializer import Comment, CommentSerializer
 class PostSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     id = serializers.URLField(source='fqid', read_only=True)
-    page = serializers.SerializerMethodField(read_only=True)
+    page = serializers.URLField(source='fqid',read_only=True)
     description = serializers.CharField(required=True)
-    contentType = serializers.CharField(source='content_type')
+    contentType = serializers.CharField(required=True, source='content_type')
     content = serializers.CharField(required=True)
     author = AuthorSerializer(read_only=True)
     comments = serializers.SerializerMethodField(read_only=True)
@@ -35,8 +35,6 @@ class PostSerializer(serializers.ModelSerializer):
             "visibility",
         ]
         
-    def get_page(self, obj):
-        return "http://nodebbbb/authors/222/posts/293"
     
     def get_likes(self, obj):
         likes = Like.objects.filter(object=obj.fqid)

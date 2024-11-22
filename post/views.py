@@ -15,6 +15,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from service.utils.push import push
 from service.utils.check_friend import check_friend
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 
 
@@ -251,7 +252,6 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
         PUT [local] update a post
             local posts: must be authenticated locally as the author
     """
-
     if POST_SERIAL is not None and AUTHOR_SERIAL is not None:
         author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
         post = get_object_or_404(Post, serial=POST_SERIAL, author=author.id)
@@ -277,11 +277,37 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
     elif request.method == 'PUT':
         if request.user.author.serial != AUTHOR_SERIAL:
             return Response({"detail": "You are not authorized to update this post."}, status=status.HTTP_403_FORBIDDEN)
+        
+        # handle image post
+        image_file = request.FILES.get('content')
+        if image_file and image_file.content_type == 'image/jpeg':
+            if not image_file:
+                return Response({"error": "An image file is required."},
+                                status=status.HTTP_400_BAD_REQUEST)            
+            # base64 encode
+            image_data = image_file.read()
+            base64_data = base64.b64encode(image_data).decode('utf-8')
+            
+            # request.data is immutable
+            request_data = request.data.copy()
+            request_data['content'] = base64_data
 
-        serializer = PostSerializer(post, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()  
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = PostSerializer(post, data=request_data,  partial=True)
+        else:
+            serializer = PostSerializer(post, data=request.data, partial=True)
+        print(request.data)
+        try:
+            if serializer.is_valid():
+                serializer.save()  
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            print(f"Validation Error: {e.detail}")
+            return Response({"error": e.detail},  status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {"detail": f"An error occurred while saving the post: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,)
+
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     

@@ -51,12 +51,14 @@ class Post(models.Model):
             self.fqid = self.author.fqid + "/posts/" + str(self.serial)
             if 'image' in self.content_type and self.content:
                 self.image_url = self.fqid + "/image"
+        else:
+            self.updated_at = timezone.now()
             
             
         super(Post, self).save(*args, **kwargs)
     
     def __str__(self):
-        return self.fqid
+        return self.title
 '''
 def upload_post_image(instance, filename):
     # - sukh 

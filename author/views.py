@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 import requests
 from service.utils.jwt_auth import create_hearders
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view
 
 class AuthorPagination(PageNumberPagination):
     page_size = 100  
@@ -141,3 +142,64 @@ class AuthorView(ModelViewSet):
             raise PermissionDenied("You do not have permission to edit this profile.")
         return super().update(request, *args, **kwargs)
     
+    
+    
+    
+@api_view(['GET', 'PUT'])
+def author_detail(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
+    """
+    URL: ://service/api/authors/{AUTHOR_SERIAL}/
+    eg. http://localhost:8000/api/authors/1/
+        GET [local, remote]: retrieve AUTHOR_SERIAL's profile
+        PUT [local]: update AUTHOR_SERIAL's profile
+    URL: ://service/api/authors/{AUTHOR_FQID}/
+        GET [local]: retrieve AUTHOR_FQID's profile
+    """
+    
+    
+    if AUTHOR_SERIAL is not None:
+        author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False, user__isnull=False)
+        serializer = AuthorSerializer(author)
+        return Response(serializer.data)
+    elif AUTHOR_FQID is not None:
+        
+        author_exists = Author.objects.filter(fqid=AUTHOR_FQID, is_deleted=False).exists()
+        if author_exists:
+            print(AUTHOR_FQID)
+            author = get_object_or_404(Author, fqid=AUTHOR_FQID, is_deleted=False)
+            serializer = AuthorSerializer(author)
+        else:
+            allowed_node_exists = Node.objects.filter(is_allowed=True, url__in=AUTHOR_FQID).exists()
+            if allowed_node_exists:
+                allowed_node = Node.objects.filter(is_allowed=True, url__in=AUTHOR_FQID)
+                headers = create_hearders(allowed_node)
+                
+                try:
+                    response = requests.get(AUTHOR_FQID, headers=headers)
+                    
+                    if response.status_code == 200:
+                        try:
+                            author = response.json()
+                            if author.get("id"):
+                                serializer = AuthorSerializer(data=author)
+                                if serializer.is_valid():
+                                    serializer.save()   
+                                else:
+                                    return Response({'errors': f"Author validation failed on host:{AUTHOR_FQID}:{serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+                            
+                        except ValidationError as e:
+                            print(f"Validation Error: {e.detail}")
+                            return Response({"error": e.detail},  status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        print(f"Failed to fetch authors from {AUTHOR_FQID}: {response.status_code}")
+                        Response(f"Failed to fetch authors from {AUTHOR_FQID}: {response.status_code}", status=status.HTTP_400_BAD_REQUEST)
+                        
+                except requests.RequestException as e:
+                    print(f"Error fetching authors from {AUTHOR_FQID}: {e}")
+            else:
+                print(f"Node object not found for {AUTHOR_FQID}")
+                Response(f"Node object not found for {AUTHOR_FQID}", status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(serializer.data)
+            
+                

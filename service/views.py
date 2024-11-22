@@ -24,7 +24,7 @@ import urllib.parse
 import requests
 from rest_framework.exceptions import ValidationError
 from service.models import Node
-from service.utils.jwt_auth import create_server_token
+from service.utils.jwt_auth import create_hearders
 
 # Later on, the index function will be used to handle incoming requests to polls/ and it will return the hello world string shown below.
 def index(request):
@@ -160,17 +160,13 @@ def forward_follow_request(request):
         if object.host != actor.host:            
             nodes_exists = Node.objects.filter(is_allowed=True, url=object.host).exists()
             if nodes_exists:
-                node = Node.objects.filter(is_allowed=True, url=object.host)
+                node = Node.objects.get(is_allowed=True, url=object.host)                
                 print(node.username,node.password)
-                token = create_server_token({'username': node.username, 'password': node.password}, 100000, node.url)
-                print(token)
-                headers = {
-                    "Authorization": f"Bearer {token}" 
-                }
+                headers = create_hearders(node)
                 try:
-                    response = requests.get(f"{object.fqid}/inbox", headers=headers)
+                    response = requests.post(f"{object.fqid}/inbox", headers=headers, json=request.data)
                     
-                    if response.status_code == 200:
+                    if response.status_code == 201:
                         try:
                             response_data = response.json()
                             
@@ -178,11 +174,11 @@ def forward_follow_request(request):
                             print(f"Validation Error: {e.detail}")
                             return Response({"error": e.detail},  status=status.HTTP_400_BAD_REQUEST)
                     else:
-                        print(f"Failed to fetch authors from {node.url}: {response.status_code}")
-                        return Response(f"Failed to fetch authors from {node.url}: {response.status_code}", status=status.HTTP_400_BAD_REQUEST)
+                        print(f"Failed POST request to {node.url} with {response}")
+                        return Response(f"Failed POST request to  {node.url} with {response}", status=status.HTTP_400_BAD_REQUEST)
                         
                 except requests.RequestException as e:
-                    print(f"Error fetching authors from {node.url}: {e}")
+                    print(f"Error forward follow request to {node.url}: {e}")
 
         return Response(response_data, status=status.HTTP_201_CREATED)
     

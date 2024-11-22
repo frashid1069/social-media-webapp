@@ -12,6 +12,7 @@ export default function AuthorsPage() {
     const { authorId } = useParams();
     const navigate = useNavigate();
     const currentAuthorId = authorId;
+    const loggedInID = localStorage.getItem("logged_in_id");
 
     useEffect(() => {
         const fetchAuthors = async () => {
@@ -19,15 +20,16 @@ export default function AuthorsPage() {
           const data = await response.json();
       
           if (data && data.authors && data.authors.length > 0) {
-            const filteredAuthors = data.authors.filter(
-              (author) => {
-                console.log("author id:", getAuthorId(author.id));
-                console.log("current author id:", currentAuthorId);
-                return getAuthorId(author.id) !== currentAuthorId;
-                }
-            );
-            setAuthors(filteredAuthors); // Update state
-            console.log(filteredAuthors.length); // Log directly from the filtered list
+            // const filteredAuthors = data.authors.filter(
+            //   (author) => {
+            //     console.log("author id:", getAuthorId(author.id));
+            //     console.log("current author id:", currentAuthorId);
+            //     return getAuthorId(author.id) !== currentAuthorId;
+            //     }
+            // );
+            // setAuthors(filteredAuthors); // Update state
+            // console.log(filteredAuthors.length); // Log directly from the filtered list
+            setAuthors(data.authors);
           }
         };
       
@@ -90,7 +92,7 @@ export default function AuthorsPage() {
         };
       
         // Send the follow request to the inbox
-        const response = await cusFetch(`${apiUrl}authors/${authorID}/inbox`, {
+        const response = await cusFetch(`${apiUrl}forward/`, {
           method: "POST",
           headers: {
             token: `${token}`,
@@ -150,7 +152,7 @@ export default function AuthorsPage() {
             <button
                 id="unfollowButton"
                 className="follow-btn"
-                onClick={() => handleUnfollow(getAuthorId(author.id))}
+                onClick={() => handleUnfollow(author.id)}
             >
                 Unfollow
             </button>
@@ -158,7 +160,7 @@ export default function AuthorsPage() {
             <button
                 id="followButton"
                 className="follow-btn"
-                onClick={() => handleFollow(getAuthorId(author.id))}
+                onClick={() => handleFollow(author.id)}
             >
                 Follow
             </button>

@@ -8,7 +8,7 @@ import { cusFetch } from './Login';
 import Stream from "./Stream";
 const apiUrl = process.env.REACT_APP_API_URL;
 
-export default function PostCards({ post, editable, onClick }) {
+export default function PostCards({ post, currenAuthor, onClick }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState("");
@@ -79,7 +79,7 @@ export default function PostCards({ post, editable, onClick }) {
         comment: newCommentContent,
         contentType: "text/markdown",
         post: post.id,
-        author: post.author.id
+        author: currenAuthor.id
       }),
     });
 

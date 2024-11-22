@@ -43,6 +43,15 @@ export default function Stream() {
   const [streamPosts, setstreamPosts] = useState([]);
   const currentAuthorId = authorId
 
+  // get the current author object
+  const [currentAuthor, setCurrentAuthor] = useState([]);
+  useEffect(() => {
+    cusFetch(`${apiUrl}authors/${authorId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setCurrentAuthor(data);
+      });
+  }, []);
 
   // Get the posts list
   useEffect(() => {
@@ -246,7 +255,7 @@ export default function Stream() {
             <PostCards
               post={post}
               key={post.id}
-              editable={false}
+              currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
                   ? navigate(`authors/${getAuthorId(post.id)}/posts/${getPostId(post.id)}`)
@@ -266,7 +275,7 @@ export default function Stream() {
             <PostCards
               post={post}
               key={post.id}
-              editable={true}
+              currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
                   ? navigate(`authors/${getAuthorId(post.id)}/posts/${getPostId(post.id)}`)

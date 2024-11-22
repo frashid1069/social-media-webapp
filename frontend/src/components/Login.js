@@ -15,16 +15,6 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
 
-  // get the author list
-  // useEffect(() => {
-  //   fetch(`${apiUrl}author/`)
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       console.log(data);
-  //       setAuthors(data);
-  //     });
-  // }, []);
-
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
   };
@@ -32,34 +22,16 @@ export default function Login() {
     setPassword(e.target.value);
   };
 
-  // check if the input username and author's username match
-  // const matchesUsername = (author, username) => {
-  //   return author.username === username;
-  // };
+  // const fetchCurrentAuthor = async (userID) => {
+  //   const response = await cusFetch(`${apiUrl}authors/${userID}`);
+  //   const data = await response.json();
 
-  // check if the input password and author's password match
-  // const matchesPassword = (author, password) => {
-  //   return author.password === password;
-  // };
-
-  // find the matched author by comparing username and password
-  // const filterAuthor = authors.filter(
-  //   (author) =>
-  //     matchesUsername(author, username) && matchesPassword(author, password)
-  // );
-
-  // for existed user, redirect to its stream page, otherwise redirect to sign up page
-  // function verify() {
-  //   if (filterAuthor.length === 0) {
-  //     console.log(filterAuthor);
-  //     navigate("/signup");
-  //   } else {
-  //     navigate(`/stream/${filterAuthor[0].id}`);
+  //   if (data && data.type==='author') {
+  //     const author = new Author(data);
+  //     localStorage.setItem("currentAuthor", JSON.stringify(author.toJSON()));
   //   }
-  // }
-  // function goSignUp() {
-  //   navigate("/signup");
-  // }
+  // };
+
   const verify = async () => {
     try {
       const response = await fetch(`${apiUrl}login/`, {
@@ -78,10 +50,9 @@ export default function Login() {
         //"user":{"id":6,"username":"dd","display_name":"dd"}}
         const data = await response.json();
         const token = data.token;        
-        // const author = new Author(data);    // Create an Author instance for the logged-in user
-        // localStorage.setItem("currentAuthor", JSON.stringify(author.toJSON()));  // Save the logged-in user to local storage
         localStorage.setItem("token", token);
         localStorage.setItem("logged_in_id", data.user.id);
+        // fetchCurrentAuthor(data.user.id);
         navigate(`/stream/${data.user.id}`);
       } else {
         //const data = await response.json();

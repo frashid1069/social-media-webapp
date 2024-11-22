@@ -35,10 +35,10 @@ urlpatterns = [
                                               permission_classes=[AllowAny]), name='redoc'),
     re_path(r'^home.*$', index), # applied re to path(), it handles matched urls to the frontend 
     path('api/', include("service.urls")),
-    path('api/', include("author.urls")),
     path('api/', include("post.urls")),
     path('api/', include("comment.urls")),
     path('api/', include("like.urls")),
+    path('api/', include("author.urls")),
 ]
 
 # Check if the application is running in development mode (DEBUG = True)

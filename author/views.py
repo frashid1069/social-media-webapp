@@ -192,13 +192,14 @@ def author_detail(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
                             return Response({"error": e.detail},  status=status.HTTP_400_BAD_REQUEST)
                     else:
                         print(f"Failed to fetch authors from {AUTHOR_FQID}: {response.status_code}")
-                        Response(f"Failed to fetch authors from {AUTHOR_FQID}: {response.status_code}", status=status.HTTP_400_BAD_REQUEST)
+                        return Response(f"Failed to fetch authors from {AUTHOR_FQID}: {response.status_code}", status=status.HTTP_400_BAD_REQUEST)
                         
                 except requests.RequestException as e:
                     print(f"Error fetching authors from {AUTHOR_FQID}: {e}")
+                    return Response(f"Error fetching authors from {AUTHOR_FQID}: {e}")
             else:
                 print(f"Node object not found for {AUTHOR_FQID}")
-                Response(f"Node object not found for {AUTHOR_FQID}", status=status.HTTP_400_BAD_REQUEST)
+                return Response(f"Node object not found for {AUTHOR_FQID}", status=status.HTTP_400_BAD_REQUEST)
         
         return Response(serializer.data)
             

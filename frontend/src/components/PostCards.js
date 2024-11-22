@@ -19,17 +19,17 @@ export default function PostCards({ post, editable, onClick }) {
 
   const navigate = useNavigate();
 
-  
+
   function getAuthorId(url) {
     const authorMatch = url.match(/authors\/(\d+)/);
     return authorMatch ? authorMatch[1] : null;       // Returns author ID or null if not found
   }
-  
+
   function getPostId(url) {
     const postMatch = url.match(/posts\/(\d+)/);
     return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
   }
-  
+
 
 
   // Fetch likes for the post
@@ -91,13 +91,19 @@ export default function PostCards({ post, editable, onClick }) {
 
   const getMarkdownContent = () => {
     // From https://www.w3schools.com/jsref/jsref_startswith.asp 
-    if(post.content.startsWith("/")) {
+    if (post.content.startsWith("/")) {
       return { __html: marked("") };
     }
     return { __html: marked(post.content || "") };
   };
 
-  const imageURL = post.image_url || null;
+  // if type is image then format the image url
+  let imageURL = null;
+  if (post.contentType === "image/jpeg") {
+    imageURL = `${post.id}/image`;
+  } else {
+    imageURL = null;
+  }
 
   const handleLike = async () => {
     const myProfile = cusFetch(`${apiUrl}authors/${authorId}/`).then((response) => response.json())
@@ -139,7 +145,7 @@ export default function PostCards({ post, editable, onClick }) {
             "description": post.description,
           }),
         });
-  
+
         if (response.ok) {
           alert("Post shared successfully!");
         } else {

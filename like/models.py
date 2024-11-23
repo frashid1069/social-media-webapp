@@ -1,8 +1,7 @@
 from django.db import models
-from datetime import datetime
 from author.models import Author
 from post.models import Post
-
+from django.utils import timezone
 
 class Like(models.Model):    
     # READ ONLY
@@ -11,7 +10,7 @@ class Like(models.Model):
     object = models.URLField(blank=True, null=True, max_length=200)
     fqid = models.URLField(blank=True, null=True, max_length=200, unique=True)
     serial = models.PositiveIntegerField(default=0)
-    created_at = models.DateTimeField(default=datetime.now)
+    created_at = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
         return f"Like by {self.author} on {self.post}"

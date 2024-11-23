@@ -22,6 +22,7 @@ class Post(models.Model):
         ('public', 'PUBLIC'),
         ('friend-only', 'FRIENDS'),
         ('unlisted', 'UNLISTED'),
+        ('deleted', 'DELETED')
     ]
     visibility = models.CharField(max_length=11, choices=VISIBILITY_CHOICES, default='public')
     '''
@@ -44,15 +45,19 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         if self._state.adding:
             # for serial increament
-            self.serial = self.author.post_count + 1
-            self.author.post_count = self.serial
-            self.author.save(update_fields=['post_count']) 
-            # for fqid
-            self.fqid = self.author.fqid + "/posts/" + str(self.serial)
-            if 'image' in self.content_type and self.content:
-                self.image_url = self.fqid + "/image"
+            if self.author.user is not None:
+                self.serial = self.author.post_count + 1
+                self.author.post_count = self.serial
+                self.author.save(update_fields=['post_count']) 
+                # for fqid
+                self.fqid = self.author.fqid + "/posts/" + str(self.serial)
+                if 'image' in self.content_type and self.content:
+                    self.image_url = self.fqid + "/image"
         else:
             self.updated_at = timezone.now()
+            print(1)
+            if self.visibility == 'deleted':
+                self.is_deleted = True
             
             
         super(Post, self).save(*args, **kwargs)

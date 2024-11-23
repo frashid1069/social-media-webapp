@@ -299,6 +299,7 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
         try:
             if serializer.is_valid():
                 serializer.save()  
+                push(author, request, serializer.data)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except ValidationError as e:
             print(f"Validation Error: {e.detail}")
@@ -316,9 +317,15 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
             return Response({"detail": "You are not authorized to delete this post."}, status=status.HTTP_403_FORBIDDEN)
 
         # soft delete the post
-        post.is_deleted = True
+        post.visibility = 'deleted'
         post.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = PostSerializer(post)
+        print(serializer.data)
+        push(author, request, serializer.data)
+        if post.visibility == 'deleted' and post.is_deleted == True:
+            return Response({"detail": "Post is deleted"},status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"error": "Failed to delete"},status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def fqid_post_detail(request, POST_FQID=None):
@@ -372,7 +379,7 @@ def post_list(request, AUTHOR_SERIAL):
             posts = Post.objects.filter(author=author, visibility='public')
              
         # TODO: to_representation and to_internal_value
-     
+        
         paginator = PostPagination()
         paged_posts = paginator.paginate_queryset(posts, request)
         serializer = PostSerializer(paged_posts, many=True)

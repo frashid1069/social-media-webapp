@@ -44,6 +44,8 @@ class Post(models.Model):
     
     def save(self, *args, **kwargs):
         if self._state.adding:
+            if self.visibility == 'deleted':
+                self.is_deleted = True
             # for serial increament
             if self.author.user is not None:
                 self.serial = self.author.post_count + 1
@@ -55,7 +57,6 @@ class Post(models.Model):
                     self.image_url = self.fqid + "/image"
         else:
             self.updated_at = timezone.now()
-            print(1)
             if self.visibility == 'deleted':
                 self.is_deleted = True
             

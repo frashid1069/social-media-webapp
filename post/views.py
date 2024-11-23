@@ -473,8 +473,9 @@ def get_all_visible_post(request):
                     posts = posts | Post.objects.filter(author=follow.followed, visibility__in=['unlisted', 'friend-only'])
                 else:
                     posts = posts | Post.objects.filter(author=follow.followed, visibility='unlisted')
+    
      
-    posts = posts.order_by("-updated_at")
+    posts = posts.filter(is_deleted=False, visibility__in=['unlisted', 'friend-only', 'public']).order_by("-updated_at")
     serializer = PostSerializer(posts, many=True)
     response_data = {
             "type":"posts",

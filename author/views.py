@@ -158,9 +158,16 @@ def author_detail(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
     
     
     if AUTHOR_SERIAL is not None:
-        author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False, user__isnull=False)
-        serializer = AuthorSerializer(author)
-        return Response(serializer.data)
+        if request.method == "GET":
+            author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False, user__isnull=False)
+            serializer = AuthorSerializer(author)
+            return Response(serializer.data)
+        if request.method == "PUT":
+            author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False, user__isnull=False)
+            serializer = AuthorSerializer(author,data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+            return Response(serializer.data)
     elif AUTHOR_FQID is not None:
         
         author_exists = Author.objects.filter(fqid=AUTHOR_FQID, is_deleted=False).exists()

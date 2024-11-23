@@ -5,7 +5,7 @@ import "../streamStyle.css";
 import { getAuthorId } from "./Stream";
 const apiUrl = process.env.REACT_APP_API_URL;
 
-
+// Shows all authors, local and foreign that I can follow
 export default function AuthorsPage() {
     const [authors, setAuthors] = useState([]);
     const [isFollowing, setIsFollowing] = useState({});
@@ -20,16 +20,13 @@ export default function AuthorsPage() {
           const data = await response.json();
       
           if (data && data.authors && data.authors.length > 0) {
-            // const filteredAuthors = data.authors.filter(
-            //   (author) => {
-            //     console.log("author id:", getAuthorId(author.id));
-            //     console.log("current author id:", currentAuthorId);
-            //     return getAuthorId(author.id) !== currentAuthorId;
-            //     }
-            // );
-            // setAuthors(filteredAuthors); // Update state
-            // console.log(filteredAuthors.length); // Log directly from the filtered list
-            setAuthors(data.authors);
+            // Include all authors I can follow, excluding me since I cannot follow myself
+            const filteredAuthors = data.authors.filter(
+              (author) => {
+                return getAuthorId(author.id) !== currentAuthorId;
+                }
+            );
+            setAuthors(filteredAuthors);
           }
         };
       
@@ -43,7 +40,6 @@ export default function AuthorsPage() {
     // Handle following
     const handleFollow = async (authorID) => {
         const token = localStorage.getItem("token");
-        console.log("author ID: ", authorID)
       
         // Fetch the logged-in author's details
         const actorResponse = await cusFetch(`${apiUrl}authors/${currentAuthorId}/`, {

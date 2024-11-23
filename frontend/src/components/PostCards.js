@@ -105,28 +105,68 @@ export default function PostCards({ post, currenAuthor, onClick }) {
     imageURL = null;
   }
 
-  const handleLike = async () => {
-    const myProfile = cusFetch(`${apiUrl}authors/${authorId}/`).then((response) => response.json())
-    if (!liked) {
-      const likeObject = {
-        author: myProfile,
-        object: post,
-      };
+  // const handleLike = async () => {
+  //   const myProfile = cusFetch(`${apiUrl}authors/${authorId}/`).then((response) => response.json())
+  //   if (!liked) {
+  //     const likeObject = {
+  //       author: myProfile,
+  //       object: post,
+  //     };
 
-      const response = await cusFetch(`${apiUrl}authors/${authorId}/inbox`, {
+  //     const response = await cusFetch(`${apiUrl}authors/${authorId}/inbox`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(likeObject),
+  //     });
+
+  //     if (response.ok) {
+  //       setLiked(true);
+  //       cusFetchLikes();
+  //     }
+  //   }
+  // };
+
+  const handleLike = async () => {
+    // Fetch the profile of the current author
+    const myProfile = await cusFetch(`${apiUrl}authors/${authorId}/`).then((response) => response.json());
+  
+    // Check if the user has already liked the post
+    if (!liked) {
+      // Construct the like object
+      const likeObject = {
+        type: "like",
+        author: {
+          type: "author",
+          id: `${apiUrl}authors/${authorId}`,
+          page: `http://nodeaaaa/authors/${myProfile.username}`,  // Adjusted to use the username from profile
+          host: apiUrl,
+          displayName: myProfile.displayName,
+          github: myProfile.github,
+          profileImage: myProfile.profileImage || "https://default.image.url",  // Default fallback image if none exists
+        },
+        object: `${apiUrl}authors/${authorId}/posts/${postId}`,  // URL format for the post object
+      };
+  
+      // Send the like object to the API
+      const response = await cusFetch(`${apiUrl}authors/${authorId}/liked`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(likeObject),
       });
-
+  
       if (response.ok) {
         setLiked(true);
-        cusFetchLikes();
+        cusFetchLikes(); // Refresh likes after posting
+      } else {
+        console.error("Failed to like the post");
       }
     }
   };
+  
 
   const handleShare = async () => {
     if (post.visibility === "public") {

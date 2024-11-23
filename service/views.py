@@ -376,8 +376,6 @@ def inbox(request, AUTHOR_SERIAL):
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 
-        
-
     elif type == 'comment':
         # check if post exists
         post_fqid = request.data.get("post")
@@ -411,210 +409,68 @@ def inbox(request, AUTHOR_SERIAL):
         return Response({"error": "Post doesn't matched with AUTHOR_SERIAL"},status=status.HTTP_400_BAD_REQUEST)
     
     elif type == 'post':
+        
         sender_fqid = request.data.get("author", {}).get("id")
         author_exists = Author.objects.filter(fqid=sender_fqid, is_deleted=False).exists()
+        
+        # create an author copy if author doesn't exists
         if author_exists:
             sender = get_object_or_404(Author, fqid=sender_fqid)
         else:
             try:
                 serializer = AuthorSerializer(data=request.data.get("author", {}))
-                
                 if serializer.is_valid():
                     sender = serializer.save(fqid=sender_fqid)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    print(f"Author copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
+                       
+                # error handling
                 else:
+                    print(f"Author validation failed {serializer.errors}")
                     return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
             except ValidationError as e:
                 print(f"Validation Error: {e.detail}")
-                return Response({"error": e.detail}, status=400)
+                return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                print(f"Unexpected Error: {e}")
+                return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        # check if post exists
+        print(f"{author} received a post from {sender}")
         post_fqid = request.data.get("id")
         post_exists = Post.objects.filter(fqid=post_fqid, is_deleted=False).exists()
+        # create a post copy if post doesn't exists
         if not post_exists:
             try:
                 serializer = PostSerializer(data=request.data)
                 if serializer.is_valid():
-                    serializer.save(author=sender)
+                    serializer.save(author=sender, fqid=post_fqid)
+                    print(f"Post copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
+                              
+                # error handling
                 else:
-                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+                    print(f"Post validation failed {serializer.errors}")
+                    return Response({'errors': f"Post validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
             except ValidationError as e:
                 print(f"Validation Error: {e.detail}")
-                return Response({"error": e.detail}, status=400)
+                return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                print(f"Unexpected Error: {e}")
+                return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+        # update a post
         else:
-            post = get_object_or_404(Post, fqid=post_fqid)
-        
-        print(f"{author} received a new post from {sender}")
-        return Response(
-            {"detail": f"Post already exists with fqid {post_fqid}.", "post": PostSerializer(post).data},
-            status=status.HTTP_200_OK,
-        )
-        
-        
+            post = get_object_or_404(Post, fqid=post_fqid, is_deleted=False)
+            serializer = PostSerializer(post, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                print(f"Post copy updated successfully: {sender.display_name} (fqid: {sender.fqid})")
+                return Response({"detail": f"Post already exists with fqid {post_fqid}.", "post": PostSerializer(post).data},
+                                status=status.HTTP_200_OK,)
+            else:
+                print(f"Author validation failed {serializer.errors}")
+                return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
     
-    return Response({"error": "Nothing matched"},status=status.HTTP_400_BAD_REQUEST)
-
-
-"""
-Creates a post and saves it in the database
-"""
-def create_post(request):
-    # Checks if request is a POST, then gets information and creates the post
-    if request.method == "POST":
-        title = request.POST.get("title")
-        content = request.POST.get("content")
-        content_type = request.POST.get("content_type")
-        image_content = request.POST.get("image_content")
-        visibility = request.POST.get("visibility")
-        author = request.POST.get("author")
-        Post.objects.create(title=title, content=content, content_type = content_type, image_content = image_content, visbility=visibility, author=author)
-    # Need to return to the ui page
-    return
-
-"""
-Creates comment for the post and saves it in the database
-"""
-def create_comment(request, post_id, author_id):
-    if request.method == "POST":
-        content = request.POST.get("content")
-        post = Post.objects.get(id=post_id)
-        author = Author.objects.get(id=author_id)
-        if content == None or len(content) == 0:
-            # Error return to page again, does not create comment
-            return 
-        # Creates comment
-        models.Comment.objects.create(content=content, post=post, author=author_id)
-    # Redirect to page here, comment is added now
-    return
-
-def delete_post(request, post_id):
-    # Request should send through post id
-    # From https://stackoverflow.com/questions/3805958/how-to-delete-a-record-in-django-models by Wolph
-    Post.objects.filter(id=post_id).delete()
-    # Return to ui
-    return
-
-def edit_post(request, post_id):
-    # Retrieve the post object that matches the given post_id from the database
-    post = Post.objects.get(id=post_id)
-
-    # Check if the data provided in the request is valid according to the serializer's validation rules.
-    serializer = serializers.Post(post, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data) # # Return the updated post data as a JSON response.
-    # Return to ui
-    return 
-
-def follow_author(request, author_id):
-    follower = Author.objects.get(id=author_id)
-    followed_id = request.POST.get("followed")
-    followed = Author.objects.get(id=followed_id)
-
-    # Check if a pending follow request already exists
-    existing_follow = Follow.objects.filter(follower=follower, followed=followed, pending="yes")
-    if existing_follow:
-        return
-    
-    # Create a new follow request if none exists
-    Follow.objects.create(follower=follower, followed=followed, pending="yes")
-    return
-
-def handle_follow(request, follow_id):
-    # From https://stackoverflow.com/questions/3805958/how-to-delete-a-record-in-django-models by Wolph
-    choice = request.POST.get("choice")
-    follow = Follow.objects.filter(id=follow_id).first()
-
-    # if doesn't exist, return
-    if not follow:
-        return
-
-    # if follow request declined, delete the follow object entirely
-    if choice == "no":
-        follow.delete()
-    # If accepted, update and save follow object to show that the sender is following the receiver    
-    elif choice == "yes":
-        follow.pending = "no"
-        follow.save()
-    # Return to ui
-    return
-
-def unfollow_author(request, author_id):
-    current_user_author = request.user.author  # Retrieve the current user's Author instance
-    author_to_unfollow = Author.objects.get(id=author_id)
-    
-    # Check if the Follow relationship exists
-    follow_instance = Follow.objects.filter(follower=current_user_author, followed=author_to_unfollow)
-    if follow_instance:
-        follow_instance.delete()  # Remove the Follow relationship
-    return
-
-
-def create_like(request, author_id, post_id):
-    if request.method == "POST":
-        # Retrieve the author and post objects based on the provided author_id and post_id
-        author = Author.objects.get(id=author_id)
-        post = Post.objects.get(id=post_id)
-
-        # Check if the like already exists
-        if models.Like.objects.filter(author=author, post=post).exists():
-            return
-        # Create the like
-        models.Like.objects.create(author=author, post=post)
-
-    # Redirect to the UI
-    return
-
-def delete_like(request, author_id, post_id):
-    if request.method == "DELETE":
-        like = models.Like.objects.filter(post=post_id, author=author_id)
-
-        # If the like exists, delete it
-        if like.exists():
-            like.delete()
-    # Return to ui
-    return
-
-
-def get_stream_posts(request, author_id):
-    following = models.Follow.filter(follower=author_id)
-    following_authors = []
-    for follow in following:
-        follower = follow.get_follower()
-        following_authors.append(follower)
-    # A list of all posts made by people that the author is following 
-    following_posts = Post.filter(author=following_authors)
-    return
-
-def sign_up(request):
-    username = request.POST.get("username")
-    display_name = request.POST.get("display_name")
-    password = request.POST.get("password")
-    bio = request.POST.get("bio")
-    github_url = request.POST.get("github_url")
-    # From https://www.devhandbook.com/django/user-profile/
-    profile_image = request.POST.get("profile_image")
-    Author.objects.create(username=username, display_name=display_name, password=password, bio=bio, github_url=github_url, profile_image=profile_image)
-    # Return to UI
-    return 
-
-def login(request):
-    username = request.POST.get("username")
-    password = request.POST.get("password")
-    author = Author.objects.get(username=username)
-    if author == None:
-        # User does not exist return
-        return 
-    if author.password != password:
-        # Invalid password return
-        return
-    # Successful return, return with username to show they are signed in now
-    return
-# Now in the followView 
-# def notify(request, author_id):
-#     follow_requests = models.Follow.filter(following=author_id)
-#     return
+    return Response({"error": "Nothing matched with feild 'type'"},status=status.HTTP_400_BAD_REQUEST)
 
 
 '''
@@ -629,7 +485,3 @@ def edit_profile(request, author_id):
     # Return to ui
     return
 
-    # test comment
-
-
-    

@@ -14,7 +14,7 @@ function EditProfile() {
   const [formData, setFormData] = useState({
     displayName: '',
     github: '',
-    profile_image: null
+    profileImage: null
   });
 
   const token = localStorage.getItem('token');  
@@ -43,7 +43,7 @@ function EditProfile() {
     .then((data) => setFormData(data));
   }, [authorId]);
 
-  console.log(formData);
+
 
   /*
     The handleChange function is used to update the formData state variable whenever the author inputs data into the form fields. This 
@@ -65,7 +65,7 @@ function EditProfile() {
   const handleFileChange = (e) => {
     setFormData({
       ...formData,
-      profile_image: e.target.files[0],
+      profileImage: e.target.files[0],
     });
   };
 
@@ -87,20 +87,29 @@ function EditProfile() {
     // formDataToSend.append('updated_at', new Date().toISOString());
     //update upated_at to current time
     formDataToSend.append('updated_at', new Date().toISOString());
-  
+    
+    var object = {};
+    formDataToSend.forEach(function(value, key){
+      object[key] = value;
+    });
+    
     fetch(`${apiUrl}authors/${authorId}/`, {
       method: 'PUT',
       headers: {
         "token": `${token}`,
+        "Content-Type": "application/json"
       },
-      body: formDataToSend,
+      body: JSON.stringify(object),
     })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Profile updated successfully:', data);
+      .then(response => {if (response.ok) {
         navigate(`/stream/${authorId}/profile`);
-      })
-      .catch(error => console.error('Error updating profile:', error));
+      }})
+      // .then(response => response.json())
+      // .then(data => {
+      //   console.log('Profile updated successfully:', data);
+      //   navigate(`/stream/${authorId}/profile`);
+      // })
+      catch(error => console.error('Error updating profile:', error));
   };
 
   return (

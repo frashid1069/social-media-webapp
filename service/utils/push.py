@@ -31,7 +31,7 @@ def push(author, request, data):
             print("send to local followers")
             headers = {"Authorization": f"Bearer {request.auth}"}
             response = requests.post(f"{follower.fqid}/inbox", headers=headers, json=data)
-            response_data = f"Notify {follower} in {node.url} with {response} Successfully"
+            response_data = f"Notify {follower} in local with {response} Successfully"
         else:
             response_data = f"Error fetching from {node.url}"
         

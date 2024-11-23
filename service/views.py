@@ -14,7 +14,7 @@ from django.db import IntegrityError
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from author.models import Author
 from post.models import Post
-from service.models import Follow
+from service.serializers import Follow, FollowSerializer
 from rest_framework.permissions import AllowAny
 from author.serializers import AuthorSerializer
 from like.serializers import LikeSerializer
@@ -186,9 +186,33 @@ def forward_follow_request(request):
     
     return Response({"error": "Type is not follow."}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+def get_follow_requests(request):
+    author = request.user.author
+    follow_requests = Follow.objects.filter(followed=author, pending='yes')
+    serializers = FollowSerializer(follow_requests, many=True)
+    return Response(serializers.data)
 
+@api_view(['PUT'])
+def handle_follow_request(request, FOLLOW_ID=None):
     
-    
+    if FOLLOW_ID is not None:
+        follow = get_object_or_404(Follow, id=FOLLOW_ID, pending="yes")
+        decision = request.data.get("pending")
+        if decision == "yes":
+            follow.reject()
+            return Response({"detail": "Follow request rejected."}, status=status.HTTP_204_NO_CONTENT)
+        elif decision == "no":
+            follow.accept()
+            return Response({"detail": "Follow request accepted."}, status=status.HTTP_200_OK)         
+        else:
+            return Response({"error": "Feild pending should be yes/no."}, status=status.HTTP_400_BAD_REQUEST)
+        
+    return Response({"error": "Incorret follow id ."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        
+
+
 
 @api_view(['GET'])
 def get_followers(request, AUTHOR_SERIAL=None):

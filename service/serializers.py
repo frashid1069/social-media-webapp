@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Follow
-from author.serializers import Author
+from author.serializers import Author, AuthorSerializer
 from django.contrib.auth.models import User
 
 
@@ -47,7 +47,24 @@ class SignUpSerializer(serializers.ModelSerializer):
 
         
 class FollowSerializer(serializers.ModelSerializer):
+    
+    follower = AuthorSerializer(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    pending = serializers.CharField(write_only=True)
     class Meta:
         model = Follow
-        fields = "__all__"
+        fields = [
+            "id",
+            "follower",
+            "created_at",
+            "pending"
+        ]
+        
+    def validate_pending(self, value):
+        normalized_value = value.lower()
+        valid_choices = [choice[0] for choice in Follow.PENDING_CHOICES]
+        if normalized_value not in valid_choices:
+            raise serializers.ValidationError(f"Invalid visibility value: {value}")
+        return normalized_value
+        
         

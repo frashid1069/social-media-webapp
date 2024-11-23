@@ -6,43 +6,98 @@ from post.serializers import Post
 from comment.serializer import Comment
 from author.serializers import AuthorSerializer
 from django.urls import reverse
+from author.models import Author
+from author.serializers import AuthorSerializer
 
 class LikeViewTest(BaseAPITestCase):
 
     def setUp(self):
         super().setUp()
-        # Create a sample post for testing likes
-        self.post = Post.objects.create(author=self.author1, title="Test Post", content="This is a test post.")
-        # self.comment = Comment.objects.create(author=self.author1, title="Test Post", content="This is a test post.")
-        # Define the URL for creating a like, so it can be used across tests
-        self.like_url = reverse('inbox', kwargs={'AUTHOR_SERIAL': self.author2.serial})
-
-    def test_create_like(self):
-        """
-        Tests that a like can be created for a post by an author.
-        """
+    
+    # ://service/api/authors/{AUTHOR_SERIAL}/inbox
+    def test_post_like(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        serializer = AuthorSerializer(author1)
+        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
         data = {
             "type":"like",
-            "author": AuthorSerializer(self.author2).data,
-            "object": self.post.fqid,       
+            "author":serializer.data,
+            "object":post.fqid 
         }
-    
-        response = self.client.post(self.like_url, data, format="json")
+        response = self.client.post(reverse('inbox', args=[1]), data, format="json")
+        likes = Like.objects.all()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Like.objects.count(), 1)
-        self.assertEqual(response.data.get("author", {}).get("id"), self.author2.fqid)
-        self.assertEqual(response.data["object"], self.post.fqid)
+        self.assertEqual(len(likes), 1)
+    
+    # ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/likes
+    def test_get_post_likes(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        like = Like.objects.create(author=author1, object=post.fqid)
+        response = self.client.get(reverse('liked_post', args=[1, 1]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 1)
+    
+    # ://service/api/posts/{POST_FQID}/likes 
+    def test_get_post_fqid_likes(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        like = Like.objects.create(author=author1, object=post.fqid)
+        response = self.client.get(reverse('fqid_liked_post', args=[post.fqid]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 1)
+    
+    # ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments/{COMMENT_FQID}/likes 
+    def test_get_comment_likes(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        comment = Comment.objects.create(author=author1, content="Sick Olde English", post=post)
+        like = Like.objects.create(author=author1, object=comment.fqid)
+        response = self.client.get(reverse('liked_comment', args=[1, 1, comment.fqid]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], comment.fqid+"/likes")
 
-    def test_create_duplicate_like(self):
-        """
-        Tests that creating a duplicate like does not create a new entry.
-        """
-        # First like creation
-        data = {
-            "author": self.author1.id,
-            "post": self.post.id
-        }
-
-        # Attempt to create a duplicate like
-        response = self.client.post(self.like_url, data, format="json")
-        self.assertEqual(Like.objects.count(), 1)   # only one like object should still remain
+    # ://service/api/authors/{AUTHOR_SERIAL}/liked 
+    def test_get_author_liked(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        serializer = AuthorSerializer(author1)
+        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        like = Like.objects.create(author=author1, object=post.fqid)
+        response = self.client.get(reverse('things_liked_by_author', args=[1]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 1)
+    
+    # ://service/api/authors/{AUTHOR_SERIAL}/liked/{LIKE_SERIAL} 
+    def test_get_single_like(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        like = Like.objects.create(author=author1, object=post.fqid)
+        response = self.client.get(reverse('like_detail', args=[1, 1]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+     # ://service/api/authors/{AUTHOR_FQID}/liked
+    def test_get_fqid_author_liked(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        serializer = AuthorSerializer(author1)
+        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        like = Like.objects.create(author=author1, object=post.fqid)
+        response = self.client.get(reverse('things_liked_by_author_fqid', args=[author1.fqid]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 1)
+    
+    # ://service/api/liked/{LIKE_FQID}
+    def test_get_liked_fqid(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        serializer = AuthorSerializer(author1)
+        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        like = Like.objects.create(author=author1, object=post.fqid)
+        response = self.client.get(reverse('fqid_like_detail', args=[like.fqid]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

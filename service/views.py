@@ -267,7 +267,7 @@ def foreign_followers(request, AUTHOR_SERIAL=None, FOREIGN_AUTHOR_FQID=None):
     elif request.method == "PUT":
         if request.user.author == author:
             if follow_object and follow_object.pending == 'yes':
-                follow_object.pending = 'no'
+                follow.accept()
                 serializer = AuthorSerializer(foreign_author)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             
@@ -318,7 +318,7 @@ def inbox(request, AUTHOR_SERIAL):
             serializer = LikeSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save(author=sender)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response({"error": "Object doesn't matched with AUTHOR_SERIAL"},status=status.HTTP_400_BAD_REQUEST)
     
@@ -478,7 +478,10 @@ The edit_profile function allows the user to edit their profile. The user must b
 '''
 def edit_profile(request, author_id):
     author = Author.objects.get(id=author_id)
-    serializer = AuthorSerializer(author, data=request.data, partial=True)
+    # From https://www.geeksforgeeks.org/fix-django-wsgirequest-object-has-no-attribute-data/
+    # From https://www.freecodecamp.org/news/python-bytes-to-string-how-to-convert-a-bytestring/
+    data = request.body.decode("utf-8")
+    serializer = AuthorSerializer(author, data=data, partial=True)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)

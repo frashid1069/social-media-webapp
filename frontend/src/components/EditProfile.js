@@ -15,6 +15,7 @@ function EditProfile() {
     displayName: '',
     github: '',
     profileImage: null
+    profileImage: null
   });
 
   const token = localStorage.getItem('token');  
@@ -46,6 +47,7 @@ function EditProfile() {
 
   
 
+
   /*
     The handleChange function is used to update the formData state variable whenever the author inputs data into the form fields. This 
     will help to keep the state variable updated with the latest data that the author inputs.
@@ -66,6 +68,7 @@ function EditProfile() {
   const handleFileChange = (e) => {
     setFormData({
       ...formData,
+      profileImage: e.target.files[0],
       profileImage: e.target.files[0],
     });
   };

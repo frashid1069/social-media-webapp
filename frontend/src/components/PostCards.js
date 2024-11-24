@@ -59,7 +59,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
   };
 
   // get comments for the post
-  const matchedComments = post.comments;
+  const matchedComments = post.comments.src;
 
 
   const goProfile = () => {

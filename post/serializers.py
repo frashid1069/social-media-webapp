@@ -3,6 +3,8 @@ from author.serializers import AuthorSerializer, Author
 from .models import Post
 from like.serializers import Like, LikeSerializer
 from comment.serializer import Comment, CommentSerializer
+from like.views import LikePagination
+from comment.views import CommentPagination
 
 class PostSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
@@ -40,13 +42,49 @@ class PostSerializer(serializers.ModelSerializer):
         ]
         
     
+    # def get_likes(self, obj):
+    #     likes = Like.objects.filter(object=obj.fqid)
+    #     return {
+    #         "type": "comments",
+    #         "id": "http://nodebbbb/api/authors/222/posts/293/comments",
+    #         "page": "http://nodebbbb/authors/222/posts/293/comments",
+    #         "page_number": 1,
+    #         "size": 5,
+    #         "count": len(likes),
+    #         "src": LikeSerializer(likes, many=True).data,
+    #     }
+        
     def get_likes(self, obj):
-        likes = Like.objects.filter(object=obj.fqid)
-        return LikeSerializer(likes, many=True).data
+        likes_queryset = Like.objects.filter(object=obj.fqid)
+        paginator = LikePagination()
+        request = self.context.get('request', None)
+        page = paginator.paginate_queryset(likes_queryset, request, view=None)
+
+        url = self.context['request'].build_absolute_uri().strip('/')
+        paginated_response = paginator.get_paginated_response(
+            LikeSerializer(page, many=True).data,
+            url=url
+        )
+        return paginated_response.data
     
     def get_comments(self, obj):
-        comments = Comment.objects.filter(post=obj.id)
-        return CommentSerializer(comments, many=True).data
+        comments_queryset = Comment.objects.filter(post=obj.id)
+        paginator = CommentPagination()
+        request = self.context.get('request', None)
+        page = paginator.paginate_queryset(comments_queryset, request, view=None)
+
+        url = self.context['request'].build_absolute_uri().strip('/')
+        paginated_response = paginator.get_paginated_response(
+            CommentSerializer(page, many=True).data,
+            url=url
+        )
+        return paginated_response.data
+    
+    # def get_comments(self, obj):
+    #     comments = Comment.objects.filter(post=obj.id)
+    #     if not comments.exists():
+    #         return {}
+    #     return CommentSerializer(comments, many=True).data
     
     def validate_visibility(self, value):
         # Normalize value to lowercase and ensure it matches a valid choice

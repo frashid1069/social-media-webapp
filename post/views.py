@@ -292,9 +292,9 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
             request_data = request.data.copy()
             request_data['content'] = base64_data
 
-            serializer = PostSerializer(post, data=request_data,  partial=True)
+            serializer = PostSerializer(post, data=request_data,  partial=True, context={'request': request})
         else:
-            serializer = PostSerializer(post, data=request.data, partial=True)
+            serializer = PostSerializer(post, data=request.data, partial=True, context={'request': request})
         print(request.data)
         try:
             if serializer.is_valid():
@@ -319,7 +319,7 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
         # soft delete the post
         post.visibility = 'deleted'
         post.save()
-        serializer = PostSerializer(post)
+        serializer = PostSerializer(post, context={'request': request})
         print(serializer.data)
         push(author, request, serializer.data)
         if post.visibility == 'deleted' and post.is_deleted == True:
@@ -342,7 +342,7 @@ def fqid_post_detail(request, POST_FQID=None):
         return Response({"detail": "This post is already deleted."}, status=status.HTTP_404_NOT_FOUND)
         
     
-    serializer = PostSerializer(post)
+    serializer = PostSerializer(post, context={'request': request})
     if serializer.data.get("visibility") == "friend-only":
         author = post.author
         if check_friend(author, request.user.author) or request.user.author == author:
@@ -384,7 +384,7 @@ def post_list(request, AUTHOR_SERIAL):
         
         paginator = PostPagination()
         paged_posts = paginator.paginate_queryset(posts, request)
-        serializer = PostSerializer(paged_posts, many=True)
+        serializer = PostSerializer(paged_posts, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data,len(serializer.data)) 
         
 
@@ -406,14 +406,17 @@ def post_list(request, AUTHOR_SERIAL):
             request_data = request.data.copy()
             request_data['content'] = base64_data
 
-            serializer = PostSerializer(data=request_data)
+            # serializer = PostSerializer(data=request_data)
+            serializer = PostSerializer(data=request_data, context={'request': request})
         else:   
-            serializer = PostSerializer(data=request.data)
+            # serializer = PostSerializer(data=request.data)
+            serializer = PostSerializer(data=request.data, context={'request': request})
             
         if serializer.is_valid():
             serializer.save(author=author)
             # push to inbox
             push(author, request, serializer.data)
+            print(serializer.data)
            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -478,7 +481,7 @@ def get_all_visible_post(request):
     
      
     posts = posts.filter(is_deleted=False, visibility__in=['unlisted', 'friend-only', 'public']).order_by("-updated_at")
-    serializer = PostSerializer(posts, many=True)
+    serializer = PostSerializer(posts, many=True, context={'request': request})
     response_data = {
             "type":"posts",
             "count": len(serializer.data),

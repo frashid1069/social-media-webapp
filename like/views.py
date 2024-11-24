@@ -28,7 +28,7 @@ class LikePagination(PageNumberPagination):
         response_data = {
         "type":"likes",
         "page": url,
-        "id": f'{url}/likes',
+        "id": f'{url}likes',
         "page_number":self.page.number,
         "size": self.get_page_size(self.request),
         "count": len(data),

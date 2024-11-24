@@ -14,6 +14,8 @@ def push(author, request, data):
         for follow in follow_objects:
             print(follow)
             follower = follow.follower
+            if not follower.host.endswith("api/"):
+                follower.host = follower.host.rstrip('/') + "/api/"
             nodes_exists = Node.objects.filter(is_allowed=True, url=follower.host).exists()
             if nodes_exists:
                 print("send to remote followers")
@@ -36,7 +38,7 @@ def push(author, request, data):
                 response = requests.post(f"{follower.fqid}/inbox", headers=headers, json=data)
                 response_data = f"Notify {follower} in local with {response} Successfully"
             else:
-                response_data = f"Error fetching from {node.url}"
+                response_data = f"Error fetching from {follower.host}"
             
             log.append(response_data)
     

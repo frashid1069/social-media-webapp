@@ -16,11 +16,6 @@ export const getPostId = (url) => {
     return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
   }
 
-
-// export function getCurrentAuthorId() {
-//   return currentAuthorId;
-// }
-
 /**
  * This is a component for displaying the personal stream page by using PostCards component.
  * Click Profile button => go to profile page
@@ -41,6 +36,7 @@ export default function Stream() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const follow_id = localStorage.getItem("follow_id");
   const [streamPosts, setstreamPosts] = useState([]);
+  const [pendingFollowRequests, setPendingFollowRequests] = useState([]);
   const currentAuthorId = authorId
 
   // get the current author object
@@ -71,7 +67,23 @@ export default function Stream() {
       });
   }, []);
 
-  // Fetch follow requests and get follower details
+  // Fetch all pending follow requests for the author
+  useEffect(() => {
+    cusFetch(`${apiUrl}follows/`)
+      .then((response) => {
+        response.json();
+        console.log(response);
+      })
+      .then((data) => {
+        console.log("data", data);
+        setPendingFollowRequests(...data);
+        console.log("pending: ", pendingFollowRequests)
+      })
+      .catch((error) => {
+        console.log(error);
+        console.log("pending: ", pendingFollowRequests);}) 
+    });
+    
   // Fetch follow requests and get follower details
   useEffect(() => {
     fetch(`${apiUrl}follow/`, {
@@ -104,65 +116,46 @@ export default function Stream() {
             ...follow,
             followerName: followers[index].display_name, // Use display_name field from Author model
           }));
-          console.log("Mapped Follows with Names:", followsWithNames); // Verify data
           setFollows(followsWithNames);
         });
       });
   }, [apiUrl, token, authorIdInt]);
 
   // Handle accepting or declining follow requests
-  const handleAccept = async (followerId, followerName) => {
-    const response = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
-      method: "PUT",
-      headers: {
-        "token": `${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        follower: followerId,
-        followed: authorIdInt,
-        pending: "no"
-      }),
-    });
-    if (response.ok) {
-      alert(`Accepted follow request from ${followerName}`);
-      setFollows((prevFollows) =>
-        prevFollows.filter((follow) => follow.follower !== followerId)
-      );
+  const handleAccept = async (followRequest) => {
+    try {
+      const response = await cusFetch(`${apiUrl}follows/${followRequest.id}`, {
+        method: "PUT",
+        headers: {
+          "token": `${token}`,
+          "Content-Type": "application/json",
+        },
+        body: {
+          "pending": "no"
+        },
+      });
+      if (response.ok) {
+        alert(`Accepted follow request from ${followRequest.follower.displayName}`);
+      }
+    } catch (error) {
+      console.error("Error declining follow request:", error);
     }
   };
 
-  const handleDecline = async (followerId, followerName) => {
+  const handleDecline = async (followRequest) => {
     try {
-      // First, check if the follow object exists
-      const checkResponse = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
-        method: "GET",
+      const response = await cusFetch(`${apiUrl}follows/${followRequest.id}`, {
+        method: "PUT",
         headers: {
           "token": `${token}`,
           "Content-Type": "application/json",
         },
-      });
-  
-      if (!checkResponse.ok) {
-        alert("The follow request no longer exists.");
-        return;
-      }
-  
-      // If it exists, proceed with deletion
-      const deleteResponse = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
-        method: "DELETE",
-        headers: {
-          "token": `${token}`,
-          "Content-Type": "application/json",
+        body: {
+          "pending": "yes"
         },
       });
-  
-      if (deleteResponse.ok) {
-        // Remove the follow request from the pending list
-        setFollows((prevFollows) =>
-          prevFollows.filter((follow) => follow.follower !== followerId)
-        );
-        alert(`Declined follow request from ${followerName}`);
+      if (response.ok) {
+        alert(`Declined follow request from ${followRequest.follower.displayName}`);
       }
     } catch (error) {
       console.error("Error declining follow request:", error);
@@ -224,18 +217,18 @@ export default function Stream() {
 
           {dropdownOpen && (
             <div className="dropdown-menu">
-              {pendingFollows.map((follow) => (
-                <div key={follow.id} className="dropdown-item">
-                  <span>{follow.followerName}</span> {/* Display follower's name */}
+              {pendingFollowRequests.map((followRequest) => (
+                <div key={followRequest.id} className="dropdown-item">
+                  <span>{followRequest.follower.displayName}</span> {/* Display follower's name */}
                   <button
                     className="tick-btn"
-                    onClick={(e) => { handleAccept(follow.follower, follow.followerName) }}
+                    onClick={(e) => { handleAccept(followRequest) }}
                   >
                     ✔️
                   </button>
                   <button
                     className="cross-btn"
-                    onClick={(e) => { handleDecline(follow.follower, follow.followerName) }}
+                    onClick={(e) => { handleDecline(followRequest) }}
                   >
                     ❌
                   </button>

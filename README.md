@@ -1,10 +1,10 @@
-# Backend set up
 ## Backend dependency install
 ```
 pip3 install -r requirements.txt
 python3 -m venv venv
 source venv/bin/activate
 ```
+
 
 ## Django:
 ### How to set up database
@@ -63,17 +63,7 @@ all has 1 public post
 
 1,3 are friends
 
-# Frontend set up
-## Frontend dependency install
-```
-cd frontend
-npm install
-```
 
-## Run
-```
-npm start
-```
 
 
 

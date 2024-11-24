@@ -56,31 +56,31 @@ export default function Profile() {
   
 
   useEffect(() => {
-    checkFollowingStatus();
+    // checkFollowingStatus();
   }, [authorId]);
 
-  // Check if the logged-in user is following the profile author
-  const checkFollowingStatus = async () => {
-    const loggedIn = localStorage.getItem("logged_in_id");
-    try {
-      const response = await cusFetch(`${apiUrl}follow/?author_id=${authorId}&follower=${loggedIn}`);
-      if (response.ok) {
-        const data = await response.json();
-        if(data.length > 0) {
-          localStorage.setItem("follow_id", data[0].id)
-          setIsFollowing(true);
-        }
-        else {
-          // No follow relationship found, reset follow status
-          // localStorage.removeItem("follow_id");
-          setIsFollowing(false);
-        }
-      }
-    } 
-    catch (error) {
-      console.error("Error checking following status:", error);
-    }
-  };
+  // // Check if the logged-in user is following the profile author
+  // const checkFollowingStatus = async () => {
+  //   const loggedIn = localStorage.getItem("logged_in_id");
+  //   try {
+  //     const response = await cusFetch(`${apiUrl}follow/?author_id=${authorId}&follower=${loggedIn}`);
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       if(data.length > 0) {
+  //         localStorage.setItem("follow_id", data[0].id)
+  //         setIsFollowing(true);
+  //       }
+  //       else {
+  //         // No follow relationship found, reset follow status
+  //         // localStorage.removeItem("follow_id");
+  //         setIsFollowing(false);
+  //       }
+  //     }
+  //   } 
+  //   catch (error) {
+  //     console.error("Error checking following status:", error);
+  //   }
+  // };
 
 
   // navigate to the edit profile page
@@ -96,41 +96,88 @@ export default function Profile() {
   // Handle following
   const handleFollow = async (event) => {
     event.preventDefault();
-    var loggedIn = localStorage.getItem("logged_in_id");
-    const response = await cusFetch(`${apiUrl}follow/`, {
-      method: "POST",
+    console.log(event)
+      
+    // Fetch the logged-in author's details
+    const actorResponse = await cusFetch(`${apiUrl}authors/${authorId}/`, {
+      method: "GET",
       headers: {
-        "token": `${token}`,
+        token: `${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        follower: loggedIn,
-        followed: authorId,
-        pending: "yes"
-      }),
     });
+  
+    if (!actorResponse.ok) {
+      alert("Failed to fetch logged-in author's details.");
+      return;
+    }
+  
+    const actor = await actorResponse.json();
+  
+    // Fetch the author to follow's details
+    const objectResponse = await cusFetch(`${apiUrl}authors/${authorID}/`, {
+      method: "GET",
+      headers: {
+        token: `${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+  
+    if (!objectResponse.ok) {
+      alert("Failed to fetch author details for following.");
+      return;
+    }
+  
+    const object = await objectResponse.json();
+  
+    // Construct the follow request object
+    const followRequest = {
+      type: "follow",
+      summary: `${actor.displayName} wants to follow ${object.displayName}`,
+      actor: {
+        type: "author",
+        ...actor,
+      },
+      object: {
+        type: "author",
+        ...object,
+      },
+    };
+  
+    // Send the follow request to the inbox
+    const response = await cusFetch(`${apiUrl}forward/`, {
+      method: "POST",
+      headers: {
+        token: `${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(followRequest),
+    });
+  
     if (response.ok) {
       alert("you have followed this author");
-      await checkFollowingStatus(); // Update follow status and follow_id after following
+      // await checkFollowingStatus(); // Update follow status and follow_id after following
       setIsFollowing(true);
+    } else {
+      alert("Failed to follow the author.");
     }
   };
 
   // Unfollow functionality
   const handleUnfollow = async (event) => {
     event.preventDefault();
-    const follow_id = localStorage.getItem("follow_id");
-    const response = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (response.ok) {
-      alert("You have unfollowed this author.");
-      await checkFollowingStatus(); // Refresh follow status after unfollowing
-      setIsFollowing(false); 
-    }
+    // const follow_id = localStorage.getItem("follow_id");
+    // const response = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
+    //   method: "DELETE",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    // });
+    // if (response.ok) {
+    //   alert("You have unfollowed this author.");
+    //   await checkFollowingStatus(); // Refresh follow status after unfollowing
+    //   setIsFollowing(false); 
+    // }
   };
 
 

@@ -14,8 +14,6 @@ def push(author, request, data):
         for follow in follow_objects:
             print(follow)
             follower = follow.follower
-            if not follower.host.endswith("api/"):
-                follower.host = follower.host.rstrip('/') + "/api/"
             nodes_exists = Node.objects.filter(is_allowed=True, url=follower.host).exists()
             if nodes_exists:
                 print("send to remote followers")

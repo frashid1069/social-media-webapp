@@ -66,14 +66,14 @@ class AuthorView(ModelViewSet):
                 headers = create_hearders(node)
                 try:
                     response = requests.get(f"{node.url}authors/", headers=headers, timeout=10)
-                    
+                    response.raise_for_status()
                     if response.status_code == 200:
                         try:
                             authors = response.json().get("authors", [])
-                            
                             for author in authors:
                                 fqid = author.get("id")
-                                if not fqid or Author.objects.filter(fqid=fqid).exists():
+                                author_exists = Author.objects.filter(fqid=fqid).exists()
+                                if author_exists:
                                     continue
                                 serializer = AuthorSerializer(data=author)
 
@@ -90,7 +90,7 @@ class AuthorView(ModelViewSet):
                         
                 except requests.RequestException as e:
                     print(f"Error fetching authors from {node.url}: {e}")
-                    return Response(f"Error fetching authors from {node.url}: {e}")
+                    continue
                     
             queryset = self.get_queryset()      
             paged_queryset = self.paginate_queryset(queryset)

@@ -37,7 +37,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
     cusFetch(`${apiUrl}authors/${authorId}/posts/${postId}/likes`)
       .then((response) => response.json())
       .then((data) => {
-        const postLikes = [];
+        let postLikes = [];
         if (data.src.length > 0) {
           postLikes = [...data.src]
           setLikes(postLikes);

@@ -129,18 +129,17 @@ export default function PostCards({ post, currenAuthor, onClick }) {
   // };
 
   const handleLike = async () => {
-    // Fetch the profile of the current author
-    const myProfile = await cusFetch(`${apiUrl}authors/${authorId}/`).then((response) => response.json());
+    // Use currentAuthor directly for the current author info
+    const myProfile = currenAuthor;
   
     // Check if the user has already liked the post
     if (!liked) {
-      // Construct the like object
       const likeObject = {
         type: "like",
         author: {
           type: "author",
-          id: `${apiUrl}authors/${authorId}`,
-          page: `http://nodeaaaa/authors/${myProfile.username}`,  // Adjusted to use the username from profile
+          id: myProfile.id,  // Directly using myProfile.id, no need to prepend apiUrl
+          page: `http://localhost:8000/authors/${myProfile.id.split("/").pop()}`,  // Extract ID and use it for page URL
           host: apiUrl,
           displayName: myProfile.displayName,
           github: myProfile.github,
@@ -149,23 +148,32 @@ export default function PostCards({ post, currenAuthor, onClick }) {
         object: `${apiUrl}authors/${authorId}/posts/${postId}`,  // URL format for the post object
       };
   
-      // Send the like object to the API
-      const response = await cusFetch(`${apiUrl}authors/${authorId}/liked`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(likeObject),
-      });
+      console.log("Sending like object:", likeObject);  // Log the like object for verification
   
-      if (response.ok) {
-        setLiked(true);
-        cusFetchLikes(); // Refresh likes after posting
-      } else {
-        console.error("Failed to like the post");
+      try {
+        const response = await cusFetch(`${apiUrl}authors/${authorId}/liked`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(likeObject),
+        });
+  
+        if (response.ok) {
+          setLiked(true);
+          cusFetchLikes(); // Refresh likes after posting
+        } else {
+          console.error("Failed to like the post");
+        }
+      } catch (error) {
+        console.error("Error in sending like request: ", error);
       }
     }
   };
+  
+  
+  
+
   
 
   const handleShare = async () => {

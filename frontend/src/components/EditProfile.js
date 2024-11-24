@@ -15,7 +15,6 @@ function EditProfile() {
     displayName: '',
     github: '',
     profileImage: null
-    profileImage: null
   });
 
   const token = localStorage.getItem('token');  
@@ -68,7 +67,6 @@ function EditProfile() {
   const handleFileChange = (e) => {
     setFormData({
       ...formData,
-      profileImage: e.target.files[0],
       profileImage: e.target.files[0],
     });
   };

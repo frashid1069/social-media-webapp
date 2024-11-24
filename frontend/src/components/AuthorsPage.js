@@ -91,7 +91,7 @@ export default function AuthorsPage() {
         });
       
         if (response.ok) {
-          alert(`You have followed this author`);
+          alert(`You have sent a follow request to this author`);
           setIsFollowing((prev) => ({ ...prev, [authorID]: true })); // Mark this author as followed
         } else {
           alert("Failed to follow the author.");

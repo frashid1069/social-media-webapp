@@ -51,7 +51,7 @@ export default function AuthorsPage() {
         const actor = await actorResponse.json();
       
         // Fetch the author to follow's details
-        const objectResponse = await cusFetch(`${apiUrl}authors/${authorID}/`, {
+        const objectResponse = await cusFetch(`${authorID}/`, {
           method: "GET",
           headers: {
             token: `${token}`,

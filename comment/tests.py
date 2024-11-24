@@ -18,13 +18,13 @@ class CommentViewTest(BaseAPITestCase):
         post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
         data = {
             "type":"comment",
-            "author":author1.fqid,
+            "author":serializer.data,
             "comment":"Sick Olde English",
             "contentType":"text/markdown", 
             "post":post.fqid 
         }
         response = self.client.post(reverse('inbox', args=[1]), data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
     
     # ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments
     def test_get_comments(self):
@@ -71,8 +71,8 @@ class CommentViewTest(BaseAPITestCase):
         post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
         data = {
             "type":"comment",
-            "author":author1.fqid,
-            "content":"Sick Olde English",
+            "author":serializer.data,
+            "comment":"Sick Olde English",
             "contentType":"text/markdown", 
             "post":post.fqid 
         }

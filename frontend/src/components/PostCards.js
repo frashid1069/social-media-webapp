@@ -155,7 +155,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
       const likeUrl = `http://localhost:8000/api/authors/${myProfile.id.split("/").pop()}/liked`;  // Ensure it's Author 1's /liked endpoint
   
       try {
-        const response = await fetch(likeUrl, {
+        const response = await cusFetch(likeUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

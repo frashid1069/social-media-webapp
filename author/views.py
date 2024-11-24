@@ -63,7 +63,12 @@ class AuthorView(ModelViewSet):
             allowed_nodes = Node.objects.filter(is_allowed=True)
             
             for node in allowed_nodes:
-                headers = create_hearders(node)
+                print(node.username,node.password)
+                token = create_server_token({'username': node.username, 'password': node.password}, 100000, node.url)
+                print(token)
+                headers = {
+                    "Authorization": f"Bearer {token}" 
+                }
                 try:
                     response = requests.get(f"{node.url}authors/", headers=headers, timeout=10)
                     

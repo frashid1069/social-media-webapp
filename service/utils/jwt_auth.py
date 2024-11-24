@@ -17,19 +17,8 @@ def create_token(payload, timeout=60):
     
     return jwt.encode(payload=payload, key=salt, algorithm='HS256', headers=headers)
 
-def create_server_token(username, password):
-    credentials = f"{username}:{password}"
-    
-    # Encode the credentials as Base64
-    base64_credentials = base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
-    
-    return base64_credentials
-
-
-def create_hearders(node):
-    
-    token = create_server_token(node.username, node.password)
-    
+def create_server_token(payload, timeout=60, host=None):
+    salt = host
     headers = {
         "Authorization": f"Basic {token}" 
         }

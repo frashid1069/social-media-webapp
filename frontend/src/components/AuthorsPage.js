@@ -84,7 +84,7 @@ export default function AuthorsPage() {
         };
       
         // Send the follow request to the inbox
-        const response = await cusFetch(`${apiUrl}authors/${authorID}/inbox`, {
+        const response = await cusFetch(`${apiUrl}forward/`, {
           method: "POST",
           headers: {
             token: `${token}`,

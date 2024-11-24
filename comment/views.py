@@ -193,7 +193,8 @@ def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
                 serializer.save(author=author)
                 # push to inbox
                 push(author, request, serializer.data)
-           
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
            # error handling
             else:
                 print(f"Post validation failed {serializer.errors}")

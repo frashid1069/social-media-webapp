@@ -20,7 +20,11 @@ heroku login
 
 heroku git:remote -a example-app
 
+REACT_APP_API_URL
+
 git push heroku DEV:main
+
+add nodejs buildpack , commit something, git push heroku DEV:main 
 
 heroku addons:create heroku-postgresql:essential-0 --app APPNAME
 

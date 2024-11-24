@@ -11,11 +11,14 @@ const apiUrl = process.env.REACT_APP_API_URL
  *
  */
 export default function Profile() {
+  const { authorId } = useParams();
   const [author, setAuthor] = useState([]);
   const [posts, setPosts] = useState([]);
   const [followers, setFollowers] = useState([]);
+  // const [isFollowing, setIsFollowing] = useState(() => {
+  //   const savedState = localStorage.getItem(`isFollowing_${authorId}`);
+  //   return savedState ? JSON.parse(savedState) : false;})
   const [isFollowing, setIsFollowing] = useState(false);
-  const { authorId } = useParams();
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
@@ -26,6 +29,10 @@ export default function Profile() {
   useEffect(() => {
     ownProfile();
   }, []);
+
+  // useEffect(() => {
+  //   localStorage.setItem(`isFollowing_${authorId}`, JSON.stringify(isFollowing));
+  // }, [isFollowing, authorId]);
 
   // get the author info
   useEffect(() => {
@@ -96,7 +103,6 @@ export default function Profile() {
   // Handle following
   const handleFollow = async (event) => {
     event.preventDefault();
-    console.log(event)
       
     // Fetch the logged-in author's details
     const actorResponse = await cusFetch(`${apiUrl}authors/${localStorage.getItem("logged_in_id")}/`, {

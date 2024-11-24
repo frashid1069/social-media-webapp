@@ -71,55 +71,15 @@ export default function Stream() {
   useEffect(() => {
     cusFetch(`${apiUrl}follows/`)
       .then((response) => {
-        response.json();
-        console.log(response);
+        return response.json();
       })
       .then((data) => {
-        console.log("data", data);
-        setPendingFollowRequests(...data);
-        console.log("pending: ", pendingFollowRequests)
+        setPendingFollowRequests(data);
       })
       .catch((error) => {
-        console.log(error);
-        console.log("pending: ", pendingFollowRequests);}) 
-    });
-    
-  // Fetch follow requests and get follower details
-  useEffect(() => {
-    fetch(`${apiUrl}follow/`, {
-      method: "GET",
-      headers: {
-        "token": `${token}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const pendingRequests = data.filter(
-          (follow) => follow.pending === "yes" && follow.followed === authorIdInt
-        );
-
-        // Fetch follower details for each follow request
-        const followerPromises = pendingRequests.map((follow) =>
-          fetch(`${apiUrl}author/${follow.follower}`, {
-            method: "GET",
-            headers: {
-              "token": `${token}`,
-              "Content-Type": "application/json",
-            },
-          }).then((response) => response.json())
-        );
-
-        // Map display names to the follow requests
-        Promise.all(followerPromises).then((followers) => {
-          const followsWithNames = pendingRequests.map((follow, index) => ({
-            ...follow,
-            followerName: followers[index].display_name, // Use display_name field from Author model
-          }));
-          setFollows(followsWithNames);
-        });
-      });
-  }, [apiUrl, token, authorIdInt]);
+        console.error("Error getting follow requests: ", error);
+      }) 
+    }, [authorId, pendingFollowRequests.length]);
 
   // Handle accepting or declining follow requests
   const handleAccept = async (followRequest) => {
@@ -130,12 +90,11 @@ export default function Stream() {
           "token": `${token}`,
           "Content-Type": "application/json",
         },
-        body: {
-          "pending": "no"
-        },
+        body: JSON.stringify({ pending: "no" })
       });
       if (response.ok) {
         alert(`Accepted follow request from ${followRequest.follower.displayName}`);
+        pendingFollowRequests.filter(request => request.id !== followRequest.id)
       }
     } catch (error) {
       console.error("Error declining follow request:", error);
@@ -150,12 +109,11 @@ export default function Stream() {
           "token": `${token}`,
           "Content-Type": "application/json",
         },
-        body: {
-          "pending": "yes"
-        },
+        body: JSON.stringify({ pending: "yes" })
       });
       if (response.ok) {
         alert(`Declined follow request from ${followRequest.follower.displayName}`);
+        pendingFollowRequests.filter(request => request.id !== followRequest.id)
       }
     } catch (error) {
       console.error("Error declining follow request:", error);
@@ -177,13 +135,13 @@ export default function Stream() {
     localStorage.setItem("token", '');
     navigate("/login")
   }
-  const matchId = (follow) => {
-    return follow.followed.toString() === localStorage.getItem("logged_in_id");
-  };
-  const matchPending = (follow) => {
-    return follow.pending === "yes";
-  };
-  const pendingFollows = follows.filter((follow) => matchId(follow) && matchPending(follow));
+  // const matchId = (follow) => {
+  //   return follow.followed.toString() === localStorage.getItem("logged_in_id");
+  // };
+  // const matchPending = (follow) => {
+  //   return follow.pending === "yes";
+  // };
+  // const pendingFollows = follows.filter((follow) => matchId(follow) && matchPending(follow));
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   return (
@@ -212,7 +170,7 @@ export default function Stream() {
             options to accept or decline. Date: NOV 2, 2024*/}
         <div className="dropdown">
           <button className="dropdown-toggle" onClick={toggleDropdown}>
-            {follows.length} pending follow requests
+            {pendingFollowRequests.length} pending follow requests
           </button>
 
           {dropdownOpen && (

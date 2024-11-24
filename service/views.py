@@ -493,7 +493,7 @@ def inbox(request, AUTHOR_SERIAL):
         # create a post copy if post doesn't exists
         if not post_exists:
             try:
-                serializer = PostSerializer(data=request.data)
+                serializer = PostSerializer(data=request.data, context={'request': request})
                 if serializer.is_valid():
                     serializer.save(author=sender, fqid=post_fqid)
                     print(f"Post copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
@@ -517,7 +517,7 @@ def inbox(request, AUTHOR_SERIAL):
             if serializer.is_valid():
                 serializer.save()
                 print(f"Post copy updated successfully: {sender.display_name} (fqid: {sender.fqid})")
-                return Response({"detail": f"Post already exists with fqid {post_fqid}.", "post": PostSerializer(post).data},
+                return Response({"detail": f"Post already exists with fqid {post_fqid}.", "post": PostSerializer(post, context={'request': request}).data},
                                 status=status.HTTP_200_OK,)
             else:
                 print(f"Author validation failed {serializer.errors}")

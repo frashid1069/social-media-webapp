@@ -264,7 +264,7 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
     if request.method == 'GET':
        
         
-        serializer = PostSerializer(post)
+        serializer = PostSerializer(post, context={'request': request})
         if serializer.data.get("visibility") == "friend-only":
             if check_friend(author, request.user.author) or request.user.author == author:
                 return Response(serializer.data, status=status.HTTP_200_OK)

@@ -19,10 +19,12 @@ class Like(models.Model):
     def save(self, *args, **kwargs):
         if self._state.adding:
             # for serial increament
-            self.serial = self.author.like_count + 1
-            self.author.like_count = self.serial
-            self.author.save(update_fields=['like_count']) 
-            # for fqid
-            self.fqid = self.author.fqid + "/liked/" + str(self.serial)
+            if self.author.user is not None:
+                self.serial = self.author.like_count + 1
+                self.author.like_count = self.serial
+                self.author.save(update_fields=['like_count']) 
+                # for fqid
+                self.fqid = self.author.fqid + "/liked/" + str(self.serial)
+                
         super().save(*args, **kwargs)
     

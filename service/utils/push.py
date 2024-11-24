@@ -68,5 +68,36 @@ def push(author, request, data):
             response_data = f"Error fetching from {node.url}"
         
         log.append(response_data)
+    
+    elif type == 'like':
+        object_fqid = data.get("object")
+        nodes_exists = Node.objects.filter(is_allowed=True, url__in=object_fqid).exists()
+        if nodes_exists:
+            print("send to remote post owner")
+            node = Node.objects.get(is_allowed=True, url__in=object_fqid)
+            headers = create_hearders(node)
+            try:
+                serial = object_fqid.split('authors/')[1].split('/')[0]
+                response = requests.post(f"{node.url}authors/{serial}/inbox", headers=headers, json=data)
+                if response.status_code == 201:
+                    response_data = f"Notify {url} in {node.url} with {response} Successfully"
+                else:
+                    response_data = f"Failed to notify {url} in {node.url} with {response}"
+                    
+            except requests.RequestException as e:
+                print(f"Error notifying {url} in {node.url}: {e}")
+                return Response(f"Error notifying {url} in {node.url}: {e}", status=status.HTTP_400_BAD_REQUEST)
+            
+        elif author.host in post_fqid:
+            print("send to local post owner")
+            headers = {"Authorization": f"Bearer {request.auth}"}
+            response = requests.post(f"{url}/inbox", headers=headers, json=data)
+            response_data = f"Notify {url} in local with {response} Successfully"
+        else:
+            response_data = f"Error fetching from {node.url}"
+        
+        log.append(response_data)
+        
+        
     print(log)
     return log

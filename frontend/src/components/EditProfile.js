@@ -74,43 +74,43 @@ function EditProfile() {
     author has inputted data into the form fields and then send the data to the API. If the profile is updated successfully, the author will be
     redirected to the profile page.
   */
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formDataToSend = new FormData();
-    for (const key in formData) {
-      if (formData[key] !== "" && formData[key] !== null) {
-        formDataToSend.append(key, formData[key]);
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      const formDataToSend = new FormData();
+      for (const key in formData) {
+        if (formData[key] !== "" && formData[key] !== null) {
+          formDataToSend.append(key, formData[key]);
+        }
       }
-    }
+    
+      
+     // print formData to console
+      for (var pair of formDataToSend.entries()) {
+        console.log(pair[0]+ ', ' + pair[1]); 
+      }
+      var object = {};
+      formDataToSend.forEach(function(value, key){
+        object[key] = value;
+      });
   
-    
-    // formDataToSend.append('updated_at', new Date().toISOString());
-    //update upated_at to current time
-    formDataToSend.append('updated_at', new Date().toISOString());
-    
-    var object = {};
-    formDataToSend.forEach(function(value, key){
-      object[key] = value;
-    });
-    
-    fetch(`${apiUrl}authors/${authorId}/`, {
-      method: 'PUT',
-      headers: {
-        "token": `${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(object),
-    })
-      .then(response => {if (response.ok) {
-        navigate(`/stream/${authorId}/profile`);
-      }})
-      // .then(response => response.json())
-      // .then(data => {
-      //   console.log('Profile updated successfully:', data);
-      //   navigate(`/stream/${authorId}/profile`);
-      // })
-      catch(error => console.error('Error updating profile:', error));
-  };
+      
+      fetch(`${apiUrl}authors/${authorId}/`, {
+        method: 'PUT',
+        headers: {
+          "token": `${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(object)
+      })
+        .then(response => {if (response.ok) {
+          navigate(`/stream/${authorId}/profile`);
+        }})
+        // .then(data => {
+        //   console.log('Profile updated successfully:', data);
+        //   navigate(`/stream/${authorId}/profile`);
+        // })
+        .catch(error => console.error('Error updating profile:', error));
+    };
 
   return (
     <form onSubmit={handleSubmit}>

@@ -80,21 +80,22 @@ def push(author, request, data):
                 serial = object_fqid.split('authors/')[1].split('/')[0]
                 response = requests.post(f"{node.url}authors/{serial}/inbox", headers=headers, json=data)
                 if response.status_code == 201:
-                    response_data = f"Notify {url} in {node.url} with {response} Successfully"
+                    response_data = f"Notify {node.url}authors/{serial} in {node.url} with {response} Successfully"
                 else:
-                    response_data = f"Failed to notify {url} in {node.url} with {response}"
+                    response_data = f"Failed to notify {node.url}authors/{serial} in {node.url} with {response}"
                     
             except requests.RequestException as e:
-                print(f"Error notifying {url} in {node.url}: {e}")
-                return Response(f"Error notifying {url} in {node.url}: {e}", status=status.HTTP_400_BAD_REQUEST)
+                print(f"Error notifying {node.url}authors/{serial} in {node.url}: {e}")
+                return Response(f"Error notifying {node.url}authors/{serial} in {node.url}: {e}", status=status.HTTP_400_BAD_REQUEST)
             
-        elif author.host in post_fqid:
+        elif author.host in object_fqid:
+            serial = object_fqid.split('authors/')[1].split('/')[0]
             print("send to local post owner")
             headers = {"Authorization": f"Bearer {request.auth}"}
-            response = requests.post(f"{url}/inbox", headers=headers, json=data)
-            response_data = f"Notify {url} in local with {response} Successfully"
+            response = requests.post(f"{author.host}authors/{serial}/inbox", headers=headers, json=data)
+            response_data = f"Notify {author} in local with {response} Successfully"
         else:
-            response_data = f"Error fetching from {node.url}"
+            response_data = f"Error fetching from {author}"
         
         log.append(response_data)
         

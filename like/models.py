@@ -13,7 +13,7 @@ class Like(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
-        return f"Like by {self.author} on {self.post}"
+        return f"Like by {self.author} on {self.object}"
     
     
     def save(self, *args, **kwargs):

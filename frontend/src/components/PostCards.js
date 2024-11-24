@@ -105,6 +105,29 @@ export default function PostCards({ post, currenAuthor, onClick }) {
     imageURL = null;
   }
 
+  // const handleLike = async () => {
+  //   const myProfile = cusFetch(`${apiUrl}authors/${authorId}/`).then((response) => response.json())
+  //   if (!liked) {
+  //     const likeObject = {
+  //       author: myProfile,
+  //       object: post,
+  //     };
+
+  //     const response = await cusFetch(`${apiUrl}authors/${authorId}/inbox`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(likeObject),
+  //     });
+
+  //     if (response.ok) {
+  //       setLiked(true);
+  //       cusFetchLikes();
+  //     }
+  //   }
+  // };
+
   const handleLike = async () => {
     // Ensure currentAuthor is Author 1 (logged-in user)
     const myProfile = currenAuthor; // currenAuthor should contain the logged-in user's details (Author 1)
@@ -152,6 +175,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
       }
     }
   };
+  
 
   const handleShare = async () => {
     if (post.visibility === "public") {

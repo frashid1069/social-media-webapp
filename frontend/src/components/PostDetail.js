@@ -15,7 +15,7 @@ export default function PostDetail() {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await fetch(`${apiUrl}authors/${authorId}/posts/${postId}`, {
+                const response = await fetch(`${apiUrl}authors/posts/${apiUrl}authors/${authorId}/posts/${postId}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "token": token,

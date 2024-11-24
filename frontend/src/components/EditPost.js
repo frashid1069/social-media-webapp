@@ -14,11 +14,11 @@ const EditPost = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
     const apiUrl = process.env.REACT_APP_API_URL
-
+    
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await fetch(`${apiUrl}authors/${authorId}/posts/${postId}`, {
+                const response = await fetch(`${apiUrl}authors/posts/${apiUrl}authors/${authorId}/posts/${postId}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "token": token, // Add token to the request headers

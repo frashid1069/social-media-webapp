@@ -129,47 +129,54 @@ export default function PostCards({ post, currenAuthor, onClick }) {
   // };
 
   const handleLike = async () => {
-    // Use currentAuthor directly for the current author info
-    const myProfile = currenAuthor;
+    // Ensure currentAuthor is Author 1 (logged-in user)
+    const myProfile = currenAuthor; // currenAuthor should contain the logged-in user's details (Author 1)
   
-    // Check if the user has already liked the post
+    // Verify that the post is not already liked
     if (!liked) {
+      // Construct the like object with the correct author details (Author 1's details)
       const likeObject = {
         type: "like",
         author: {
           type: "author",
-          id: myProfile.id,  // Directly using myProfile.id, no need to prepend apiUrl
-          page: `http://localhost:8000/authors/${myProfile.id.split("/").pop()}`,  // Extract ID and use it for page URL
-          host: apiUrl,
-          displayName: myProfile.displayName,
-          github: myProfile.github,
-          profileImage: myProfile.profileImage || "https://default.image.url",  // Default fallback image if none exists
+          id: myProfile.id,  // Author ID from myProfile
+          page: myProfile.page,  // Author page URL from myProfile
+          host: myProfile.host,  // Author host from myProfile
+          displayName: myProfile.displayName,  // Author's displayName
+          github: myProfile.github,  // Author's GitHub URL
+          profileImage: myProfile.profileImage || "https://default.image.url"  // Author's profile image or default
         },
-        object: `${apiUrl}authors/${authorId}/posts/${postId}`,  // URL format for the post object
+        object: `http://localhost:8000/api/authors/${authorId}/posts/${postId}`,  // Post being liked (Author 1's post)
       };
   
-      console.log("Sending like object:", likeObject);  // Log the like object for verification
+      console.log("Sending like object:", likeObject);  // Log the like object for debugging
+  
+      // Send the like request to Author 1's /liked endpoint
+      const likeUrl = `http://localhost:8000/api/authors/${myProfile.id.split("/").pop()}/liked`;  // Ensure it's Author 1's /liked endpoint
   
       try {
-        const response = await cusFetch(`${apiUrl}authors/${authorId}/liked`, {
+        const response = await fetch(likeUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(likeObject),
+          body: JSON.stringify(likeObject),  // Send the like object in the request body
         });
   
+        // If the like request was successful, update state
         if (response.ok) {
-          setLiked(true);
-          cusFetchLikes(); // Refresh likes after posting
+          setLiked(true);  // Mark post as liked
+          cusFetchLikes();  // Refresh the likes for the post
         } else {
-          console.error("Failed to like the post");
+          console.error("Failed to like the post");  // Handle failure
         }
       } catch (error) {
-        console.error("Error in sending like request: ", error);
+        console.error("Error in sending like request: ", error);  // Catch any errors in the request
       }
     }
   };
+  
+  
   
   
   

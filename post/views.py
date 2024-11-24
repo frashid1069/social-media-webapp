@@ -371,12 +371,14 @@ def post_list(request, AUTHOR_SERIAL):
     author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
     
     if request.method == 'GET':
-        if request.user.author == author:
+        current_author = getattr(request.user, 'author', None)
+        if current_author == author:
             posts = Post.objects.filter(author=author)
-        elif check_friend(request.user.author, author):
+        elif check_friend(current_author, author):
             posts = Post.objects.filter(author=author).filter(visibility__in=['public', 'friend-only'])
         else:
             posts = Post.objects.filter(author=author, visibility='public')
+
              
         # TODO: to_representation and to_internal_value
         

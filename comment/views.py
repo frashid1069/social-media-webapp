@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from author.serializers import Author, AuthorSerializer
 from post.serializers import Post
 from rest_framework.pagination import PageNumberPagination
+from service.utils.push import push
+from rest_framework.exceptions import ValidationError
 
 class CommentPagination(PageNumberPagination):
     page_size = 5
@@ -97,36 +99,6 @@ class CommentView(ModelViewSet):
         return super().destroy(request, *args, **kwargs)
     
 # Comments API
-@api_view(['POST'])
-def create_comment(request, author_id):
-    '''
-    authors/<int:author_id>/inbox
-    '''
-    author = get_object_or_404(Author, id=author_id)
-    
-    if not request.user.is_authenticated:
-        return Response({"detail": "You are not authorized to create a comment for this post."}, status=status.HTTP_403_FORBIDDEN)
-         
-    serializer = CommentSerializer(data=request.data)
-        
-    if serializer.is_valid():
-        serializer.save(author=author)
-        comment = serializer.data
-        
-        response_data = {
-                "type": "comment",
-                "author": AuthorSerializer(author).data,
-                "comment": comment['content'],
-                "contentType": "text/markdown",
-                "published": comment['created_at'],
-                "id": "http://nodeaaaa/api/authors/111/commented/130",
-                "post": "http://nodebbbb/api/authors/222/posts/249",
-                "likes": "likes",        
-            }
-        return Response(response_data, status=status.HTTP_201_CREATED)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
 @api_view(['GET'])    
 def comment_list(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
     '''
@@ -140,10 +112,10 @@ def comment_list(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
         GET [local, remote]: the comments on the post (that our server knows about)
     '''
     if AUTHOR_SERIAL is not None and POST_SERIAL is not None:
-        author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
-        post = get_object_or_404(Post, serial=POST_SERIAL, author__serial=author.serial)
+        author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False)
+        post = get_object_or_404(Post, serial=POST_SERIAL, author__serial=author.serial, is_deleted=False)
     elif POST_FQID is not None:
-        post = get_object_or_404(Post, fqid=POST_FQID)
+        post = get_object_or_404(Post, fqid=POST_FQID, is_deleted=False)
     else:
         return Response({"detail": "Comment not found."}, status=status.HTTP_404_NOT_FOUND)
         
@@ -164,8 +136,8 @@ def comment_detail_post(request,  AUTHOR_SERIAL=None, POST_SERIAL=None, REMOTE_C
     """
     
     if AUTHOR_SERIAL is not None and POST_SERIAL is not None and REMOTE_COMMENT_FQID is not None:
-        author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
-        post = get_object_or_404(Post, serial=POST_SERIAL, author__serial=author.serial)
+        author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False)
+        post = get_object_or_404(Post, serial=POST_SERIAL, author__serial=author.serial, is_deleted=False)
         comment = get_object_or_404(Comment, post__id=post.id, fqid=REMOTE_COMMENT_FQID)
     else:
         return Response({"detail": "Comment not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -194,17 +166,46 @@ def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
     """
     if request.method == 'GET':
         if AUTHOR_SERIAL is not None:
-            author = get_object_or_404(Author, serial=AUTHOR_SERIAL)  
+            author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False)  
         elif AUTHOR_FQID is not None:
-            author = get_object_or_404(Author, fqid=AUTHOR_FQID)
+            author = get_object_or_404(Author, fqid=AUTHOR_FQID, is_deleted=False)
             
         url = author.fqid
         comments = author.comments.all()
-        
+
         paginator = CommentPagination()
         paged_comments = paginator.paginate_queryset(comments, request)
         serializer = CommentSerializer(paged_comments, many=True)
         return paginator.get_paginated_response(serializer.data, url)
+
+    elif request.method == 'POST':
+        if AUTHOR_SERIAL is not None:
+            author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False)
+        else:
+            return Response({"error": "AUTHOR_SERIAL is not provided"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        
+        if not request.user.is_authenticated or request.user.author.serial != AUTHOR_SERIAL:
+            return Response({"detail": "You are not authorized to create a post for this author."}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            serializer = CommentSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(author=author)
+                # push to inbox
+                push(author, request, serializer.data)
+           
+           # error handling
+            else:
+                print(f"Post validation failed {serializer.errors}")
+                return Response({'errors': f"Post validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            print(f"Validation Error: {e.detail}")
+            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"Unexpected Error: {e}")
+            return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
 
 @api_view(['GET'])    
 def comment_detail(request, AUTHOR_SERIAL=None, COMMENT_SERIAL=None, COMMENT_FQID=None):
@@ -217,7 +218,7 @@ def comment_detail(request, AUTHOR_SERIAL=None, COMMENT_SERIAL=None, COMMENT_FQI
         GET [local] get this comment
     """
     if AUTHOR_SERIAL is not None and COMMENT_SERIAL is not None: 
-        author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
+        author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False)
         comment = get_object_or_404(Comment, serial=COMMENT_SERIAL, author=author.serial)
     elif COMMENT_FQID is not None:
         comment = get_object_or_404(Comment, fqid=COMMENT_FQID)

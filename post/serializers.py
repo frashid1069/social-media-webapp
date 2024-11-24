@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from author.serializers import AuthorSerializer 
+from author.serializers import AuthorSerializer, Author
 from .models import Post
 from like.serializers import Like, LikeSerializer
 from comment.serializer import Comment, CommentSerializer
@@ -13,6 +13,10 @@ class PostSerializer(serializers.ModelSerializer):
     content = serializers.CharField(required=True)
     author = AuthorSerializer(read_only=True)
     comments = serializers.SerializerMethodField(read_only=True)
+
+    # comments = serializers.ListSerializer(
+    #     child=CommentSerializer(), required=False, allow_null=True
+    # )
     likes = serializers.SerializerMethodField(read_only=True)
     published = serializers.DateTimeField(source='created_at', read_only=True)
     visibility = serializers.CharField(required=True)
@@ -51,7 +55,60 @@ class PostSerializer(serializers.ModelSerializer):
         if normalized_value not in valid_choices:
             raise serializers.ValidationError(f"Invalid visibility value: {value}")
         return normalized_value
+    
+    # def create(self, validated_data):
+    #     comments_data = validated_data.pop('comments', {})
+    #     post = super().create(validated_data)
 
+    #     # Create associated comments if provided
+    #     for comment_data in comments_data:
+    #         author_data = comment_data.pop('author', {})
+    #         author_fqid = author_data.get('id')
+    #         if Author.objects.filter(fqid=author_fqid).exists():
+    #             comment_author = Author.objects.get(fqid=author_fqid)
+    #         else:
+    #             serializer = AuthorSerializer(data=author_data)
+    #             if serializer.is_valid():
+    #                 comment_author = serializer.save(fqid=author_fqid)
+                    
+    #                 print(f"Author copy created successfully: {comment_author.display_name} (fqid: {comment_author.fqid})")
+
+    #         Comment.objects.create(author=comment_author, post=post, fqid=comment_data.get('id'), **comment_data)
+
+    #     return post
+
+    # def update(self, instance, validated_data):
+    #     comments_data = validated_data.pop('comments', {})
+    #     post = super().update(instance, validated_data)
+
+    #     # Update or create associated comments
+    #     for comment_data in comments_data:
+    #         author_data = comment_data.pop('author', {})
+    #         author_fqid = author_data.get('id')
+            
+    #         # check if author exists, create copy if not
+    #         if Author.objects.filter(fqid=author_fqid).exists():
+    #             comment_author = Author.objects.get(fqid=author_fqid)
+    #         else:
+    #             serializer = AuthorSerializer(data=author_data)
+    #             if serializer.is_valid():
+    #                 comment_author = serializer.save(fqid=author_fqid)
+                    
+    #                 print(f"Author copy created successfully: {comment_author.display_name} (fqid: {comment_author.fqid})")
+            
+    #         # check if comment exists, create copy if not
+    #         comment_fqid = comment_data.get('id')
+    #         if Comment.objects.filter(post=post, fqid=comment_fqid).exists():
+    #             comment = Comment.objects.get(fqid=comment_fqid)
+    #             serializer = CommentSerializer(comment, data=comment_data, partial=True)
+    #             if serializer.is_valid():
+    #                 serializer.save()
+    #         else:
+    #             serializer = CommentSerializer(data=comment_data)
+    #             if serializer.is_valid():
+    #                 serializer.save(author=comment_author, post=post, fqid=comment_fqid)
+
+    #     return post
         
     
 

@@ -128,49 +128,6 @@ export default function PostCards({ post, currenAuthor, onClick }) {
   //   }
   // };
 
-  // const handleLike = async () => {
-  //   // Use currentAuthor directly for the current author info
-  //   const myProfile = currenAuthor;
-  
-  //   // Check if the user has already liked the post
-  //   if (!liked) {
-  //     const likeObject = {
-  //       type: "like",
-  //       author: {
-  //         type: "author",
-  //         id: myProfile.id,  // Directly using myProfile.id, no need to prepend apiUrl
-  //         page: `http://localhost:8000/authors/${myProfile.id.split("/").pop()}`,  // Extract ID and use it for page URL
-  //         host: apiUrl,
-  //         displayName: myProfile.displayName,
-  //         github: myProfile.github,
-  //         profileImage: myProfile.profileImage || "https://default.image.url",  // Default fallback image if none exists
-  //       },
-  //       object: `${apiUrl}authors/${authorId}/posts/${postId}`,  // URL format for the post object
-  //     };
-  
-  //     console.log("Sending like object:", likeObject);  // Log the like object for verification
-  
-  //     try {
-  //       const response = await cusFetch(`${apiUrl}authors/${authorId}/liked`, {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(likeObject),
-  //       });
-  
-  //       if (response.ok) {
-  //         setLiked(true);
-  //         cusFetchLikes(); // Refresh likes after posting
-  //       } else {
-  //         console.error("Failed to like the post");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error in sending like request: ", error);
-  //     }
-  //   }
-  // };
-
   const handleLike = async () => {
     // Ensure currentAuthor is Author 1 (logged-in user)
     const myProfile = currenAuthor; // currenAuthor should contain the logged-in user's details (Author 1)
@@ -182,12 +139,12 @@ export default function PostCards({ post, currenAuthor, onClick }) {
         type: "like",
         author: {
           type: "author",
-          id: `http://localhost:8000/api/authors/${myProfile.id.split("/").pop()}`,  // Use Author 1's ID
-          page: `http://localhost:8000/authors/${myProfile.id.split("/").pop()}`,    // Use Author 1's page URL
-          host: `http://localhost:8000/api/`,
-          displayName: myProfile.displayName,    // Author 1's displayName
-          github: myProfile.github,              // Author 1's GitHub URL
-          profileImage: myProfile.profileImage || "https://default.image.url"  // Author 1's profile image or default
+          id: myProfile.id,  // Author ID from myProfile
+          page: myProfile.page,  // Author page URL from myProfile
+          host: myProfile.host,  // Author host from myProfile
+          displayName: myProfile.displayName,  // Author's displayName
+          github: myProfile.github,  // Author's GitHub URL
+          profileImage: myProfile.profileImage || "https://default.image.url"  // Author's profile image or default
         },
         object: `http://localhost:8000/api/authors/${authorId}/posts/${postId}`,  // Post being liked (Author 1's post)
       };

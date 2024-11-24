@@ -25,10 +25,10 @@ class LikeViewTest(BaseAPITestCase):
             "author":serializer.data,
             "object":post.fqid 
         }
-        response = self.client.post(reverse('inbox', args=[1]), data, format="json")
-        likes = Like.objects.all()
+        response = self.client.post(reverse('things_liked_by_author', args=[1]), data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(likes), 1)
+        self.assertEqual(response.data["count"], 1)
+       
     
     # ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/likes
     def test_get_post_likes(self):

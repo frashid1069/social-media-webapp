@@ -6,6 +6,7 @@ import { getAuthorId } from "./Stream";
 const apiUrl = process.env.REACT_APP_API_URL;
 
 
+
 export default function AuthorsPage() {
     const [authors, setAuthors] = useState([]);
     const [isFollowing, setIsFollowing] = useState({});
@@ -91,7 +92,7 @@ export default function AuthorsPage() {
         });
       
         if (response.ok) {
-          alert(`You have followed this author`);
+          alert(`You have sent a follow request to this author`);
           setIsFollowing((prev) => ({ ...prev, [authorID]: true })); // Mark this author as followed
         } else {
           alert("Failed to follow the author.");
@@ -109,13 +110,10 @@ export default function AuthorsPage() {
         response.json();
       })
       .then((data) => {
-        data.filter((request) => {
-          request.follower.id == authorID;
-        })
+        data.filter((request) => request.follower.id == authorID)
       })
       .catch((error) => {
-        console.log(error);
-        console.log("pending: ", pendingFollowRequests);}) 
+        console.log(error);}) 
     
       // // Encode the unfollowed author's ID as required by the API
       // const encodedAuthorId = encodeURIComponent(authorID);
@@ -175,7 +173,7 @@ export default function AuthorsPage() {
             <button
                 id="unfollowButton"
                 className="follow-btn"
-                onClick={() => handleUnfollow(author.id)}
+                onClick={() => handleUnfollow(getAuthorId(author.id))}
             >
                 Unfollow
             </button>
@@ -183,7 +181,7 @@ export default function AuthorsPage() {
             <button
                 id="followButton"
                 className="follow-btn"
-                onClick={() => handleFollow(author.id)}
+                onClick={() => handleFollow(getAuthorId(author.id))}
             >
                 Follow
             </button>

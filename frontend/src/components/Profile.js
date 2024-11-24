@@ -99,7 +99,7 @@ export default function Profile() {
     console.log(event)
       
     // Fetch the logged-in author's details
-    const actorResponse = await cusFetch(`${apiUrl}authors/${authorId}/`, {
+    const actorResponse = await cusFetch(`${apiUrl}authors/${localStorage.getItem("logged_in_id")}/`, {
       method: "GET",
       headers: {
         token: `${token}`,
@@ -115,7 +115,7 @@ export default function Profile() {
     const actor = await actorResponse.json();
   
     // Fetch the author to follow's details
-    const objectResponse = await cusFetch(`${apiUrl}authors/${authorID}/`, {
+    const objectResponse = await cusFetch(`${apiUrl}authors/${authorId}/`, {
       method: "GET",
       headers: {
         token: `${token}`,
@@ -155,7 +155,7 @@ export default function Profile() {
     });
   
     if (response.ok) {
-      alert("you have followed this author");
+      alert("you have sent a follow request to this author");
       // await checkFollowingStatus(); // Update follow status and follow_id after following
       setIsFollowing(true);
     } else {

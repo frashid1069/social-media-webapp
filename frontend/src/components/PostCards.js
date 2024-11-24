@@ -79,7 +79,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
         comment: newCommentContent,
         contentType: "text/markdown",
         post: post.id,
-        author: currenAuthor.id
+        author: currenAuthor
       }),
     });
 

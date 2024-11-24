@@ -152,20 +152,4 @@ class FollowViewTest(BaseAPITestCase):
         follow = models.Follow.objects.all()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(len(follow), 1)
-        
-class EditProfileTest(BaseAPITestCase):
-    def setUp(self):
-        super().setUp()
-
-    def test_edit_profile(self):
-        """
-        Ensure we can edit a profile.
-        """
-        author1 = self.client.get(reverse('author-detail', args=[1]))
-        author1 = Author.objects.get(fqid=author1.data["id"])
-        data = {'bio':'new bio'}
-        response = self.client.put(reverse('edit_profile', args=[1]), data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        author1.refresh_from_db()
-
-        self.assertEqual(author1.bio, data['bio'])
+ 

@@ -55,8 +55,9 @@ export default function Login() {
         // fetchCurrentAuthor(data.user.id);
         var user = data.user
         var author = user.author.id
-        localStorage.setItem("currentAuthor", author);
+        localStorage.setItem("currentAuthorId", author);
         const store = localStorage.getItem("currentAuthorId");
+        alert(store)
         navigate(`/stream/${encodeURIComponent(store)}`);
       } else {
         //const data = await response.json();

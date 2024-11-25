@@ -16,6 +16,8 @@ export default function PostCards({ post, currenAuthor, onClick }) {
   // const currentAuthorId = Stream.currentAuthorId;
   const currentAuthorId = localStorage.getItem("currentAuthorId")
   const encodedAuthorFqid = encodeURIComponent(currentAuthorId);
+  const encodedPostAuthorFqid = encodeURIComponent(post.author.id)
+  console.log(post.author.id)
 
   const authorId = getAuthorId(post.id)
   const postId = getPostId(post.id)
@@ -67,7 +69,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
 
 
   const goProfile = () => {
-    navigate(`/stream/${authorId}/profile`);
+    navigate(`/stream/${encodedPostAuthorFqid}/profile`);
   };
 
 

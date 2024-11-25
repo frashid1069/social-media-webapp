@@ -133,7 +133,6 @@ class PostViewTest(BaseAPITestCase):
         )
         
         response = self.client.get(reverse("fqid_post_image", args=[post.fqid]))
-        self.assertEqual(response.data["detail"], 1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 

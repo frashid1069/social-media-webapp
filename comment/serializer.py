@@ -2,8 +2,7 @@ from rest_framework import serializers
 from comment.models import Comment
 from author.serializers import AuthorSerializer 
 from like.serializers import Like, LikeSerializer
-
-
+from like.views import LikePagination
 
 class CommentSerializer(serializers.ModelSerializer):
     
@@ -29,8 +28,17 @@ class CommentSerializer(serializers.ModelSerializer):
         ]
         
     def get_likes(self, obj):
-        likes = Like.objects.filter(object=obj.fqid)
-        return LikeSerializer(likes, many=True).data
+        likes_queryset = Like.objects.filter(object=obj.fqid)
+        paginator = LikePagination()
+        request = self.context.get('request', None)
+        page = paginator.paginate_queryset(likes_queryset, request, view=None)
+
+        url = self.context['request'].build_absolute_uri().strip('/')
+        paginated_response = paginator.get_paginated_response(
+            LikeSerializer(page, many=True).data,
+            url=url
+        )
+        return paginated_response.data
     
     # def create(self, validated_data):
     #     comment = Comment.objects.create(validated_data)

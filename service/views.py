@@ -399,6 +399,7 @@ def inbox(request, AUTHOR_SERIAL):
     elif type == 'comment':
         # check if post exists
         post_fqid = request.data.get("post")
+        print(request.data)
         post_exists = Post.objects.filter(fqid=post_fqid, is_deleted=False).exists()
         if not post_exists:
             return Response({"error": "post field is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -436,16 +437,16 @@ def inbox(request, AUTHOR_SERIAL):
         # create a comment copy if comment doesn't exists
         if not comment_exists:
             try:
-                serializer = CommentSerializer(data=request.data)
+                serializer = CommentSerializer(data=request.data, context={'request': request})
                 if serializer.is_valid():
                     serializer.save(post=post, author=sender, fqid=comment_fqid)
-                    print(f"Post copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
+                    print(f"Comment copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
             
             # error handling
                 else:
-                    print(f"Post validation failed {serializer.errors}")
-                    return Response({'errors': f"Post validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+                    print(f"Comment validation failed {serializer.errors}")
+                    return Response({'errors': f"Comment validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
             except ValidationError as e:
                 print(f"Validation Error: {e.detail}")
                 return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
@@ -455,7 +456,7 @@ def inbox(request, AUTHOR_SERIAL):
         
         else:
             print("Comment copy need updates")
-        serializer = CommentSerializer(data=request.data)
+        serializer = CommentSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save(post=post, author=sender)
             return Response(serializer.data, status=status.HTTP_200_OK)

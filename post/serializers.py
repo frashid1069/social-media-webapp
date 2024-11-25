@@ -63,7 +63,7 @@ class PostSerializer(serializers.ModelSerializer):
 
         url = self.context['request'].build_absolute_uri().strip('/')
         paginated_response = paginator.get_paginated_response(
-            CommentSerializer(page, many=True).data,
+            CommentSerializer(page, many=True, context={'request': request}).data,
             url=url
         )
         return paginated_response.data

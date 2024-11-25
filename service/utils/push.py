@@ -53,7 +53,7 @@ def push(author, request, data):
             headers = create_hearders(node)
             try:
                 response = requests.post(f"{url}/inbox", headers=headers, json=data)
-                if response.status_code == 201:
+                if response.status_code == 201 or response.status_code == 200:
                     response_data = f"Notify {url} in {node.url} with {response} Successfully"
                 else:
                     response_data = f"Failed to notify {url} in {node.url} with {response}"

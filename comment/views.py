@@ -124,7 +124,7 @@ def comment_list(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
     
     paginator = CommentPagination()
     paged_comments = paginator.paginate_queryset(comments, request)
-    serializer = CommentSerializer(paged_comments, many=True)
+    serializer = CommentSerializer(paged_comments, many=True, context={'request': request})
     return paginator.get_paginated_response(serializer.data, url)
 
 @api_view(['GET'])    
@@ -141,7 +141,7 @@ def comment_detail_post(request,  AUTHOR_SERIAL=None, POST_SERIAL=None, REMOTE_C
         comment = get_object_or_404(Comment, post=post.fqid, fqid=REMOTE_COMMENT_FQID)
     else:
         return Response({"detail": "Comment not found."}, status=status.HTTP_404_NOT_FOUND)
-    serializer = CommentSerializer(comment)
+    serializer = CommentSerializer(comment, context={'request': request})
     
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -175,7 +175,7 @@ def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
 
         paginator = CommentPagination()
         paged_comments = paginator.paginate_queryset(comments, request)
-        serializer = CommentSerializer(paged_comments, many=True)
+        serializer = CommentSerializer(paged_comments, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data, url)
 
     elif request.method == 'POST':
@@ -188,7 +188,7 @@ def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
             return Response({"detail": "You are not authorized to create a post for this author."}, status=status.HTTP_403_FORBIDDEN)
 
         # try:
-        serializer = CommentSerializer(data=request.data)
+        serializer = CommentSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save(author=author)
             # push to inbox
@@ -226,5 +226,5 @@ def comment_detail(request, AUTHOR_SERIAL=None, COMMENT_SERIAL=None, COMMENT_FQI
     else:
         return Response({"detail": "Comment not found."}, status=status.HTTP_404_NOT_FOUND)
     
-    serializer = CommentSerializer(comment)
+    serializer = CommentSerializer(comment, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)

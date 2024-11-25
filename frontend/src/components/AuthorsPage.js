@@ -51,12 +51,13 @@ export default function AuthorsPage() {
           method: "GET",
         });
       
-        if (!objectResponse.ok) {
-          alert("Failed to fetch author details for following.");
-          return;
-        }
+        // if (!objectResponse.ok) {
+        //   alert("Failed to fetch author details for following.");
+        //   return;
+        // }
+        // const object = await objectResponse.json();
+        const object = authors.filter((author) => author.id === authorID)
       
-        const object = await objectResponse.json();
       
         // Construct the follow request object
         const followRequest = {

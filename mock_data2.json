@@ -1,0 +1,17 @@
+[
+    {
+        "model": "auth.user",
+        "pk": 1,
+        "fields": {
+            "username": "rex",
+            "first_name": "Rex",
+            "last_name": "",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$cAP6On8ROXD8BaDqJFmh4i$MRNDXuVxtki/aTxPc0zIdf39/fAmfp6Uuw/vT1E8VSs=", 
+            "is_superuser": true,
+            "is_staff": true,
+            "is_active": true, 
+            "date_joined": "2024-10-20 22:52:00Z"
+        }
+    }
+]

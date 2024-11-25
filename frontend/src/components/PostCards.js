@@ -127,7 +127,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
         object: `${apiUrl}authors/${authorId}/posts/${postId}`, // Reference to the post being liked
       };
   
-      const likeUrl = `${apiUrl}authors/${currenAuthor.id.split("/").pop()}/liked`;
+      const likeUrl = `${currentAuthorId}/liked`;
   
       try {
         const response = await cusFetch(likeUrl, {

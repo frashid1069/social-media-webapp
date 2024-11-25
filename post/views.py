@@ -439,7 +439,7 @@ def post_image(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
         author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
         image_post = get_object_or_404(Post, author=author.id, serial=POST_SERIAL)
         # if 'image/png;base64' != post.content_type or 'image/jpeg;base64' not in post.content_type
-        if 'image/png' == image_post.content_type or 'image/jpeg' == image_post.content_type:
+        if 'image/png;base64' == image_post.content_type or 'image/jpeg;base64' == image_post.content_type:
             image_binary = base64.b64decode(image_post.content)
             content_type = image_post.content_type
             return HttpResponse(image_binary, content_type=content_type)

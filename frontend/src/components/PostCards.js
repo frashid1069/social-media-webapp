@@ -97,7 +97,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
 
   // if type is image then format the image url
   let imageURL = null;
-  if (post.contentType === "image/jpeg") {
+  if (post.contentType.startsWith("image/")) {
     imageURL = `${post.id}/image`;
   } else {
     imageURL = null;

@@ -77,6 +77,17 @@ class PostSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Invalid visibility value: {value}")
         return normalized_value
     
+    def validate_contentType(self, value):
+        """
+        Custom validator for contentType.
+        If the contentType is 'image/jpeg', convert it to 'image/png;base64'.
+        """
+        if value == 'image/jpeg':
+            return 'image/jpeg;base64'
+        elif value == 'image/png':
+            return 'image/png;base64'
+        return value
+    
     def to_representation(self, instance):
         """
         Override representation to return visibility in uppercase.
@@ -84,6 +95,8 @@ class PostSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['visibility'] = instance.visibility_display
         return representation
+    
+    
     
     def get_can_share(self, obj):
         # Only public posts are shareable

@@ -76,9 +76,9 @@ export default function PostDetail() {
                     <h2>{post.title}</h2>
                     <p>Author: {post.author ? post.author.displayName : "Unknown Author"}</p>
 
-                    {post.contentType === "image/jpeg" ? (
+                    {post.contentType.startsWith("image/") ? (
                         <img
-                            src={`data:image/jpeg;base64,${post.content}`}
+                            src={`data:${post.contentType},${post.content}`}
                             alt={post.title}
                             style={{ maxWidth: "100%", height: "auto" }}
                         />

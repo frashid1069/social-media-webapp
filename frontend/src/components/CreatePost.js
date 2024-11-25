@@ -49,7 +49,7 @@ export default function CreatePost() {
     // Append the image file if an image is selected
     if (selectedImage) {
       formData.set("content", selectedImage);
-      formData.set("contentType", "image/jpeg");
+      formData.set("contentType", "image/jpeg;base64");
     }
   
     try {

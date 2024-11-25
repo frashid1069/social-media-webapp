@@ -11,7 +11,7 @@ export default function AuthorsPage() {
     const [isFollowing, setIsFollowing] = useState({});
     const { authorId } = useParams();
     const navigate = useNavigate();
-    const currentAuthorId = authorId;
+    const currentAuthorId = decodeURIComponent(authorId);
 
     useEffect(() => {
         const fetchAuthors = async () => {
@@ -27,7 +27,7 @@ export default function AuthorsPage() {
       }, [currentAuthorId]);
 
     const goBackStream = () => {
-        navigate(`/stream/${currentAuthorId}`);
+        navigate(`/stream/${encodeURIComponent(currentAuthorId)}`);
       };
 
     // Handle following

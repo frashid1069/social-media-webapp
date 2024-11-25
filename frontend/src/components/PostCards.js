@@ -12,7 +12,10 @@ export default function PostCards({ post, currenAuthor, onClick }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState("");
-  const currentAuthorId = Stream.currentAuthorId;
+  const [CommentList, setCommentList] = useState("");
+  // const currentAuthorId = Stream.currentAuthorId;
+  const currentAuthorId = localStorage.getItem("currentAuthorId")
+  const encodedAuthorFqid = encodeURIComponent(currentAuthorId);
 
   const authorId = getAuthorId(post.id)
   const postId = getPostId(post.id)

@@ -42,7 +42,7 @@ export default function Stream() {
   // get the current author object
   const [currentAuthor, setCurrentAuthor] = useState([]);
   useEffect(() => {
-    cusFetch(`${apiUrl}authors/${currentAuthorId}`)
+    cusFetch(`${currentAuthorId}`)
       .then((response) => response.json())
       .then((data) => {
         setCurrentAuthor(data);
@@ -60,7 +60,7 @@ export default function Stream() {
   
   // get the posts owned by the current user
   useEffect(() => {
-    cusFetch(`${apiUrl}authors/${currentAuthorId}/posts/`)
+    cusFetch(`${currentAuthorId}/posts/`)
       .then((response) => response.json())
       .then((data) => {
           setEditablePosts(data.src);

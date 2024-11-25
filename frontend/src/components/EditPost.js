@@ -14,11 +14,11 @@ const EditPost = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
     const apiUrl = process.env.REACT_APP_API_URL
-
+    
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await fetch(`${apiUrl}authors/${authorId}/posts/${postId}`, {
+                const response = await fetch(`${apiUrl}authors/posts/${apiUrl}authors/${authorId}/posts/${postId}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "token": token, // Add token to the request headers
@@ -50,7 +50,6 @@ const EditPost = () => {
         formData.append("description", postDescription);
         formData.append("contentType", postContentType);
         formData.append("visibility", visibility);
-        formData.append("published", new Date().toISOString());
 
         if (postContentType === "text/markdown") {
             formData.append("content", postContent);
@@ -151,7 +150,7 @@ const EditPost = () => {
                         required
                     >
                         <option value="public">Public</option>
-                        <option value="friend-only">Friend Only</option>
+                        <option value="friends">Friend Only</option>
                         <option value="unlisted">Unlisted</option>
                     </select>
                 </div>

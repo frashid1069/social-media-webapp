@@ -5,54 +5,52 @@ import "../streamStyle.css";
 import "../likes.css";
 import Comment from "./Comment";
 import { cusFetch } from './Login';
-import { getCurrentAuthorId } from "./Stream";
+import Stream from "./Stream";
 const apiUrl = process.env.REACT_APP_API_URL;
 
-export default function PostCards({ post, editable, onClick, isFriend }) {
-  const [comments, setComments] = useState([]);
+export default function PostCards({ post, currenAuthor, onClick }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState("");
-  const [hasReposted, setHasReposted] = useState(false);
-  const token = localStorage.getItem('token'); 
-  const currentAuthorId = getCurrentAuthorId()
+  const currentAuthorId = Stream.currentAuthorId;
 
   const authorId = getAuthorId(post.id)
   const postId = getPostId(post.id)
 
   const navigate = useNavigate();
 
-  
+
   function getAuthorId(url) {
     const authorMatch = url.match(/authors\/(\d+)/);
     return authorMatch ? authorMatch[1] : null;       // Returns author ID or null if not found
   }
-  
+
   function getPostId(url) {
     const postMatch = url.match(/posts\/(\d+)/);
     return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
   }
-  
+
 
 
   // Fetch likes for the post
   const cusFetchLikes = () => {
-    cusFetch(`${apiUrl}authors/${authorId}/posts/${postId}/likes/`)
+    cusFetch(`${apiUrl}authors/${authorId}/posts/${postId}/likes`)
       .then((response) => response.json())
       .then((data) => {
-        const postLikes = [];
-        if (data.src.length > 0) {
-          postLikes = [...data.src]
-          setLikes(postLikes);
-          const userLiked = postLikes.some((like) => like.author.id === `${apiUrl}authors/${authorId}`);
-          setLiked(userLiked);
-        }
-      });
+        const postLikes = data.src || [];
+        setLikes(postLikes);
+  
+        // Check if the current user has already liked the post
+        const userLiked = postLikes.some((like) => like.author.id === currenAuthor.id);
+        setLiked(userLiked); // Update liked state
+      })
+      .catch((error) => console.error("Error fetching likes: ", error));
   };
 
   useEffect(() => {
     cusFetchLikes();
-  }, [hasReposted]);
+  }, [currenAuthor, postId, authorId]);
+  
 
 
   // get the author's display name for the post
@@ -62,7 +60,7 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
   };
 
   // get comments for the post
-  const matchedComments = post.comments;
+  const matchedComments = post.comments.src;
 
 
   const goProfile = () => {
@@ -82,7 +80,7 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
         comment: newCommentContent,
         contentType: "text/markdown",
         post: post.id,
-        author: post.author.id
+        author: currenAuthor
       }),
     });
 
@@ -94,37 +92,63 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
 
   const getMarkdownContent = () => {
     // From https://www.w3schools.com/jsref/jsref_startswith.asp 
-    if(post.content.startsWith("/")) {
+    if (post.content.startsWith("/")) {
       return { __html: marked("") };
     }
     return { __html: marked(post.content || "") };
   };
 
-  const imageURL = post.image_url || null;
+  // if type is image then format the image url
+  let imageURL = null;
+  if (post.contentType === "image/jpeg") {
+    imageURL = `${post.id}/image`;
+  } else {
+    imageURL = null;
+  }
 
   const handleLike = async () => {
-    const myProfile = cusFetch(`${apiUrl}authors/${authorId}/`).then((response) => response.json())
+    // Ensure the user has not already liked the post
     if (!liked) {
+      const myProfile = currenAuthor;
+  
+      // Construct the like object
       const likeObject = {
-        author: myProfile,
-        object: post,
-      };
-
-      const response = await cusFetch(`${apiUrl}authors/${authorId}/inbox`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+        type: "like",
+        author: {
+          type: "author",
+          id: myProfile.id,
+          page: myProfile.page,
+          host: myProfile.host,
+          displayName: myProfile.displayName,
+          github: myProfile.github,
+          profileImage: myProfile.profileImage || "https://default.image.url",
         },
-        body: JSON.stringify(likeObject),
-      });
-
-      if (response.ok) {
-        setLiked(true);
-        cusFetchLikes();
+        object: `${apiUrl}authors/${authorId}/posts/${postId}`, // Reference to the post being liked
+      };
+  
+      const likeUrl = `${apiUrl}authors/${currenAuthor.id.split("/").pop()}/liked`;
+  
+      try {
+        const response = await cusFetch(likeUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(likeObject),
+        });
+  
+        if (response.ok) {
+          setLiked(true); // Update state to reflect the like
+          cusFetchLikes(); // Refresh the list of likes
+        } else {
+          console.error("Failed to like the post.");
+        }
+      } catch (error) {
+        console.error("Error in sending like request: ", error);
       }
     }
   };
-
+  
   const handleShare = async () => {
     if (post.visibility === "public") {
       try {
@@ -142,7 +166,7 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
             "description": post.description,
           }),
         });
-  
+
         if (response.ok) {
           alert("Post shared successfully!");
         } else {
@@ -157,8 +181,6 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
     }
   };
 
-
-
   return (
     <div key={post.id} className="post-card" onClick={onClick} style={{ cursor: "pointer" }}>
       <h3 className="post-card-title">{post.title}</h3>
@@ -166,7 +188,14 @@ export default function PostCards({ post, editable, onClick, isFriend }) {
         <button className="post-card-author" onClick={(e) => { e.stopPropagation(); goProfile(); }}>
           {displayAuthor(post)}
         </button>
-        <button className="btn-like" onClick={(e) => { e.stopPropagation(); handleLike(); }}>
+        <button
+          className="btn-like"
+          disabled={liked} // Disable the button if already liked
+          onClick={(e) => {
+            e.stopPropagation();
+            handleLike();
+          }}
+        >
           {liked ? "Liked" : "Like"} ({likes.length})
         </button>
         {post.visibility === "public" && (

@@ -1,0 +1,221 @@
+[
+    {
+        "model": "auth.user",
+        "pk": 1,
+        "fields": {
+            "username": "rex",
+            "first_name": "Rex",
+            "last_name": "",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$cAP6On8ROXD8BaDqJFmh4i$MRNDXuVxtki/aTxPc0zIdf39/fAmfp6Uuw/vT1E8VSs=", 
+            "is_superuser": true,
+            "is_staff": true,
+            "is_active": true, 
+            "date_joined": "2024-10-20 22:52:00Z"
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 2,
+        "fields": {
+            "username": "backend",
+            "first_name": "Rex",
+            "last_name": "",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$cAP6On8ROXD8BaDqJFmh4i$MRNDXuVxtki/aTxPc0zIdf39/fAmfp6Uuw/vT1E8VSs=", 
+            "is_superuser": false,
+            "is_staff": true,
+            "is_active": true, 
+            "date_joined": "2024-10-20 22:52:00Z"
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 3,
+        "fields": {
+            "username": "rexlocal1",
+            "first_name": "Rex",
+            "last_name": "",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$s63pXH4wNa4jzMApQ5vc69$GtOp8UxYwwFfHGVKXNeWdhMD2D3rPk40Ar+pwc/KiRA=", 
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true, 
+            "date_joined": "2024-11-22 06:28:58"
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 4,
+        "fields": {
+            "username": "rexlocal2",
+            "first_name": "Rex",
+            "last_name": "",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$s63pXH4wNa4jzMApQ5vc69$GtOp8UxYwwFfHGVKXNeWdhMD2D3rPk40Ar+pwc/KiRA=", 
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true, 
+            "date_joined": "2024-11-22 06:28:58"
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 5,
+        "fields": {
+            "username": "rexlocal3",
+            "first_name": "Rex",
+            "last_name": "",
+            "email": "john.doe@example.com",
+            "password": "pbkdf2_sha256$870000$s63pXH4wNa4jzMApQ5vc69$GtOp8UxYwwFfHGVKXNeWdhMD2D3rPk40Ar+pwc/KiRA=", 
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true, 
+            "date_joined": "2024-11-22 06:28:58"
+        }
+    },
+    {
+        "model": "author.author",
+        "pk": 1,
+        "fields": {
+            "user": 3,
+            "fqid": "http://localhost:8000/api/authors/3",
+            "host": "http://localhost:8000/api/",
+            "serial": 3,
+            "display_name": "rexlocal1",
+            "bio": "rexlocal1",
+            "github_url": "https://github.com/yongxin12",
+            "profile_image": null,
+            "created_at": "2024-11-22 06:28:58.656257",
+            "updated_at": "2024-11-22 06:28:58.656261"
+        }
+    },
+    {
+        "model": "author.author",
+        "pk": 2,
+        "fields": {
+            "user": 4,
+            "fqid": "http://localhost:8000/api/authors/4",
+            "host": "http://localhost:8000/api/",
+            "serial": 4,
+            "display_name": "rexlocal2",
+            "bio": "rexlocal2",
+            "github_url": "https://github.com/yongxin12",
+            "profile_image": null,
+            "created_at": "2024-11-22 06:28:58.656257",
+            "updated_at": "2024-11-22 06:28:58.656261"
+        }
+    },
+    {
+        "model": "author.author",
+        "pk": 3,
+        "fields": {
+            "user": 5,
+            "fqid": "http://localhost:8000/api/authors/5",
+            "host": "http://localhost:8000/api/",
+            "serial": 5,
+            "display_name": "rexlocal3",
+            "bio": "rexlocal3",
+            "github_url": "https://github.com/yongxin12",
+            "profile_image": null,
+            "created_at": "2024-11-22 06:28:58.656257",
+            "updated_at": "2024-11-22 06:28:58.656261"
+        }
+    },
+    {
+        "model": "post.post",
+        "pk": 1,
+        "fields": {
+            "author": 1,
+            "title": "rexlocal1 public",
+            "description": "rexlocal1 public",
+            "content": "rexlocal1 public",
+            "content_type": "text/markdown",
+            "serial": 1,
+            "fqid":"http://localhost:8000/api/authors/3/posts/1",
+            "created_at": "2024-11-22 06:42:17.796522",
+            "updated_at": "2024-11-22 06:42:17.796522",
+            "visibility": "public"
+        }
+    },
+    {
+        "model": "post.post",
+        "pk": 2,
+        "fields": {
+            "author": 1,
+            "title": "rexlocal1 unlisted",
+            "description": "rexlocal1 unlisted",
+            "content": "rexlocal1 unlisted",
+            "content_type": "text/markdown",
+            "serial": 2,
+            "fqid":"http://localhost:8000/api/authors/3/posts/2",
+            "created_at": "2024-11-22 06:42:17.796522",
+            "updated_at": "2024-11-22 06:42:17.796522",
+            "visibility": "unlisted"
+        }
+    },
+    {
+        "model": "post.post",
+        "pk": 3,
+        "fields": {
+            "author": 1,
+            "title": "rexlocal1 friends",
+            "description": "rexlocal1 friends",
+            "content": "rexlocal1 friends",
+            "content_type": "text/markdown",
+            "serial": 3,
+            "fqid":"http://localhost:8000/api/authors/3/posts/3",
+            "created_at": "2024-11-22 06:42:17.796522",
+            "updated_at": "2024-11-22 06:42:17.796522",
+            "visibility": "friends"
+        }
+    },
+    {
+        "model": "post.post",
+        "pk": 4,
+        "fields": {
+            "author": 2,
+            "title": "rexlocal2 public",
+            "description": "rexlocal2 public",
+            "content": "rexlocal2 public",
+            "content_type": "text/markdown",
+            "serial": 1,
+            "fqid":"http://localhost:8000/api/authors/4/posts/1",
+            "created_at": "2024-11-22 06:42:17.796522",
+            "updated_at": "2024-11-22 06:42:17.796522",
+            "visibility": "public"
+        }
+    },
+    {
+        "model": "post.post",
+        "pk": 5,
+        "fields": {
+            "author": 2,
+            "title": "rexlocal2 unlisted",
+            "description": "rexlocal2 unlisted",
+            "content": "rexlocal2 unlisted",
+            "content_type": "text/markdown",
+            "serial": 2,
+            "fqid":"http://localhost:8000/api/authors/4/posts/2",
+            "created_at": "2024-11-22 06:42:17.796522",
+            "updated_at": "2024-11-22 06:42:17.796522",
+            "visibility": "unlisted"
+        }
+    },
+    {
+        "model": "post.post",
+        "pk": 6,
+        "fields": {
+            "author": 2,
+            "title": "rexlocal2 friends",
+            "description": "rexlocal2 friends",
+            "content": "rexlocal2 friends",
+            "content_type": "text/markdown",
+            "serial": 3,
+            "fqid":"http://localhost:8000/api/authors/4/posts/3",
+            "created_at": "2024-11-22 06:42:17.796522",
+            "updated_at": "2024-11-22 06:42:17.796522",
+            "visibility": "friends"
+        }
+    }
+]

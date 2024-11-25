@@ -20,8 +20,9 @@ class Post(models.Model):
     content = models.TextField(blank=True, null=True)
     VISIBILITY_CHOICES = [ # database value/ human readable 
         ('public', 'PUBLIC'),
-        ('friend-only', 'FRIENDS'),
+        ('friends', 'FRIENDS'),
         ('unlisted', 'UNLISTED'),
+        ('deleted', 'DELETED')
     ]
     visibility = models.CharField(max_length=11, choices=VISIBILITY_CHOICES, default='public')
     '''
@@ -43,20 +44,35 @@ class Post(models.Model):
     
     def save(self, *args, **kwargs):
         if self._state.adding:
+            if self.visibility == 'deleted':
+                self.is_deleted = True
             # for serial increament
-            self.serial = self.author.post_count + 1
-            self.author.post_count = self.serial
-            self.author.save(update_fields=['post_count']) 
-            # for fqid
-            self.fqid = self.author.fqid + "/posts/" + str(self.serial)
-            if 'image' in self.content_type and self.content:
-                self.image_url = self.fqid + "/image"
+            if self.author.user is not None:
+                self.serial = self.author.post_count + 1
+                self.author.post_count = self.serial
+                self.author.save(update_fields=['post_count']) 
+                # for fqid
+                self.fqid = self.author.fqid + "/posts/" + str(self.serial)
+                if 'image' in self.content_type and self.content:
+                    self.image_url = self.fqid + "/image"
+        else:
+            self.updated_at = timezone.now()
+            if self.visibility == 'deleted':
+                self.is_deleted = True
             
             
         super(Post, self).save(*args, **kwargs)
     
     def __str__(self):
-        return self.fqid
+        return self.title
+    
+    @property
+    def visibility_display(self):
+        """
+        Return the human-readable visibility value in uppercase.
+        """
+        return dict(self.VISIBILITY_CHOICES).get(self.visibility, self.visibility).upper()
+    
 '''
 def upload_post_image(instance, filename):
     # - sukh 

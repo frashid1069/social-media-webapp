@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+from corsheaders.defaults import default_headers
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,7 +29,12 @@ SECRET_KEY = 'django-insecure-5mbcvr_@qaxbenyqqp)1+1n3zx05h#fp^9s__oj5r4a%k@b*ll
 DEBUG = True
 
 # ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['*']
+
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    "token",
+)
 
 STATIC_ROOT = BASE_DIR / "staticfiles" 
 STATIC_URL = "/static/"
@@ -53,10 +60,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',                    # CorsMiddleware
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",               # WhiteNoiseMiddlewar
     'django.contrib.sessions.middleware.SessionMiddleware', 
-    'corsheaders.middleware.CorsMiddleware',                    # CorsMiddleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -69,11 +76,11 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'service.authentication.JwtQueryParamsAuthentication',  # authentication
-        # TODO: basic authentication
+        'service.authentication.BackendAuthentication',  # authentication
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        # 'rest_framework.permissions.IsAuthenticated',
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.permissions.AllowAny',
     ],
 }
 
@@ -183,16 +190,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8000',        # React front-end port
-    'http://localhost:3000',
-]
-
-CORS_ALLOW_HEADERS = [
-    "content-type",
-    "authorization",
-    "token",
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 # URL path where media files will be accessible. 
 # It defines the base URL for serving media files (e.g., images, documents, etc.) in the browser.

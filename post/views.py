@@ -1,21 +1,23 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from author.serializers import AuthorSerializer, Author
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from post.serializers import PostSerializer
 from rest_framework.viewsets import ModelViewSet
-from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from post.models import Post
-from rest_framework import status, permissions
-from rest_framework import permissions
+from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.authentication import get_authorization_header
 import base64
 from django.http import HttpResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from service.utils.push import push
 from service.utils.check_friend import check_friend
+from rest_framework.exceptions import PermissionDenied, ValidationError
+
+
 
 class PostPagination(PageNumberPagination):
     page_size = 5
@@ -46,7 +48,7 @@ class PostView(ModelViewSet):
     # queryset = Post.objects.all()
     queryset = Post.objects.select_related('author').all()
     serializer_class = PostSerializer
-    permission_classes = [permissions.AllowAny]  # Allows public access for reading
+    permission_classes = [AllowAny]  # Allows public access for reading
 
     
     
@@ -60,7 +62,7 @@ class PostView(ModelViewSet):
         """,
         parameters=[
             OpenApiParameter(name="author_id", description="Filter posts by the author's ID", required=False, type=OpenApiTypes.INT),
-            OpenApiParameter(name="visibility", description="Filter posts by visibility (public, friend-only, unlisted)", required=False, type=OpenApiTypes.STR),
+            OpenApiParameter(name="visibility", description="Filter posts by visibility (public, friends, unlisted)", required=False, type=OpenApiTypes.STR),
             OpenApiParameter(name="title", description="Filter posts by title", required=False, type=OpenApiTypes.STR),
             OpenApiParameter(name="following_list", description="Return posts from authors that the user follows", required=False, type=OpenApiTypes.BOOL),
         ],
@@ -100,7 +102,7 @@ class PostView(ModelViewSet):
             print(followed_by_user)
             # followed_by_user is a list of author id who current user followed
             # author__id__in filter the posts that belong to these author, same for visibility__in
-            #queryset = queryset.filter(author__id__in=followed_by_user,visibility__in=["unlisted", "friend-only", "public"] )
+            #queryset = queryset.filter(author__id__in=followed_by_user,visibility__in=["unlisted", "friends", "public"] )
             queryset = queryset.filter(author__id__in=followed_by_user)
             
         return queryset.order_by("updated_at")
@@ -159,8 +161,8 @@ class PostView(ModelViewSet):
             serializer = self.get_serializer(post)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        # Restrict friend-only posts to friends
-        elif post.visibility == 'friend-only':
+        # Restrict friends posts to friends
+        elif post.visibility == 'friends':
             # Retrieve the current author's profile based on the current user
             try:
                 author = Author.objects.get(user=current_user)
@@ -239,23 +241,20 @@ class PostView(ModelViewSet):
     
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
+def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}
     eg. http://localhost:8000/api/authors/1/posts/1
         GET [local, remote] get the public post whose serial is POST_SERIAL
-            friends-only posts: must be authenticated
+            friends posts: must be authenticated
         DELETE [local] remove a
             local posts: must be authenticated locally as the author
         PUT [local] update a post
             local posts: must be authenticated locally as the author
     """
-    
     if POST_SERIAL is not None and AUTHOR_SERIAL is not None:
         author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
-        post = get_object_or_404(Post, serial=POST_SERIAL, author=author.serial)
-    elif POST_FQID is not None:
-        post = get_object_or_404(Post, fqid=POST_FQID)
+        post = get_object_or_404(Post, serial=POST_SERIAL, author=author.id)
     else:
         return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
     
@@ -263,25 +262,53 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
         return Response({"detail": "This post is already deleted."}, status=status.HTTP_404_NOT_FOUND)
     
     if request.method == 'GET':
+       
         
-        
-        serializer = PostSerializer(post)
-        if serializer.data.get("visibility") == "friends-only":
+        serializer = PostSerializer(post, context={'request': request})
+        if serializer.data.get("visibility") == "friends":
             if check_friend(author, request.user.author) or request.user.author == author:
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response({"detail": "You are not authorized to get this post."}, status=status.HTTP_403_FORBIDDEN)
+
             
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     elif request.method == 'PUT':
         if request.user.author.serial != AUTHOR_SERIAL:
             return Response({"detail": "You are not authorized to update this post."}, status=status.HTTP_403_FORBIDDEN)
+        
+        # handle image post
+        image_file = request.FILES.get('content')
+        if image_file and image_file.content_type == 'image/jpeg':
+            if not image_file:
+                return Response({"error": "An image file is required."},
+                                status=status.HTTP_400_BAD_REQUEST)            
+            # base64 encode
+            image_data = image_file.read()
+            base64_data = base64.b64encode(image_data).decode('utf-8')
+            
+            # request.data is immutable
+            request_data = request.data.copy()
+            request_data['content'] = base64_data
 
-        serializer = PostSerializer(post, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()  
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = PostSerializer(post, data=request_data,  partial=True, context={'request': request})
+        else:
+            serializer = PostSerializer(post, data=request.data, partial=True, context={'request': request})
+        print(request.data)
+        try:
+            if serializer.is_valid():
+                serializer.save()  
+                push(author, request, serializer.data)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            print(f"Validation Error: {e.detail}")
+            return Response({"error": e.detail},  status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {"detail": f"An error occurred while saving the post: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,)
+
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -290,16 +317,22 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
             return Response({"detail": "You are not authorized to delete this post."}, status=status.HTTP_403_FORBIDDEN)
 
         # soft delete the post
-        post.is_deleted = True
+        post.visibility = 'deleted'
         post.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = PostSerializer(post, context={'request': request})
+        print(serializer.data)
+        push(author, request, serializer.data)
+        if post.visibility == 'deleted' and post.is_deleted == True:
+            return Response({"detail": "Post is deleted"},status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"error": "Failed to delete"},status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def fqid_post_detail(request, POST_FQID=None):
     """
     URL: ://service/api/posts/{POST_FQID}
         GET [local] get the public post whose URL is POST_FQID
-            friends-only posts: must be authenticated
+            friends posts: must be authenticated
     """
     if POST_FQID is None:
         return Response({"detail": "Post not found with POST_FQID."}, status=status.HTTP_404_NOT_FOUND)
@@ -309,8 +342,8 @@ def fqid_post_detail(request, POST_FQID=None):
         return Response({"detail": "This post is already deleted."}, status=status.HTTP_404_NOT_FOUND)
         
     
-    serializer = PostSerializer(post)
-    if serializer.data.get("visibility") == "friends-only":
+    serializer = PostSerializer(post, context={'request': request})
+    if serializer.data.get("visibility") == "friends":
         author = post.author
         if check_friend(author, request.user.author) or request.user.author == author:
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -330,7 +363,7 @@ def post_list(request, AUTHOR_SERIAL):
         GET [local, remote] get the recent posts from author AUTHOR_SERIAL (paginated)
             Not authenticated: only public posts.
             Authenticated locally as author: all posts.
-            Authenticated locally as friend of author: public + friends-only posts.
+            Authenticated locally as friend of author: public + friends posts.
             Authenticated as remote node: This probably should not happen. Remember, the way remote node becomes aware of local posts is by local node pushing those posts to inbox, not by remote node pulling.
         POST [local] create a new post but generate a new ID
             Authenticated locally as author
@@ -338,18 +371,20 @@ def post_list(request, AUTHOR_SERIAL):
     author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
     
     if request.method == 'GET':
-        if request.user.author == author:
+        current_author = getattr(request.user, 'author', None)
+        if current_author == author:
             posts = Post.objects.filter(author=author)
-        elif check_friend(request.user.author, author):
-            posts = Post.objects.filter(author=author).filter(visibility__in=['public', 'friends-only'])
+        elif check_friend(current_author, author):
+            posts = Post.objects.filter(author=author).filter(visibility__in=['public', 'friends'])
         else:
             posts = Post.objects.filter(author=author, visibility='public')
+
              
         # TODO: to_representation and to_internal_value
-     
+        
         paginator = PostPagination()
         paged_posts = paginator.paginate_queryset(posts, request)
-        serializer = PostSerializer(paged_posts, many=True)
+        serializer = PostSerializer(paged_posts, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data,len(serializer.data)) 
         
 
@@ -371,20 +406,24 @@ def post_list(request, AUTHOR_SERIAL):
             request_data = request.data.copy()
             request_data['content'] = base64_data
 
-            serializer = PostSerializer(data=request_data)
+            # serializer = PostSerializer(data=request_data)
+            serializer = PostSerializer(data=request_data, context={'request': request})
         else:   
-            serializer = PostSerializer(data=request.data)
+            # serializer = PostSerializer(data=request.data)
+            serializer = PostSerializer(data=request.data, context={'request': request})
             
         if serializer.is_valid():
             serializer.save(author=author)
             # push to inbox
             push(author, request, serializer.data)
+            print(serializer.data)
            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-@api_view(['GET'])    
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def post_image(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
     """
     URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/image
@@ -397,7 +436,8 @@ def post_image(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
         return 404 if not an image
     """
     if POST_SERIAL is not None and AUTHOR_SERIAL is not None:
-        image_post = get_object_or_404(Post, author=AUTHOR_SERIAL, serial=POST_SERIAL)
+        author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
+        image_post = get_object_or_404(Post, author=author.id, serial=POST_SERIAL)
         # if 'image/png;base64' != post.content_type or 'image/jpeg;base64' not in post.content_type
         if 'image/png' == image_post.content_type or 'image/jpeg' == image_post.content_type:
             image_binary = base64.b64decode(image_post.content)
@@ -407,6 +447,7 @@ def post_image(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
         return Response({"detail": "Image not found with AUTHOR_SERIAL/POST_SERIAL."}, status=status.HTTP_404_NOT_FOUND)
     
     elif POST_FQID is not None:
+        
         image_post = get_object_or_404(Post, fqid=POST_FQID)
         if 'image/png' == image_post.content_type or 'image/jpeg' == image_post.content_type:
             image_binary = base64.b64decode(image_post.content)
@@ -434,12 +475,13 @@ def get_all_visible_post(request):
             if follow.pending == 'no':
 
                 if check_friend(follow.followed, author):
-                    posts = posts | Post.objects.filter(author=follow.followed, visibility__in=['unlisted', 'friends-only'])
+                    posts = posts | Post.objects.filter(author=follow.followed, visibility__in=['unlisted', 'friends'])
                 else:
                     posts = posts | Post.objects.filter(author=follow.followed, visibility='unlisted')
+    
      
-    posts = posts.order_by("-updated_at")
-    serializer = PostSerializer(posts, many=True)
+    posts = posts.filter(is_deleted=False, visibility__in=['unlisted', 'friends', 'public']).order_by("-updated_at")
+    serializer = PostSerializer(posts, many=True, context={'request': request})
     response_data = {
             "type":"posts",
             "count": len(serializer.data),

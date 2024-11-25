@@ -228,3 +228,6 @@ select {
 #unfollowButton {
     background-color: red;
 }
+.logout-btn{
+    background-color: red;
+}

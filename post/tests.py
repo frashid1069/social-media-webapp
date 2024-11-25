@@ -4,293 +4,132 @@ from rest_framework import status
 import base64
 from io import BytesIO
 from PIL import Image
-from .models import Post, Repost
+from .models import Post
 from author.models import Author
 from django.contrib.auth.models import User
+from service.models import Follow
+from author.serializers import AuthorSerializer
 
 class PostViewTest(BaseAPITestCase):
-    '''        data = {
-            'title': 'New Post',
-            'author': self.author.id,
-            'content': 'New content',
-            "content_type": "text/markdown",
-            'visibility': 'public'
-        }'''
+
     def setUp(self):
         super().setUp()
-        # Create a user and an author
-        self.user = User.objects.create_user(username='testuser', password='testpassword')
-        self.author = Author.objects.create(user=self.user, display_name='Test Author')
-        self.post = Post.objects.create(author=self.author, title="Test Post", visibility="public", is_deleted=False)
-        self.share_url_template = "post-share"
-        
-
-
-
-        # Create an image
-        self.image = BytesIO()
-        Image.new("RGB", (100, 100), color="red").save(self.image, format="JPEG")
-        self.image.seek(0)  # Reset file pointer to start
     
-        # Endpoints for testing
-        self.create_url = reverse("post-list")  # URL for creating image posts
-        self.retrieve_url_template = "post-detail"  # Template for retrieving image posts
+    # ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL} Get
+    def test_get_post(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        response = self.client.get(reverse("post_detail", args=[1,1]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["title"], "Test Post 1")
+
+    # ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL} Delete
+    def test_delete_post(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        response = self.client.delete(reverse("post_detail", args=[1,1]))
+        post.refresh_from_db()
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(post.is_deleted, True)
+
+    # ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL} Put
+    def test_put_post(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        data = {"author":author1.fqid, "title":"Updated title"}
+        response = self.client.put(reverse("post_detail", args=[1,1]), data, format="json")
+        post = Post.objects.get(id=1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(post.title, "Updated title")
+    
+    # ://service/api/posts/{POST_FQID} public
+    def test_get_public_post(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        post = Post.objects.get(id=1)
+        response = self.client.get(reverse("fqid_post_detail", args=[post.fqid]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["title"], "Test Post 1")
+
+    # ://service/api/posts/{POST_FQID} friends-only
+    def test_get_friends_only_post(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author2 = self.client.get(reverse('author-detail', args=[2]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        author2 = Author.objects.get(fqid=author2.data["id"])
+        post = Post.objects.create(author=author2, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "friends")
         
-        self.image_post = Post.objects.create(
+        response = self.client.get(reverse("fqid_post_detail", args=[post.fqid]))
+        self.assertEqual(response.status_code, 403)
+        
+        Follow.objects.create(follower=author2, followed=author1, pending="no")
+        Follow.objects.create(follower=author1, followed=author2, pending="no")
+        response = self.client.get(reverse("fqid_post_detail", args=[post.fqid]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["title"], "Test Post 1")
+
+    # ://service/api/authors/{AUTHOR_SERIAL}/posts/ Get
+    def test_get_authors_posts(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "friends")
+        Post.objects.create(author=author1, title="Test Post 2", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        response = self.client.get(reverse("post_list", args=[1]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 2)
+
+    # ://service/api/authors/{AUTHOR_SERIAL}/posts/ Post 
+    def test_post_author_post(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        serializer = AuthorSerializer(author1)
+        data = {"author": serializer.data, "title":"Test Post 1", "description":"This is a test post", "contentType":"text/markdown", "content":"Content of the post", "visibility":"public"}
+        response = self.client.post(reverse("post_list", args=[1]), data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        post = Post.objects.get(author=author1)
+        self.assertEqual(post.title, "Test Post 1")
+        
+    # ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/image
+    def test_get_image_post(self):    
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"]) 
+        image = BytesIO()
+        Image.new("RGB", (100, 100), color="red").save(image, format="JPEG")
+        image.seek(0)  # Reset file pointer to start
+        image_content = base64.b64encode(image.getvalue()).decode("utf-8")
+        Post.objects.create(
             title="Image Title",
-            author= self.author,
-            content= base64.b64encode(self.image.getvalue()).decode("utf-8"),
+            author= author1,
+            content= image_content,
             content_type= "image/jpeg",
             visibility="public",
             is_deleted=False
         )
-        
-    def test_share_public_post_success(self):
-        """
-        Test that a public post can be shared.
-        """
-        # Ensure the post is public
-        self.post.visibility = "public"
-        self.post.save()
-
-        # Authenticate user
-        self.client.force_authenticate(user=self.user)
-
-        # Share the post
-        share_url = reverse(self.share_url_template, args=[self.post.id])
-        response = self.client.post(share_url)
-
-        # Verify success status (either 200 OK or 201 Created)
-        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_201_CREATED])
-
-    def test_share_non_public_post_failure(self):
-        """
-        Test that a non-public post cannot be shared.
-        """
-        # Set post visibility to private
-        self.post.visibility = "private"
-        self.post.save()
-
-        # Authenticate user
-        self.client.force_authenticate(user=self.user)
-
-        # Attempt to share the private post
-        share_url = reverse(self.share_url_template, args=[self.post.id])
-        response = self.client.post(share_url)
-
-        # Verify failure status without checking for error message
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-
-    def test_post_creation(self):
-        """
-        POST request to '/api/post/'
-        Test that a post is created correctly.
-        """
-        self.client.force_authenticate(user=self.user)
-        data = {
-            'title': 'New Post',
-            'author': self.author.user.id,
-            'content': 'New content',
-            "content_type": "text/markdown",
-        }
-        response = self.client.post(reverse('post-list'), data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['title'], 'New Post')
-        
-    def test_get_post_list(self):
-        """
-        GET request to '/api/post/'
-        Test getting a list of posts.
-        """
-        for i in range(2):
-            Post.objects.create(author=self.author, title="Test Post", visibility="public", is_deleted=False)
-        response = self.client.get(reverse('post-list'))
+        response = self.client.get(reverse("post_image", args=[1, 1]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) > 0)
-
-    def test_filter_posts_by_author(self):
-        """
-        GET request to '/api/post/?author_id=<pk>'
-        Test filtering posts by author ID.
-        """
-        for i in range(2):
-            Post.objects.create(author=self.author, title="Test Post", visibility="public", is_deleted=False)
-            
-        response = self.client.get(reverse('post-list'), {'author_id': self.author.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) > 0)
-
-    # POST request tests
-    def test_create_image_post_success(self):
-        """
-        POST request to '/api/image_post/'
-        Test creating an image post successfully.
-        """
-        response = self.client.post(
-            self.create_url,
-            {
-                "title":"Image Title",
-                "author": 1,
-                "content": self.image,  
-                "content_type": "image/jpeg",
-                "visibility": "public",
-            },
+    
+    # ://service/api/posts/{POST_FQID}/image
+    def test_get_image_fqid_post(self):    
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author1 = Author.objects.get(fqid=author1.data["id"]) 
+        image = BytesIO()
+        Image.new("RGB", (100, 100), color="red").save(image, format="JPEG")
+        image.seek(0)  # Reset file pointer to start
+        image_content = base64.b64encode(image.getvalue()).decode("utf-8")
+        post = Post.objects.create(
+            title="Image Title",
+            author= author1,
+            content= image_content,
+            content_type= "image/jpeg",
+            visibility="public",
+            is_deleted=False
         )
-        # Ensure the image post is created successfully
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn("content", response.data)  # Verify base64 data is in the response
-        
-    def test_create_image_post_no_file(self):
-        """
-        POST request to '/api/post/'
-        Test creating an image post without providing an image file.
-        """
-        response = self.client.post(
-            self.create_url,
-            {
-                "author_id": 1,
-                "post_id": 1,
-                "content_type": "image/jpeg",
-                # No content field provided
-            },
-            format="multipart"
-        )
-
-        # Expect a 400 Bad Request due to missing file
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["error"], "An image file is required.")
-    
-    # GET request tests
-    def test_retrieve_image_post_success(self):
-        """
-        GET request to '/api/image_post/1/'
-        Test retrieving an existing image post as binary data.
-        """
-        
-        # Use the detail URL for retrieving a single post
-        retrieve_url = reverse(self.retrieve_url_template, args=[self.image_post.id])
-        response = self.client.get(retrieve_url)
-
-        # Ensure the retrieval was successful and returns image data
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("content", response.data)  # Content-Type based on the image MIME type
-
-    def test_retrieve_image_post_not_found(self):
-        """
-        GET request to '/api/post/1/'
-        Test retrieving a non-existent image post, expecting a 404 error.
-        """
-        # Try retrieving an image post with a non-existent ID
-        retrieve_url = reverse(self.retrieve_url_template, args=[9999])  # Non-existent ID
-        response = self.client.get(retrieve_url)
-
-        # Expect a 404 Not Found response
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        
-    def test_get_image(self):
-        """
-        GET request to '/api/image_post/image/?author_id={author_serial}&image_id={image_post.id}'
-        Test retrieving an image from image_post api, expecting binary image data.
-        """
-        # Prepare the URL for the get_image action with author_id and image_id
-        url = reverse('post-get_image')  
-        params = {'author_id': self.user.id, 'post_id': self.image_post.id}
-        
-        response = self.client.get(url, params)
-        
+        response = self.client.get(reverse("fqid_post_image", args=[post.fqid]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # Decode the returned image and check if it matches the original
-        returned_image_base64 = base64.b64encode(response.content).decode('utf-8')
-        original_image_base64 = self.image_post.content
-        
-        self.assertEqual(returned_image_base64, original_image_base64)
 
-        # Verify content type
-        self.assertEqual(response['Content-Type'], 'image/jpeg')
-        
-    def test_filter_posts_by_visibility_friend(self):
-        for i in range(2):
-            Post.objects.create(author=self.author, title="Test Post", visibility="friend-only", is_deleted=False)
-        response = self.client.get(reverse('post-list'), {'visibility': "friend-only"})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) > 0)
-    
-    def test_filter_posts_by_visibility_unlisted(self):
-        for i in range(2):
-            Post.objects.create(author=self.author, title="Test Post", visibility="unlisted", is_deleted=False)
-        response = self.client.get(reverse('post-list'), {'visibility': "unlisted"})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) > 0)
-    
-    
-# Below test cases made with the help of OpenAI. (2023). ChatGPT (GPT-3.5) "how to write test cases for an api in django python" 2024-11-03 
-''' Below test cases made with the help of OpenAI. (2023). ChatGPT (GPT-3.5) "how to write to check this repost api:  " 2024-11-03  
-    I included the api code for the repost in chatgpt aswell
-'''         
-class RepostViewTest(BaseAPITestCase):
 
-    def setUp(self):
-        super().setUp()
-        self.post = Post.objects.create(author=self.author1, title="Test Post", visibility="public")
-        self.repost_url = reverse('repost-list')
-
-    def test_create_repost_success(self):
-        """
-        Test successful repost creation.
-        """
-        data = {
-            "post": self.post.id,
-            "reposted_by": self.author2.id
-        }
-        response = self.client.post(self.repost_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['post'], self.post.id)
-        self.assertEqual(response.data['reposted_by'], self.author2.id)
-
-    def test_create_repost_missing_fields(self):
-        """
-        Test repost creation with missing fields.
-        """
-        data = {
-            "post": self.post.id
-        }
-        response = self.client.post(self.repost_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
-        self.assertEqual(response.data['error'], 'Post and reposted_by fields are required.')
-
-    def test_create_repost_nonexistent_post(self):
-        """
-        Test repost creation with a non-existent post.
-        """
-        data = {
-            "post": 999,
-            "reposted_by": self.author2.id
-        }
-        response = self.client.post(self.repost_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
-
-    def test_create_repost_nonexistent_author(self):
-        """
-        Test repost creation with a non-existent author.
-        """
-        data = {
-            "post": self.post.id,
-            "reposted_by": 999
-        }
-        response = self.client.post(self.repost_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
-
-    def test_delete_repost(self):
-        """
-        Test deleting a repost.
-        """
-        repost = Repost.objects.create(post=self.post, reposted_by=self.author2)
-        delete_url = reverse('repost-detail', args=[repost.id])
-        response = self.client.delete(delete_url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Repost.objects.filter(id=repost.id).exists())

@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
+from service.utils.push import push
+from rest_framework.exceptions import ValidationError
 
 class LikePagination(PageNumberPagination):
     page_size = 5
@@ -162,13 +164,11 @@ def who_liked_this_comment(request, AUTHOR_SERIAL, POST_SERIAL, COMMENT_FQID):
     paged_likes = paginator.paginate_queryset(likes_of_object, request)
     serializer = LikeSerializer(paged_likes, many=True)
     return paginator.get_paginated_response(serializer.data, url)
-    
-    
 
 '''
 Liked API
 '''
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def things_liked_by_author(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
     """
     "Things Liked By Author"
@@ -182,17 +182,51 @@ def things_liked_by_author(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
         GET [local] a list of likes by AUTHOR_FQID
     """
     if AUTHOR_SERIAL is not None:
-        try:
-            author = Author.objects.get(serial=AUTHOR_SERIAL)
-        except Author.DoesNotExist:
-            return Response({"detail": "Author not found with AUTHOR_SERIAL."}, status=status.HTTP_404_NOT_FOUND)
+        if request.method == 'GET':
+            try:
+                author = Author.objects.get(serial=AUTHOR_SERIAL)
+            except Author.DoesNotExist:
+                return Response({"detail": "Author not found with AUTHOR_SERIAL."}, status=status.HTTP_404_NOT_FOUND)
+            
+        elif request.method == 'POST':
+            # authentication
+            current_author = getattr(request.user, 'author', None)
+            author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False)
+            if current_author == author:
+                try:
+                    serializer = LikeSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(author=author)
+                        # push to inbox
+                        push(author, request, serializer.data)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    
+                # error handling
+                    else:
+                        print(f"Post validation failed {serializer.errors}")
+                        return Response({'errors': f"Post validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+                except ValidationError as e:
+                    print(f"Validation Error: {e.detail}")
+                    return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+                except Exception as e:
+                    print(f"Unexpected Error: {e}")
+                    return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                return Response({"detail": f"You are not authorized to create a like for this author {author}."}, status=status.HTTP_403_FORBIDDEN)
+                
+            
+
+                
+
+            
+            
     elif AUTHOR_FQID is not None:
         try:
             author = Author.objects.get(fqid=AUTHOR_FQID)
         except Author.DoesNotExist:
             return Response({"detail": "Author not found with AUTHOR_FQID."}, status=status.HTTP_404_NOT_FOUND)
     else:
-        return Response({"detail": "Author not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "AUTHOR_SERIAL/AUTHOR_FQID is not provided"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
     likes_of_object = author.likes.all()
     url = author.fqid

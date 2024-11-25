@@ -1,8 +1,7 @@
 from rest_framework import serializers
-from .models import Post, Comment, Follow
+from .models import Follow
 from author.serializers import Author, AuthorSerializer
 from django.contrib.auth.models import User
-from django.urls import reverse
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -36,27 +35,36 @@ class SignUpSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(username=username, password=password)
         # User is inactive until approved by the admin
         user.is_active = False
-    
-        
-        #host = f"{self.context['request'].scheme}://{self.context['request'].get_host()}{reverse('author-list')}"
+        user.save()
     
         host = self.context.get('host', 'http://test') + 'api/'
         fqid = f'{host}authors/{user.id}'
         author = Author.objects.create(user=user, 
-                                       username=username,
                                        host=host,
                                        fqid=fqid,
                                        **validated_data)
         return author
 
         
-# class LikeSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Like
-#         fields = "__all__"
-
 class FollowSerializer(serializers.ModelSerializer):
+    
+    follower = AuthorSerializer(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    pending = serializers.CharField(write_only=True)
     class Meta:
         model = Follow
-        fields = "__all__"
+        fields = [
+            "id",
+            "follower",
+            "created_at",
+            "pending"
+        ]
+        
+    def validate_pending(self, value):
+        normalized_value = value.lower()
+        valid_choices = [choice[0] for choice in Follow.PENDING_CHOICES]
+        if normalized_value not in valid_choices:
+            raise serializers.ValidationError(f"Invalid visibility value: {value}")
+        return normalized_value
+        
         

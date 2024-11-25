@@ -11,7 +11,7 @@ import CreatePost from "./components/CreatePost";
 import Likes from "./components/Likes";
 import Welcome from "./components/Welcome";
 import PostDetail from "./components/PostDetail"; 
-
+import AuthorsPage from "./components/AuthorsPage";
 import ImageDisplay from './components/ImageDisplay';
 
 /**
@@ -43,6 +43,10 @@ function App() {
             <Route
               path="/stream/:authorId/profile"
               element={<Profile />}
+            ></Route>
+            <Route
+              path="/stream/:authorId/authors"
+              element={<AuthorsPage />}
             ></Route>
             <Route
               path="/stream/:authorId/:postId/edit"

@@ -8,7 +8,7 @@ export default class Author {
       this.github = author.github || null;
       this.profileImage = author.profileImage || null;
       this.host = author.host;
-      this.page = `${author.host}authors/${getAuthorId(author.id)}`; // Generating the page URL
+      this.page = author.page; // Generating the page URL
     }
 
     toJSON() {

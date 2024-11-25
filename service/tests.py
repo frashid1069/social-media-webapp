@@ -3,9 +3,11 @@ from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import Author, Post
+from author.models import Author
+from post.models import Post
 from service import models
-
+from .serializers import SignUpSerializer
+from author.models import Author
 # class for set up testcase
 class BaseAPITestCase(APITestCase):
     def setUp(self):
@@ -20,32 +22,32 @@ class BaseAPITestCase(APITestCase):
     def create_test_user_and_author(self):
         users = User.objects.all()
         user = User.objects.create_user(username=f"testuser{len(users)}", password="password")
-        author = Author.objects.create(user=user, username=f"testauthor{len(users)}", display_name=f"Test Author {len(users)}")
-        author.fqid = f"http://testserver/api/authors/{author.serial}"
+        user.is_active = True
+        user.save()
+        validated_data = {"display_name":"test user", "bio":"bio", "github_url":"http://localhost:3000/home/signup"}
+        author = Author.objects.create(user=user, host="http://test/api/", fqid=f"http://test/api/{user.id}", **validated_data)
         return user, author
 
     def login_and_get_token(self):
         data = {
-            'username': 'testauthor1',
+            'username': 'testuser0',
             'password': 'password'
         }
         response = self.client.post(reverse('login'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         return response.data.get("token")
 
-class LoginViewTest(APITestCase):
+class LoginViewTest(BaseAPITestCase):
 
     def setUp(self):
-        # Create a user and author for testing
-        self.user = User.objects.create_user(username='testuser', password='password')
-        self.author = models.Author.objects.create(user=self.user, username='testauthor', display_name='Test Author')
+        super().setUp()
 
     def test_login_successful(self):
         """
         Test that login is successful with valid credentials.
         """
         data = {
-            'username': 'testauthor',
+            'username': 'testuser0',
             'password': 'password'
         }
         response = self.client.post(reverse('login'), data, format='json')
@@ -57,7 +59,7 @@ class LoginViewTest(APITestCase):
         Test that login fails with an incorrect password.
         """
         data = {
-            'username': 'testauthor',
+            'username': 'testuser0',
             'password': 'wrongpassword'
         }
         response = self.client.post(reverse('login'), data, format='json')
@@ -82,11 +84,8 @@ class SignUpViewTest(APITestCase):
         """
         Test that signup fails with a duplicate username.
         """
-        existing_user = User.objects.create_user(username='existinguser', password='password')
-        models.Author.objects.create(user=existing_user, username='existinguser', display_name='Existing User')
         data = {
-            'username': 'existinguser',
-            'display_name': 'New User',
+            'username': 'testuser0',
             'password': 'password'
         }
         response = self.client.post(reverse('signup'), data, format='json')
@@ -98,79 +97,59 @@ class FollowViewTest(BaseAPITestCase):
     def setUp(self):
         super().setUp()
     
-    def test_requestFollow(self):
-        data = {
-            "follower": "1",
-            "followed": "2",
-            "pending": "yes"
-        }
-        response = self.client.post(reverse("follow-list"), data, format="json")
+    # ://service/api/authors/{AUTHOR_SERIAL}/followers
+    def test_get_followers(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author2 = self.client.get(reverse('author-detail', args=[2]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        author2 = Author.objects.get(fqid=author2.data["id"])
+        follow = models.Follow.objects.create(follower=author2, followed=author1, pending="no")
+        follows = models.Follow.objects.all()
+        response = self.client.get(reverse('get_followers', args=[1]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["followers"]), len(follows))
+
+    # ://service/api/authors/{AUTHOR_SERIAL}/followers/{FOREIGN_AUTHOR_FQID} Delete 
+    def test_removefollower(self):
+        self.test_get_followers()
+        author2 = self.client.get(reverse('author-detail', args=[2]))
+        author2 = Author.objects.get(fqid=author2.data["id"])
+        response = self.client.delete(reverse('foreign_followers', args=[1, author2.fqid]))
+        follows = models.Follow.objects.all()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(0, len(follows))
+
+    # ://service/api/authors/{AUTHOR_SERIAL}/followers/{FOREIGN_AUTHOR_FQID} Put 
+    def test_acceptfollower(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author2 = self.client.get(reverse('author-detail', args=[2]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        author2 = Author.objects.get(fqid=author2.data["id"])
+        follow = models.Follow.objects.create(follower=author2, followed=author1, pending="yes")
+        response = self.client.put(reverse('foreign_followers', args=[1, author2.fqid]))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['follower'], 1)
-        self.assertEqual(response.data['followed'], 2)
+        follow.refresh_from_db()
+        self.assertEqual(follow.pending, "no")
 
-    def test_acceptFollow(self):
-        data = {
-            "follower": "1",
-            "followed": "2",
-            "pending": "yes"
-        }
-        response = self.client.post(reverse("follow-list"), data, format="json")
-
-        data = {
-            "follower": "1",
-            "followed": "2",
-            "pending": "no"
-        }
-        response = self.client.put(reverse("follow-detail", args=["1"]), data, format="json")
+    # # ://service/api/authors/{AUTHOR_SERIAL}/followers/{FOREIGN_AUTHOR_FQID} Get 
+    def test_check_follower(self):
+        self.test_get_followers()
+        author2 = self.client.get(reverse('author-detail', args=[2]))
+        author2 = Author.objects.get(fqid=author2.data["id"])
+        response = self.client.get(reverse('foreign_followers', args=[1, author2.fqid]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['pending'], 'no')
+        self.assertEqual(response.data["id"], author2.fqid)
 
-    def test_declineFollow(self):
-        data = {
-            "follower": "1",
-            "followed": "2",
-            "pending": "yes"
-        }
-        response = self.client.post(reverse("follow-list"), data, format="json")
-        response = self.client.delete(reverse("follow-detail", args=["1"]), format="json")
-        self.assertEqual(response.status_code, 204)
+    # ://service/api/authors/{AUTHOR_SERIAL}/inbox
+    def test_requestFollow(self):
+        author1 = self.client.get(reverse('author-detail', args=[1]))
+        author2 = self.client.get(reverse('author-detail', args=[2]))
+        author1 = Author.objects.get(fqid=author1.data["id"])
+        author2 = Author.objects.get(fqid=author2.data["id"])
 
-    def test_unfollow(self):
-        data = {
-            "follower": "1",
-            "followed": "2",
-            "pending": "no"
-        }
-        response = self.client.post(reverse("follow-list"), data, format="json")
-        response = self.client.delete(reverse("follow-detail", args=["1"]), format="json")
-        self.assertEqual(response.status_code, 204)
-
-
-        
-        
-class EditProfileTest(APITestCase):
-    def setUp(self):
-        # Create a user and author for testing
-        self.user = User.objects.create_user(username='testuser', password='password')
-        self.author = Author.objects.create(user=self.user, username='testauthor', display_name='Test Author')
-        self.client.login(username='testuser', password='password')
-
-    def test_edit_profile(self):
-        """
-        Ensure we can edit a profile.
-        """
-        url = reverse('edit_profile', args=[self.author.id])
-        data = {
-            'username': 'updateduser',
-            'display_name': 'Updated Author',
-            'bio': 'This is an updated bio.',
-            'github_url': 'https://github.com/updateduser'
-        }
-        response = self.client.put(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.author.refresh_from_db()
-        self.assertEqual(self.author.username, data['username'])
-        self.assertEqual(self.author.display_name, data['display_name'])
-        self.assertEqual(self.author.bio, data['bio'])
-        self.assertEqual(self.author.github_url, data['github_url'])
+        data = {"type":"follow", "actor":{"type":"author","id":author1.fqid}, "object":{"type":"author","id":author2.fqid}}
+        response = self.client.post(reverse("inbox", args=[2]), data, format="json")
+        follow = models.Follow.objects.all()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(follow), 1)
+ 

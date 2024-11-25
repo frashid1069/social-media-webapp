@@ -16,12 +16,6 @@ export const getPostId = (url) => {
     return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
   }
 
-  let currentAuthorId = null;
-
-  export function getCurrentAuthorId() {
-    return currentAuthorId;
-  }
-
 /**
  * This is a component for displaying the personal stream page by using PostCards component.
  * Click Profile button => go to profile page
@@ -42,171 +36,112 @@ export default function Stream() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const follow_id = localStorage.getItem("follow_id");
   const [streamPosts, setstreamPosts] = useState([]);
-  currentAuthorId = authorId
+  const [pendingFollowRequests, setPendingFollowRequests] = useState([]);
+  const currentAuthorId = authorId
 
+  // get the current author object
+  const [currentAuthor, setCurrentAuthor] = useState([]);
+  useEffect(() => {
+    cusFetch(`${apiUrl}authors/${authorId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setCurrentAuthor(data);
+      });
+  }, []);
 
   // Get the posts list
   useEffect(() => {
     cusFetch(`${apiUrl}posts/`)
       .then((response) => response.json())
       .then((data) => {
-        if (data && data.src && data.src.length > 0) {
           setstreamPosts(data.src);
-        }
-      }, [currentAuthorId, streamPosts]);
-
-    // const currentAuthor = getCurrentAuthor();
-    // if (currentAuthor) {
-    //   console.log("Current logged-in author: ", currentAuthor);
-    // }
-    // else console.log("NO Current logged-in author found!");
-  });
+      });
+  }, []);
   
   // get the posts owned by the current user
   useEffect(() => {
     cusFetch(`${apiUrl}authors/${authorId}/posts/`)
       .then((response) => response.json())
       .then((data) => {
-        if (data && data.src && data.src.length > 0) {
           setEditablePosts(data.src);
-        }
       });
-  }, [authorIdInt, editablePosts]);
+  }, []);
 
-  // Fetch follow requests and get follower details
-  // Fetch follow requests and get follower details
+  // Fetch all pending follow requests for the author
   useEffect(() => {
-    fetch(`${apiUrl}follow/`, {
-      method: "GET",
-      headers: {
-        "token": `${token}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
+    cusFetch(`${apiUrl}follows/`)
+      .then((response) => {
+        return response.json();
+      })
       .then((data) => {
-        const pendingRequests = data.filter(
-          (follow) => follow.pending === "yes" && follow.followed === authorIdInt
-        );
-
-        // Fetch follower details for each follow request
-        const followerPromises = pendingRequests.map((follow) =>
-          fetch(`${apiUrl}author/${follow.follower}`, {
-            method: "GET",
-            headers: {
-              "token": `${token}`,
-              "Content-Type": "application/json",
-            },
-          }).then((response) => response.json())
-        );
-
-        // Map display names to the follow requests
-        Promise.all(followerPromises).then((followers) => {
-          const followsWithNames = pendingRequests.map((follow, index) => ({
-            ...follow,
-            followerName: followers[index].display_name, // Use display_name field from Author model
-          }));
-          console.log("Mapped Follows with Names:", followsWithNames); // Verify data
-          setFollows(followsWithNames);
-        });
-      });
-  }, [apiUrl, token, authorIdInt]);
+        setPendingFollowRequests(data);
+      })
+      .catch((error) => {
+        console.error("Error getting follow requests: ", error);
+      }) 
+    }, [authorId, pendingFollowRequests.length]);
 
   // Handle accepting or declining follow requests
-  const handleAccept = async (followerId, followerName) => {
-    const response = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
-      method: "PUT",
-      headers: {
-        "token": `${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        follower: followerId,
-        followed: authorIdInt,
-        pending: "no"
-      }),
-    });
-    if (response.ok) {
-      alert(`Accepted follow request from ${followerName}`);
-      setFollows((prevFollows) =>
-        prevFollows.filter((follow) => follow.follower !== followerId)
-      );
-    }
-  };
-
-  const handleDecline = async (followerId, followerName) => {
+  const handleAccept = async (followRequest) => {
     try {
-      // First, check if the follow object exists
-      const checkResponse = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
-        method: "GET",
+      const response = await cusFetch(`${apiUrl}follows/${followRequest.id}`, {
+        method: "PUT",
         headers: {
           "token": `${token}`,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ pending: "no" })
       });
-  
-      if (!checkResponse.ok) {
-        alert("The follow request no longer exists.");
-        return;
-      }
-  
-      // If it exists, proceed with deletion
-      const deleteResponse = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
-        method: "DELETE",
-        headers: {
-          "token": `${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-  
-      if (deleteResponse.ok) {
-        // Remove the follow request from the pending list
-        setFollows((prevFollows) =>
-          prevFollows.filter((follow) => follow.follower !== followerId)
-        );
-        alert(`Declined follow request from ${followerName}`);
+      if (response.ok) {
+        alert(`Accepted follow request from ${followRequest.follower.displayName}`);
+        pendingFollowRequests.filter(request => request.id !== followRequest.id)
       }
     } catch (error) {
       console.error("Error declining follow request:", error);
     }
   };
 
-  // Determine mutual friends for friend-only posts
-  const followingAuthorsId = follows
-    .filter((f) => f.follower === authorIdInt)
-    .map((f) => f.followed);
-
-  const friendsAuthorsId = followingAuthorsId.filter((id) =>
-    follows.some((f) => f.follower === id && f.followed === authorIdInt)
-  );
-
-  // Check if the post is from a friend or the author themselves
-  const isFriend = (post) =>
-    friendsAuthorsId.includes(post.author) || post.author === authorIdInt;
-
-  const matchesAuthor = (post, id) => post.author === id;
-
-  const sortedPosts = streamPosts.length > 0 ? 
-    streamPosts.sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime()) : null;
-
-
-  const sortedEditablePosts = editablePosts.length > 0 ? 
-    editablePosts.sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime()) : null;
-
+  const handleDecline = async (followRequest) => {
+    try {
+      const response = await cusFetch(`${apiUrl}follows/${followRequest.id}`, {
+        method: "PUT",
+        headers: {
+          "token": `${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ pending: "yes" })
+      });
+      if (response.ok) {
+        alert(`Declined follow request from ${followRequest.follower.displayName}`);
+        pendingFollowRequests.filter(request => request.id !== followRequest.id)
+      }
+    } catch (error) {
+      console.error("Error declining follow request:", error);
+    }
+  };
+  // go to profile page
   const goEditableProfile = () => {
     navigate(`/stream/${authorId}/profile`);
   };
-
+  // go to create post page
   const goCreatePost = () => {
     navigate(`/stream/${authorId}/createPost`);
   };
-  const matchId = (follow) => {
-    return follow.followed.toString() === localStorage.getItem("logged_in_id");
-  };
-  const matchPending = (follow) => {
-    return follow.pending === "yes";
-  };
-  const pendingFollows = follows.filter((follow) => matchId(follow) && matchPending(follow));
+  const goShowAuthors = () => {
+    navigate(`/stream/${currentAuthorId}/authors`);
+  }
+  // log out the current user
+  const goLogout = () => {
+    localStorage.setItem("token", '');
+    navigate("/login")
+  }
+  // const matchId = (follow) => {
+  //   return follow.followed.toString() === localStorage.getItem("logged_in_id");
+  // };
+  // const matchPending = (follow) => {
+  //   return follow.pending === "yes";
+  // };
+  // const pendingFollows = follows.filter((follow) => matchId(follow) && matchPending(follow));
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   return (
@@ -214,6 +149,9 @@ export default function Stream() {
       <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
 
       <div className="button-container">
+      <button className="show-authors" onClick={goShowAuthors}>
+          Show All Authors
+        </button>
         <button className="edit-profile-btn" onClick={goEditableProfile}>
           Profile
         </button>
@@ -226,28 +164,29 @@ export default function Stream() {
         >
           {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
         </button>
+        <button className="logout-btn" onClick={goLogout}>Logout</button>
         {/* Custom dropdown for follow requests 
             CHAT GPT: Prompt help me create a custom dropdown that shows the follow requestsindividually and along with
             options to accept or decline. Date: NOV 2, 2024*/}
         <div className="dropdown">
           <button className="dropdown-toggle" onClick={toggleDropdown}>
-            {follows.length} pending follow requests
+            {pendingFollowRequests.length} pending follow requests
           </button>
 
           {dropdownOpen && (
             <div className="dropdown-menu">
-              {pendingFollows.map((follow) => (
-                <div key={follow.id} className="dropdown-item">
-                  <span>{follow.followerName}</span> {/* Display follower's name */}
+              {pendingFollowRequests.map((followRequest) => (
+                <div key={followRequest.id} className="dropdown-item">
+                  <span>{followRequest.follower.displayName}</span> {/* Display follower's name */}
                   <button
                     className="tick-btn"
-                    onClick={(e) => { handleAccept(follow.follower, follow.followerName) }}
+                    onClick={(e) => { handleAccept(followRequest) }}
                   >
                     ✔️
                   </button>
                   <button
                     className="cross-btn"
-                    onClick={(e) => { handleDecline(follow.follower, follow.followerName) }}
+                    onClick={(e) => { handleDecline(followRequest) }}
                   >
                     ❌
                   </button>
@@ -261,20 +200,19 @@ export default function Stream() {
 
       {isVisible && (
         <div className="post-grid">
-          {!sortedPosts && <p>Loading posts...</p>}
-          {sortedPosts && sortedPosts.length === 0 && <p>No posts available.</p>}
-          {sortedPosts && sortedPosts.length > 0 && sortedPosts.map((post) => (
+          {!streamPosts && <p>Loading posts...</p>}
+          {streamPosts && streamPosts.length === 0 && <p>No posts available.</p>}
+          {streamPosts && streamPosts.length > 0 && streamPosts.map((post) => (
             <PostCards
               post={post}
               key={post.id}
-              editable={false}
+              currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
                   ? navigate(`authors/${getAuthorId(post.id)}/posts/${getPostId(post.id)}`)
                   : navigate(`/stream/${getAuthorId(post.id)}/${getAuthorId(post.id)}/edit`)
               }
               canShare={post.can_share}
-              isFriend={isFriend(post)}
             />
             ))
           }
@@ -282,20 +220,19 @@ export default function Stream() {
       )}
       {!isVisible && (
         <div>
-          {!sortedEditablePosts && <p>Loading posts...</p>} 
-          {sortedEditablePosts && sortedEditablePosts.length === 0 && <p>No posts available.</p>} 
-          {sortedEditablePosts && sortedEditablePosts.length > 0 && sortedEditablePosts.map((post) => (
+          {!editablePosts && <p>Loading posts...</p>} 
+          {editablePosts && editablePosts.length === 0 && <p>No posts available.</p>} 
+          {editablePosts && editablePosts.length > 0 && editablePosts.map((post) => (
             <PostCards
               post={post}
               key={post.id}
-              editable={true}
+              currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
                   ? navigate(`authors/${getAuthorId(post.id)}/posts/${getPostId(post.id)}`)
                   : navigate(`/stream/${getAuthorId(post.id)}/${getPostId(post.id)}/edit`)
               }
               canShare={post.can_share}
-              isFriend={isFriend(post)}
             />
             ))
           } 

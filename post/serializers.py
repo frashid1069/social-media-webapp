@@ -21,7 +21,7 @@ class PostSerializer(serializers.ModelSerializer):
     # )
     likes = serializers.SerializerMethodField(read_only=True)
     published = serializers.DateTimeField(source='created_at', read_only=True)
-    visibility = serializers.CharField(source='visibility_display', read_only=True)
+    visibility = serializers.CharField(required=True)
     
     class Meta:
         
@@ -71,67 +71,20 @@ class PostSerializer(serializers.ModelSerializer):
     def validate_visibility(self, value):
         # Normalize value to lowercase and ensure it matches a valid choice
         normalized_value = value.lower()
+        print(normalized_value)
         valid_choices = [choice[0] for choice in Post.VISIBILITY_CHOICES]
         if normalized_value not in valid_choices:
             raise serializers.ValidationError(f"Invalid visibility value: {value}")
         return normalized_value
     
-    # def create(self, validated_data):
-    #     comments_data = validated_data.pop('comments', {})
-    #     post = super().create(validated_data)
-
-    #     # Create associated comments if provided
-    #     for comment_data in comments_data:
-    #         author_data = comment_data.pop('author', {})
-    #         author_fqid = author_data.get('id')
-    #         if Author.objects.filter(fqid=author_fqid).exists():
-    #             comment_author = Author.objects.get(fqid=author_fqid)
-    #         else:
-    #             serializer = AuthorSerializer(data=author_data)
-    #             if serializer.is_valid():
-    #                 comment_author = serializer.save(fqid=author_fqid)
-                    
-    #                 print(f"Author copy created successfully: {comment_author.display_name} (fqid: {comment_author.fqid})")
-
-    #         Comment.objects.create(author=comment_author, post=post, fqid=comment_data.get('id'), **comment_data)
-
-    #     return post
-
-    # def update(self, instance, validated_data):
-    #     comments_data = validated_data.pop('comments', {})
-    #     post = super().update(instance, validated_data)
-
-    #     # Update or create associated comments
-    #     for comment_data in comments_data:
-    #         author_data = comment_data.pop('author', {})
-    #         author_fqid = author_data.get('id')
-            
-    #         # check if author exists, create copy if not
-    #         if Author.objects.filter(fqid=author_fqid).exists():
-    #             comment_author = Author.objects.get(fqid=author_fqid)
-    #         else:
-    #             serializer = AuthorSerializer(data=author_data)
-    #             if serializer.is_valid():
-    #                 comment_author = serializer.save(fqid=author_fqid)
-                    
-    #                 print(f"Author copy created successfully: {comment_author.display_name} (fqid: {comment_author.fqid})")
-            
-    #         # check if comment exists, create copy if not
-    #         comment_fqid = comment_data.get('id')
-    #         if Comment.objects.filter(post=post, fqid=comment_fqid).exists():
-    #             comment = Comment.objects.get(fqid=comment_fqid)
-    #             serializer = CommentSerializer(comment, data=comment_data, partial=True)
-    #             if serializer.is_valid():
-    #                 serializer.save()
-    #         else:
-    #             serializer = CommentSerializer(data=comment_data)
-    #             if serializer.is_valid():
-    #                 serializer.save(author=comment_author, post=post, fqid=comment_fqid)
-
-    #     return post
-        
+    def to_representation(self, instance):
+        """
+        Override representation to return visibility in uppercase.
+        """
+        representation = super().to_representation(instance)
+        representation['visibility'] = instance.visibility_display
+        return representation
     
-
     def get_can_share(self, obj):
         # Only public posts are shareable
         return obj.visibility == 'public'

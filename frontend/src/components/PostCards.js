@@ -70,11 +70,8 @@ export default function PostCards({ post, currenAuthor, onClick }) {
 
   const submitComment = async (event) => {
     event.preventDefault();
-    const response = await cusFetch(`${apiUrl}authors/${authorId}/inbox`, {
+    const response = await cusFetch(`${apiUrl}authors/${authorId}/commented`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         type: "comment",
         comment: newCommentContent,

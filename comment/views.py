@@ -187,24 +187,24 @@ def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
         if not request.user.is_authenticated or request.user.author.serial != AUTHOR_SERIAL:
             return Response({"detail": "You are not authorized to create a post for this author."}, status=status.HTTP_403_FORBIDDEN)
 
-        try:
-            serializer = CommentSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(author=author)
-                # push to inbox
-                push(author, request, serializer.data)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # try:
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(author=author)
+            # push to inbox
+            push(author, request, serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
             
-           # error handling
-            else:
-                print(f"Post validation failed {serializer.errors}")
-                return Response({'errors': f"Post validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
-        except ValidationError as e:
-            print(f"Validation Error: {e.detail}")
-            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            print(f"Unexpected Error: {e}")
-            return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        #    # error handling
+        #     else:
+        #         print(f"Post validation failed {serializer.errors}")
+        #         return Response({'errors': f"Post validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+        # except ValidationError as e:
+        #     print(f"Validation Error: {e.detail}")
+        #     return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        # except Exception as e:
+        #     print(f"Unexpected Error: {e}")
+        #     return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
 

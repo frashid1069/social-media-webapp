@@ -21,9 +21,9 @@ class Comment(models.Model):
         if self._state.adding:
             if self.author.user is not None:
                 # for serial increament
-                self.serial = self.post.comment_count + 1
-                self.post.comment_count = self.serial
-                self.post.save(update_fields=['comment_count']) 
+                self.serial = self.author.comment_count + 1
+                self.author.comment_count = self.serial
+                self.author.save(update_fields=['comment_count']) 
                 # for fqid
                 self.fqid = self.author.fqid + "/commented/" + str(self.serial)
         else:

@@ -32,15 +32,11 @@ export default function AuthorsPage() {
 
     // Handle following
     const handleFollow = async (authorID) => {
-        const token = localStorage.getItem("token");
+
       
         // Fetch the logged-in author's details
         const actorResponse = await cusFetch(`${apiUrl}authors/${currentAuthorId}/`, {
           method: "GET",
-          headers: {
-            token: `${token}`,
-            "Content-Type": "application/json",
-          },
         });
       
         if (!actorResponse.ok) {
@@ -51,12 +47,8 @@ export default function AuthorsPage() {
         const actor = await actorResponse.json();
       
         // Fetch the author to follow's details
-        const objectResponse = await cusFetch(`${authorID}/`, {
+        const objectResponse = await cusFetch(`${apiUrl}authors/${authorID}/`, {
           method: "GET",
-          headers: {
-            token: `${token}`,
-            "Content-Type": "application/json",
-          },
         });
       
         if (!objectResponse.ok) {
@@ -83,10 +75,6 @@ export default function AuthorsPage() {
         // Send the follow request to the inbox
         const response = await cusFetch(`${apiUrl}forward/`, {
           method: "POST",
-          headers: {
-            token: `${token}`,
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify(followRequest),
         });
       
@@ -101,7 +89,6 @@ export default function AuthorsPage() {
     
     // Unfollow functionality
     const handleUnfollow = async (authorID) => {
-      const token = localStorage.getItem("token");
 
       // get the follow request for the author
       const followRequest = cusFetch(`${apiUrl}follows/`)
@@ -140,10 +127,6 @@ export default function AuthorsPage() {
       try {
         const response = await cusFetch(`${apiUrl}follows/${followRequest.id}`, {
           method: "PUT",
-          headers: {
-            "token": `${token}`,
-            "Content-Type": "application/json",
-          },
           body: {
             "pending": "yes"
           },

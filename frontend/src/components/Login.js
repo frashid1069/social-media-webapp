@@ -110,7 +110,7 @@ export const cusFetch = (url, options = {}) => {
   const token = localStorage.getItem("token");
   const defaultHeaders = {
     "Content-Type": "application/json",
-    ...(token && { 'token': `${token}` }),
+    ...(token && { 'Authorization': `Bearer ${token}` }),
   };
 
   return fetch(url, {

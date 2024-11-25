@@ -120,7 +120,7 @@ def comment_list(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
         return Response({"detail": "Comment not found."}, status=status.HTTP_404_NOT_FOUND)
         
     url = post.fqid
-    comments = Comment.objects.filter(post=post.id)
+    comments = Comment.objects.filter(post=post.fqid)
     
     paginator = CommentPagination()
     paged_comments = paginator.paginate_queryset(comments, request)
@@ -138,7 +138,7 @@ def comment_detail_post(request,  AUTHOR_SERIAL=None, POST_SERIAL=None, REMOTE_C
     if AUTHOR_SERIAL is not None and POST_SERIAL is not None and REMOTE_COMMENT_FQID is not None:
         author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False)
         post = get_object_or_404(Post, serial=POST_SERIAL, author__serial=author.serial, is_deleted=False)
-        comment = get_object_or_404(Comment, post__id=post.id, fqid=REMOTE_COMMENT_FQID)
+        comment = get_object_or_404(Comment, post=post.fqid, fqid=REMOTE_COMMENT_FQID)
     else:
         return Response({"detail": "Comment not found."}, status=status.HTTP_404_NOT_FOUND)
     serializer = CommentSerializer(comment)

@@ -12,7 +12,7 @@ class CommentSerializer(serializers.ModelSerializer):
     comment = serializers.CharField(source='content', required=True)
     author = AuthorSerializer(read_only=True)
     published = serializers.DateTimeField(source='created_at', read_only=True)
-    post = serializers.URLField(source="post.fqid", read_only=True)
+    post = serializers.URLField(required=True)
     likes = serializers.SerializerMethodField(read_only=True)
     
     class Meta:

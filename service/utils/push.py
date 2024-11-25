@@ -42,13 +42,16 @@ def push(author, request, data):
     
     elif type == 'comment':
         post_fqid = data.get("post")
-        nodes_exists = Node.objects.filter(is_allowed=True, url__in=post_fqid).exists()
+        print(post_fqid)
+        url = post_fqid.split("/posts/")[0]
+        allowed_nodes = Node.objects.filter(is_allowed=True)
+        matching_nodes = [node for node in allowed_nodes if url.startswith(node.url)]
+        nodes_exists = bool(matching_nodes)
         if nodes_exists:
             print("send to remote post owner")
-            node = Node.objects.get(is_allowed=True, url__in=post_fqid)
+            node = matching_nodes[0]
             headers = create_hearders(node)
             try:
-                url = post_fqid.split("/posts/")[0] + "/"
                 response = requests.post(f"{url}/inbox", headers=headers, json=data)
                 if response.status_code == 201:
                     response_data = f"Notify {url} in {node.url} with {response} Successfully"
@@ -65,7 +68,7 @@ def push(author, request, data):
             response = requests.post(f"{url}/inbox", headers=headers, json=data)
             response_data = f"Notify {url} in local with {response} Successfully"
         else:
-            response_data = f"Error fetching from {node.url}"
+            response_data = f"Error fetching from {url}"
         
         log.append(response_data)
     

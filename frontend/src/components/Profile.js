@@ -121,7 +121,7 @@ export default function Profile() {
     const actor = await actorResponse.json();
   
     // Fetch the author to follow's details
-    const objectResponse = await cusFetch(`${apiUrl}authors/${authorId}/`, {
+    const objectResponse = await cusFetch(`${author.id}/`, {
       method: "GET",
       headers: {
         token: `${token}`,

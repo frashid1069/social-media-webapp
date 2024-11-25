@@ -6,7 +6,6 @@ import { getAuthorId } from "./Stream";
 const apiUrl = process.env.REACT_APP_API_URL;
 
 
-
 export default function AuthorsPage() {
     const [authors, setAuthors] = useState([]);
     const [isFollowing, setIsFollowing] = useState({});
@@ -52,7 +51,7 @@ export default function AuthorsPage() {
         const actor = await actorResponse.json();
       
         // Fetch the author to follow's details
-        const objectResponse = await cusFetch(`${apiUrl}authors/${authorID}/`, {
+        const objectResponse = await cusFetch(`${authorID}/`, {
           method: "GET",
           headers: {
             token: `${token}`,
@@ -173,7 +172,7 @@ export default function AuthorsPage() {
             <button
                 id="unfollowButton"
                 className="follow-btn"
-                onClick={() => handleUnfollow(getAuthorId(author.id))}
+                onClick={() => handleUnfollow(author.id)}
             >
                 Unfollow
             </button>
@@ -181,7 +180,7 @@ export default function AuthorsPage() {
             <button
                 id="followButton"
                 className="follow-btn"
-                onClick={() => handleFollow(getAuthorId(author.id))}
+                onClick={() => handleFollow(author.id)}
             >
                 Follow
             </button>

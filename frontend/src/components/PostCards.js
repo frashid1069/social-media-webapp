@@ -37,19 +37,20 @@ export default function PostCards({ post, currenAuthor, onClick }) {
     cusFetch(`${apiUrl}authors/${authorId}/posts/${postId}/likes`)
       .then((response) => response.json())
       .then((data) => {
-        let postLikes = [];
-        if (data.src.length > 0) {
-          postLikes = [...data.src]
-          setLikes(postLikes);
-          const userLiked = postLikes.some((like) => like.author.id === `${apiUrl}authors/${authorId}`);
-          setLiked(userLiked);
-        }
-      });
+        const postLikes = data.src || [];
+        setLikes(postLikes);
+  
+        // Check if the current user has already liked the post
+        const userLiked = postLikes.some((like) => like.author.id === currenAuthor.id);
+        setLiked(userLiked); // Update liked state
+      })
+      .catch((error) => console.error("Error fetching likes: ", error));
   };
 
   useEffect(() => {
     cusFetchLikes();
-  }, []);
+  }, [currenAuthor, postId, authorId]);
+  
 
 
   // get the author's display name for the post
@@ -106,30 +107,26 @@ export default function PostCards({ post, currenAuthor, onClick }) {
   }
 
   const handleLike = async () => {
-    // Ensure currentAuthor is Author 1 (logged-in user)
-    const myProfile = currenAuthor; // currenAuthor should contain the logged-in user's details (Author 1)
-  
-    // Verify that the post is not already liked
+    // Ensure the user has not already liked the post
     if (!liked) {
-      // Construct the like object with the correct author details (Author 1's details)
+      const myProfile = currenAuthor;
+  
+      // Construct the like object
       const likeObject = {
         type: "like",
         author: {
           type: "author",
-          id: myProfile.id,  // Author ID from myProfile
-          page: myProfile.page,  // Author page URL from myProfile
-          host: myProfile.host,  // Author host from myProfile
-          displayName: myProfile.displayName,  // Author's displayName
-          github: myProfile.github,  // Author's GitHub URL
-          profileImage: myProfile.profileImage || "https://default.image.url"  // Author's profile image or default
+          id: myProfile.id,
+          page: myProfile.page,
+          host: myProfile.host,
+          displayName: myProfile.displayName,
+          github: myProfile.github,
+          profileImage: myProfile.profileImage || "https://default.image.url",
         },
-        object: `http://localhost:8000/api/authors/${authorId}/posts/${postId}`,  // Post being liked (Author 1's post)
+        object: `${apiUrl}authors/${authorId}/posts/${postId}`, // Reference to the post being liked
       };
   
-      console.log("Sending like object:", likeObject);  // Log the like object for debugging
-  
-      // Send the like request to Author 1's /liked endpoint
-      const likeUrl = `http://localhost:8000/api/authors/${myProfile.id.split("/").pop()}/liked`;  // Ensure it's Author 1's /liked endpoint
+      const likeUrl = `${apiUrl}authors/${currenAuthor.id.split("/").pop()}/liked`;
   
       try {
         const response = await cusFetch(likeUrl, {
@@ -137,23 +134,21 @@ export default function PostCards({ post, currenAuthor, onClick }) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(likeObject),  // Send the like object in the request body
+          body: JSON.stringify(likeObject),
         });
   
-        // If the like request was successful, update state
         if (response.ok) {
-          setLiked(true);  // Mark post as liked
-          cusFetchLikes();  // Refresh the likes for the post
+          setLiked(true); // Update state to reflect the like
+          cusFetchLikes(); // Refresh the list of likes
         } else {
-          console.error("Failed to like the post");  // Handle failure
+          console.error("Failed to like the post.");
         }
       } catch (error) {
-        console.error("Error in sending like request: ", error);  // Catch any errors in the request
+        console.error("Error in sending like request: ", error);
       }
     }
   };
   
-
   const handleShare = async () => {
     if (post.visibility === "public") {
       try {
@@ -186,8 +181,6 @@ export default function PostCards({ post, currenAuthor, onClick }) {
     }
   };
 
-
-
   return (
     <div key={post.id} className="post-card" onClick={onClick} style={{ cursor: "pointer" }}>
       <h3 className="post-card-title">{post.title}</h3>
@@ -195,7 +188,14 @@ export default function PostCards({ post, currenAuthor, onClick }) {
         <button className="post-card-author" onClick={(e) => { e.stopPropagation(); goProfile(); }}>
           {displayAuthor(post)}
         </button>
-        <button className="btn-like" onClick={(e) => { e.stopPropagation(); handleLike(); }}>
+        <button
+          className="btn-like"
+          disabled={liked} // Disable the button if already liked
+          onClick={(e) => {
+            e.stopPropagation();
+            handleLike();
+          }}
+        >
           {liked ? "Liked" : "Like"} ({likes.length})
         </button>
         {post.visibility === "public" && (

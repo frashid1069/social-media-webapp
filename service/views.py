@@ -55,6 +55,7 @@ class Login(APIView):
                     'id': user.author.serial,
                     'username': user.username,
                     'display_name': user.author.display_name,
+                    "author": AuthorSerializer(user.author).data
                 }
             }, status=status.HTTP_200_OK)
 

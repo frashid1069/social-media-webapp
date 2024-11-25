@@ -22,8 +22,13 @@ export default function Profile() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  // get the author id as an int
-  const authorIdInt = parseInt(authorId);
+
+  const decodedPostAuthorFqid = decodeURIComponent(authorId);
+
+  const currentAuthorId = localStorage.getItem("currentAuthorId")
+  const encodedCurrentAuthorFqid = encodeURIComponent(currentAuthorId);
+
+
 
   // https://stackoverflow.com/questions/63193114/how-do-i-call-a-function-automatically-when-page-loads-up-in-react-js-in-2020
   useEffect(() => {
@@ -36,20 +41,20 @@ export default function Profile() {
 
   // get the author info
   useEffect(() => {
-    cusFetch(`${apiUrl}authors/${authorId}/`)
+    cusFetch(`${decodedPostAuthorFqid}`)
       .then((response) => response.json())
       .then((data) => setAuthor(data));
-  }, [authorId]);
+  }, []);
   // get the posts owned by the current user
   useEffect(() => {
-    cusFetch(`${apiUrl}authors/${authorIdInt}/posts/`)
+    cusFetch(`${decodedPostAuthorFqid}/posts/`)
       .then((response) => response.json())
       .then((data) => setPosts(data.src));
-  }, [authorIdInt]);
+  }, []);
 
   // get the follower list
   useEffect(() => {
-    cusFetch(`${apiUrl}authors/${authorIdInt}/followers`)
+    cusFetch(`${decodedPostAuthorFqid}/followers`)
       .then((response) => response.json())
       .then((data) => setFollowers(data.followers));
   }, []);
@@ -64,7 +69,7 @@ export default function Profile() {
 
   useEffect(() => {
     // checkFollowingStatus();
-  }, [authorId]);
+  }, []);
 
   // // Check if the logged-in user is following the profile author
   // const checkFollowingStatus = async () => {
@@ -92,12 +97,12 @@ export default function Profile() {
 
   // navigate to the edit profile page
   const handleEditProfile = () => {
-    navigate(`/stream/${authorId}/editProfile`);
+    navigate(`/stream/${encodedCurrentAuthorFqid}/editProfile`);
   };
 
   // go back to stream page
   const goBackStream = () => {
-    navigate(`/stream/${localStorage.getItem("logged_in_id")}`);
+    navigate(`/stream/${encodedCurrentAuthorFqid}`);
   };
   
   // Handle following
@@ -105,7 +110,7 @@ export default function Profile() {
     event.preventDefault();
       
     // Fetch the logged-in author's details
-    const actorResponse = await cusFetch(`${apiUrl}authors/${localStorage.getItem("logged_in_id")}/`, {
+    const actorResponse = await cusFetch(`${encodedCurrentAuthorFqid}/`, {
       method: "GET",
       headers: {
         token: `${token}`,
@@ -189,10 +194,10 @@ export default function Profile() {
 
 
   const ownProfile = () => {
-    if(authorId == localStorage.getItem("logged_in_id")) {
+    if(decodedPostAuthorFqid == currentAuthorId) {
       document.getElementById("followButton").hidden = true;
     };
-    if(authorId !== localStorage.getItem("logged_in_id")) {
+    if(decodedPostAuthorFqid !== currentAuthorId) {
       document.getElementById("editButton").hidden = true;
     };
   };

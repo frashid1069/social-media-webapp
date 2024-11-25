@@ -19,7 +19,7 @@ class PostViewTest(BaseAPITestCase):
     def test_get_post(self):
         author1 = self.client.get(reverse('author-detail', args=[1]))
         author1 = Author.objects.get(fqid=author1.data["id"])
-        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "PUBLIC")
         response = self.client.get(reverse("post_detail", args=[1,1]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["title"], "Test Post 1")
@@ -28,7 +28,7 @@ class PostViewTest(BaseAPITestCase):
     def test_delete_post(self):
         author1 = self.client.get(reverse('author-detail', args=[1]))
         author1 = Author.objects.get(fqid=author1.data["id"])
-        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "PUBLIC")
         response = self.client.delete(reverse("post_detail", args=[1,1]))
         post.refresh_from_db()
         self.assertEqual(response.status_code, 204)
@@ -38,7 +38,7 @@ class PostViewTest(BaseAPITestCase):
     def test_put_post(self):
         author1 = self.client.get(reverse('author-detail', args=[1]))
         author1 = Author.objects.get(fqid=author1.data["id"])
-        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "PUBLIC")
         data = {"author":author1.fqid, "title":"Updated title"}
         response = self.client.put(reverse("post_detail", args=[1,1]), data, format="json")
         post = Post.objects.get(id=1)
@@ -49,7 +49,7 @@ class PostViewTest(BaseAPITestCase):
     def test_get_public_post(self):
         author1 = self.client.get(reverse('author-detail', args=[1]))
         author1 = Author.objects.get(fqid=author1.data["id"])
-        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "PUBLIC")
         post = Post.objects.get(id=1)
         response = self.client.get(reverse("fqid_post_detail", args=[post.fqid]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -61,7 +61,7 @@ class PostViewTest(BaseAPITestCase):
         author2 = self.client.get(reverse('author-detail', args=[2]))
         author1 = Author.objects.get(fqid=author1.data["id"])
         author2 = Author.objects.get(fqid=author2.data["id"])
-        post = Post.objects.create(author=author2, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "friends")
+        post = Post.objects.create(author=author2, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "FRIENDS")
         
         response = self.client.get(reverse("fqid_post_detail", args=[post.fqid]))
         self.assertEqual(response.status_code, 403)
@@ -76,8 +76,8 @@ class PostViewTest(BaseAPITestCase):
     def test_get_authors_posts(self):
         author1 = self.client.get(reverse('author-detail', args=[1]))
         author1 = Author.objects.get(fqid=author1.data["id"])
-        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "friends")
-        Post.objects.create(author=author1, title="Test Post 2", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "FRIENDS")
+        Post.objects.create(author=author1, title="Test Post 2", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "PUBLIC")
         response = self.client.get(reverse("post_list", args=[1]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)
@@ -87,7 +87,7 @@ class PostViewTest(BaseAPITestCase):
         author1 = self.client.get(reverse('author-detail', args=[1]))
         author1 = Author.objects.get(fqid=author1.data["id"])
         serializer = AuthorSerializer(author1)
-        data = {"author": serializer.data, "title":"Test Post 1", "description":"This is a test post", "contentType":"text/markdown", "content":"Content of the post", "visibility":"public"}
+        data = {"author": serializer.data, "title":"Test Post 1", "description":"This is a test post", "contentType":"text/markdown", "content":"Content of the post", "visibility":"PUBLIC"}
         response = self.client.post(reverse("post_list", args=[1]), data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         post = Post.objects.get(author=author1)
@@ -106,7 +106,7 @@ class PostViewTest(BaseAPITestCase):
             author= author1,
             content= image_content,
             content_type= "image/jpeg",
-            visibility="public",
+            visibility="PUBLIC",
             is_deleted=False
         )
         response = self.client.get(reverse("post_image", args=[1, 1]))
@@ -125,7 +125,7 @@ class PostViewTest(BaseAPITestCase):
             author= author1,
             content= image_content,
             content_type= "image/jpeg",
-            visibility="public",
+            visibility="PUBLIC",
             is_deleted=False
         )
         response = self.client.get(reverse("fqid_post_image", args=[post.fqid]))

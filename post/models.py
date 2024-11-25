@@ -64,7 +64,7 @@ class Post(models.Model):
         super(Post, self).save(*args, **kwargs)
     
     def __str__(self):
-        return self.title
+        return f"{self.author.display_name}:  {self.title}"
     
     @property
     def visibility_display(self):

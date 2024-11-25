@@ -65,6 +65,14 @@ class Post(models.Model):
     
     def __str__(self):
         return self.title
+    
+    @property
+    def visibility_display(self):
+        """
+        Return the human-readable visibility value in uppercase.
+        """
+        return dict(self.VISIBILITY_CHOICES).get(self.visibility, self.visibility).upper()
+    
 '''
 def upload_post_image(instance, filename):
     # - sukh 

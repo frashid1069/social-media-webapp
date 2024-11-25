@@ -21,7 +21,7 @@ class PostSerializer(serializers.ModelSerializer):
     # )
     likes = serializers.SerializerMethodField(read_only=True)
     published = serializers.DateTimeField(source='created_at', read_only=True)
-    visibility = serializers.CharField(required=True)
+    visibility = serializers.CharField(source='visibility_display', read_only=True)
     
     class Meta:
         
@@ -41,18 +41,6 @@ class PostSerializer(serializers.ModelSerializer):
             "visibility",
         ]
         
-    
-    # def get_likes(self, obj):
-    #     likes = Like.objects.filter(object=obj.fqid)
-    #     return {
-    #         "type": "comments",
-    #         "id": "http://nodebbbb/api/authors/222/posts/293/comments",
-    #         "page": "http://nodebbbb/authors/222/posts/293/comments",
-    #         "page_number": 1,
-    #         "size": 5,
-    #         "count": len(likes),
-    #         "src": LikeSerializer(likes, many=True).data,
-    #     }
         
     def get_likes(self, obj):
         likes_queryset = Like.objects.filter(object=obj.fqid)
@@ -79,12 +67,6 @@ class PostSerializer(serializers.ModelSerializer):
             url=url
         )
         return paginated_response.data
-    
-    # def get_comments(self, obj):
-    #     comments = Comment.objects.filter(post=obj.id)
-    #     if not comments.exists():
-    #         return {}
-    #     return CommentSerializer(comments, many=True).data
     
     def validate_visibility(self, value):
         # Normalize value to lowercase and ensure it matches a valid choice

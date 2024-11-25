@@ -57,6 +57,7 @@ export default function AuthorsPage() {
         // }
         // const object = await objectResponse.json();
         const object = authors.filter((author) => author.id === authorID)
+        console.log(authors);
       
       
         // Construct the follow request object

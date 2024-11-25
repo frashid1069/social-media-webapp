@@ -152,6 +152,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
       }
     }
   };
+  
 
   const handleShare = async () => {
     if (post.visibility === "public") {

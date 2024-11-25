@@ -46,6 +46,7 @@ function EditProfile() {
 
   
 
+
   /*
     The handleChange function is used to update the formData state variable whenever the author inputs data into the form fields. This 
     will help to keep the state variable updated with the latest data that the author inputs.

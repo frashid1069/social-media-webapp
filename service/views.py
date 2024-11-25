@@ -439,7 +439,7 @@ def inbox(request, AUTHOR_SERIAL):
             try:
                 serializer = CommentSerializer(data=request.data, context={'request': request})
                 if serializer.is_valid():
-                    serializer.save(post=post, author=sender, fqid=comment_fqid)
+                    serializer.save(author=sender, fqid=comment_fqid)
                     print(f"Comment copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
             

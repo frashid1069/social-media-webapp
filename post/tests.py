@@ -65,9 +65,12 @@ class PostViewTest(BaseAPITestCase):
         
         response = self.client.get(reverse("fqid_post_detail", args=[post.fqid]))
         self.assertEqual(response.status_code, 403)
-        
+    
         Follow.objects.create(follower=author2, followed=author1, pending="no")
         Follow.objects.create(follower=author1, followed=author2, pending="no")
+        author1.refresh_from_db()
+        author2.refresh_from_db()
+        post.refresh_from_db()
         response = self.client.get(reverse("fqid_post_detail", args=[post.fqid]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["title"], "Test Post 1")
@@ -105,7 +108,7 @@ class PostViewTest(BaseAPITestCase):
             title="Image Title",
             author= author1,
             content= image_content,
-            content_type= "image/jpeg",
+            content_type= "image/jpeg;base64",
             visibility="PUBLIC",
             is_deleted=False
         )
@@ -124,11 +127,13 @@ class PostViewTest(BaseAPITestCase):
             title="Image Title",
             author= author1,
             content= image_content,
-            content_type= "image/jpeg",
+            content_type= "image/jpeg;base64",
             visibility="PUBLIC",
             is_deleted=False
         )
+        
         response = self.client.get(reverse("fqid_post_image", args=[post.fqid]))
+        self.assertEqual(response.data["detail"], 1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 

@@ -17,7 +17,6 @@ export default function PostCards({ post, currenAuthor, onClick }) {
   const currentAuthorId = localStorage.getItem("currentAuthorId")
   const encodedAuthorFqid = encodeURIComponent(currentAuthorId);
   const encodedPostAuthorFqid = encodeURIComponent(post.author.id)
-  console.log(post.author.id)
 
   const authorId = getAuthorId(post.id)
   const postId = getPostId(post.id)

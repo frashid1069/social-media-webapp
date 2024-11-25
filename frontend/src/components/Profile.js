@@ -22,7 +22,6 @@ export default function Profile() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  console.log(authorId)
 
   const decodedPostAuthorFqid = decodeURIComponent(authorId);
 

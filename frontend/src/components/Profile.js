@@ -120,21 +120,22 @@ export default function Profile() {
   
     const actor = await actorResponse.json();
   
-    // Fetch the author to follow's details
-    const objectResponse = await cusFetch(`${author.id}/`, {
-      method: "GET",
-      headers: {
-        token: `${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    // // Fetch the author to follow's details
+    // const objectResponse = await cusFetch(`${author.id}/`, {
+    //   method: "GET",
+    //   headers: {
+    //     token: `${token}`,
+    //     "Content-Type": "application/json",
+    //   },
+    // });
   
-    if (!objectResponse.ok) {
-      alert("Failed to fetch author details for following.");
-      return;
-    }
-  
-    const object = await objectResponse.json();
+    // if (!objectResponse.ok) {
+    //   alert("Failed to fetch author details for following.");
+    //   return;
+    // }
+    // const object = await objectResponse.json();
+
+    const object = author;
   
     // Construct the follow request object
     const followRequest = {

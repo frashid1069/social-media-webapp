@@ -20,7 +20,7 @@ class Post(models.Model):
     content = models.TextField(blank=True, null=True)
     VISIBILITY_CHOICES = [ # database value/ human readable 
         ('public', 'PUBLIC'),
-        ('friend-only', 'FRIENDS'),
+        ('friends', 'FRIENDS'),
         ('unlisted', 'UNLISTED'),
         ('deleted', 'DELETED')
     ]

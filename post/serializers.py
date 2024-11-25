@@ -10,7 +10,7 @@ class PostSerializer(serializers.ModelSerializer):
     title = serializers.CharField(required=True)
     id = serializers.URLField(source='fqid', read_only=True)
     page = serializers.URLField(source='fqid',read_only=True)
-    description = serializers.CharField(required=True)
+    description = serializers.CharField(required=False)
     contentType = serializers.CharField(required=True, source='content_type')
     content = serializers.CharField(required=True)
     author = AuthorSerializer(read_only=True)

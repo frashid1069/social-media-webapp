@@ -62,7 +62,7 @@ class PostView(ModelViewSet):
         """,
         parameters=[
             OpenApiParameter(name="author_id", description="Filter posts by the author's ID", required=False, type=OpenApiTypes.INT),
-            OpenApiParameter(name="visibility", description="Filter posts by visibility (public, friend-only, unlisted)", required=False, type=OpenApiTypes.STR),
+            OpenApiParameter(name="visibility", description="Filter posts by visibility (public, friends, unlisted)", required=False, type=OpenApiTypes.STR),
             OpenApiParameter(name="title", description="Filter posts by title", required=False, type=OpenApiTypes.STR),
             OpenApiParameter(name="following_list", description="Return posts from authors that the user follows", required=False, type=OpenApiTypes.BOOL),
         ],
@@ -102,7 +102,7 @@ class PostView(ModelViewSet):
             print(followed_by_user)
             # followed_by_user is a list of author id who current user followed
             # author__id__in filter the posts that belong to these author, same for visibility__in
-            #queryset = queryset.filter(author__id__in=followed_by_user,visibility__in=["unlisted", "friend-only", "public"] )
+            #queryset = queryset.filter(author__id__in=followed_by_user,visibility__in=["unlisted", "friends", "public"] )
             queryset = queryset.filter(author__id__in=followed_by_user)
             
         return queryset.order_by("updated_at")
@@ -161,8 +161,8 @@ class PostView(ModelViewSet):
             serializer = self.get_serializer(post)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        # Restrict friend-only posts to friends
-        elif post.visibility == 'friend-only':
+        # Restrict friends posts to friends
+        elif post.visibility == 'friends':
             # Retrieve the current author's profile based on the current user
             try:
                 author = Author.objects.get(user=current_user)
@@ -246,7 +246,7 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
     URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}
     eg. http://localhost:8000/api/authors/1/posts/1
         GET [local, remote] get the public post whose serial is POST_SERIAL
-            friend-only posts: must be authenticated
+            friends posts: must be authenticated
         DELETE [local] remove a
             local posts: must be authenticated locally as the author
         PUT [local] update a post
@@ -265,7 +265,7 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
        
         
         serializer = PostSerializer(post, context={'request': request})
-        if serializer.data.get("visibility") == "friend-only":
+        if serializer.data.get("visibility") == "friends":
             if check_friend(author, request.user.author) or request.user.author == author:
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
@@ -332,7 +332,7 @@ def fqid_post_detail(request, POST_FQID=None):
     """
     URL: ://service/api/posts/{POST_FQID}
         GET [local] get the public post whose URL is POST_FQID
-            friend-only posts: must be authenticated
+            friends posts: must be authenticated
     """
     if POST_FQID is None:
         return Response({"detail": "Post not found with POST_FQID."}, status=status.HTTP_404_NOT_FOUND)
@@ -343,7 +343,7 @@ def fqid_post_detail(request, POST_FQID=None):
         
     
     serializer = PostSerializer(post, context={'request': request})
-    if serializer.data.get("visibility") == "friend-only":
+    if serializer.data.get("visibility") == "friends":
         author = post.author
         if check_friend(author, request.user.author) or request.user.author == author:
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -363,7 +363,7 @@ def post_list(request, AUTHOR_SERIAL):
         GET [local, remote] get the recent posts from author AUTHOR_SERIAL (paginated)
             Not authenticated: only public posts.
             Authenticated locally as author: all posts.
-            Authenticated locally as friend of author: public + friend-only posts.
+            Authenticated locally as friend of author: public + friends posts.
             Authenticated as remote node: This probably should not happen. Remember, the way remote node becomes aware of local posts is by local node pushing those posts to inbox, not by remote node pulling.
         POST [local] create a new post but generate a new ID
             Authenticated locally as author
@@ -375,7 +375,7 @@ def post_list(request, AUTHOR_SERIAL):
         if current_author == author:
             posts = Post.objects.filter(author=author)
         elif check_friend(current_author, author):
-            posts = Post.objects.filter(author=author).filter(visibility__in=['public', 'friend-only'])
+            posts = Post.objects.filter(author=author).filter(visibility__in=['public', 'friends'])
         else:
             posts = Post.objects.filter(author=author, visibility='public')
 
@@ -475,12 +475,12 @@ def get_all_visible_post(request):
             if follow.pending == 'no':
 
                 if check_friend(follow.followed, author):
-                    posts = posts | Post.objects.filter(author=follow.followed, visibility__in=['unlisted', 'friend-only'])
+                    posts = posts | Post.objects.filter(author=follow.followed, visibility__in=['unlisted', 'friends'])
                 else:
                     posts = posts | Post.objects.filter(author=follow.followed, visibility='unlisted')
     
      
-    posts = posts.filter(is_deleted=False, visibility__in=['unlisted', 'friend-only', 'public']).order_by("-updated_at")
+    posts = posts.filter(is_deleted=False, visibility__in=['unlisted', 'friends', 'public']).order_by("-updated_at")
     serializer = PostSerializer(posts, many=True, context={'request': request})
     response_data = {
             "type":"posts",

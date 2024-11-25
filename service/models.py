@@ -4,13 +4,14 @@ from author.models import Author
 
 
 class Node(models.Model):
+    name = models.CharField(max_length=20, editable = True, blank=True, null=True)
     url = models.URLField(max_length = 100, editable = True)
     username = models.CharField(max_length=20, editable = True, blank=True, null=True)
     password = models.CharField(max_length=20, editable = True, blank=True, null=True)
     is_allowed = models.BooleanField(default = False)
     
     def __str__(self):
-        return str(self.url)
+        return str(self.name)
 
 class Follow(models.Model):
     '''Follower.objects.create(follower=author1, followed=author2) 

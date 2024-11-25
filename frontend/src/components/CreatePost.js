@@ -148,7 +148,7 @@ export default function CreatePost() {
             onChange={(e) => setVisibility(e.target.value)}
           >
             <option value="public">Public</option>
-            <option value="friend-only">Friend Only</option>
+            <option value="friends">Friend Only</option>
             <option value="unlisted">Unlisted</option>
           </select>
         </div>

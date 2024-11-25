@@ -167,7 +167,7 @@
             "fqid":"http://localhost:8000/api/authors/3/posts/3",
             "created_at": "2024-11-22 06:42:17.796522",
             "updated_at": "2024-11-22 06:42:17.796522",
-            "visibility": "friend-only"
+            "visibility": "friends"
         }
     },
     {
@@ -215,7 +215,7 @@
             "fqid":"http://localhost:8000/api/authors/4/posts/3",
             "created_at": "2024-11-22 06:42:17.796522",
             "updated_at": "2024-11-22 06:42:17.796522",
-            "visibility": "friend-only"
+            "visibility": "friends"
         }
     }
 ]

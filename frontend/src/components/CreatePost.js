@@ -21,6 +21,8 @@ export default function CreatePost() {
   const [posttype, setPostType] = useState("post");
   const { authorId } = useParams();
   const navigate = useNavigate();
+  const currentAuthorId = localStorage.getItem("currentAuthorId");
+  const encodedAuthorFqid = encodeURIComponent(currentAuthorId);
 
   const handlePostTypeChange = (event) => {
     setPostType(event.target.value);
@@ -49,11 +51,11 @@ export default function CreatePost() {
     // Append the image file if an image is selected
     if (selectedImage) {
       formData.set("content", selectedImage);
-      formData.set("contentType", "image/jpeg");
+      formData.set("contentType", "image/jpeg;base64");
     }
   
     try {
-      const response = await fetch(`${apiUrl}authors/${authorId}/posts/`, {
+      const response = await fetch(`${currentAuthorId}/posts/`, {
         method: "POST",
         headers: {
           "token": `${localStorage.getItem('token')}` // If a token is needed
@@ -62,7 +64,7 @@ export default function CreatePost() {
       });
   
       if (response.ok) {
-        navigate(`/stream/${authorId}`);
+        navigate(`/stream/${encodedAuthorFqid}`);
       } else {
         const error = await response.json();
         alert(JSON.stringify(error));
@@ -76,7 +78,7 @@ export default function CreatePost() {
 
   // Handle cancel action
   const cancelPostCreation = () => {
-    navigate(`/stream/${authorId}`);
+    navigate(`/stream/${encodedAuthorFqid}`);
   };
 
   // Convert the Markdown content to HTML using "marked"

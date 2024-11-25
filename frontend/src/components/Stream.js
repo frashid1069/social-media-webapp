@@ -32,17 +32,17 @@ export default function Stream() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const { authorId } = useParams();
-  const authorIdInt = parseInt(authorId);
+  const authorIdInt = decodeURIComponent(authorId);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const follow_id = localStorage.getItem("follow_id");
   const [streamPosts, setstreamPosts] = useState([]);
   const [pendingFollowRequests, setPendingFollowRequests] = useState([]);
-  const currentAuthorId = authorId
+  const currentAuthorId = localStorage.getItem("currentAuthorId")
 
   // get the current author object
   const [currentAuthor, setCurrentAuthor] = useState([]);
   useEffect(() => {
-    cusFetch(`${apiUrl}authors/${authorId}`)
+    cusFetch(`${currentAuthorId}`)
       .then((response) => response.json())
       .then((data) => {
         setCurrentAuthor(data);
@@ -60,7 +60,7 @@ export default function Stream() {
   
   // get the posts owned by the current user
   useEffect(() => {
-    cusFetch(`${apiUrl}authors/${authorId}/posts/`)
+    cusFetch(`${currentAuthorId}/posts/`)
       .then((response) => response.json())
       .then((data) => {
           setEditablePosts(data.src);
@@ -79,17 +79,13 @@ export default function Stream() {
       .catch((error) => {
         console.error("Error getting follow requests: ", error);
       }) 
-    }, [authorId, pendingFollowRequests.length]);
+    }, [currentAuthorId, pendingFollowRequests.length]);
 
   // Handle accepting or declining follow requests
   const handleAccept = async (followRequest) => {
     try {
       const response = await cusFetch(`${apiUrl}follows/${followRequest.id}`, {
         method: "PUT",
-        headers: {
-          "token": `${token}`,
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ pending: "no" })
       });
       if (response.ok) {
@@ -105,10 +101,6 @@ export default function Stream() {
     try {
       const response = await cusFetch(`${apiUrl}follows/${followRequest.id}`, {
         method: "PUT",
-        headers: {
-          "token": `${token}`,
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ pending: "yes" })
       });
       if (response.ok) {
@@ -121,27 +113,20 @@ export default function Stream() {
   };
   // go to profile page
   const goEditableProfile = () => {
-    navigate(`/stream/${authorId}/profile`);
+    navigate(`/stream/${encodeURIComponent(currentAuthorId)}/profile`);
   };
   // go to create post page
   const goCreatePost = () => {
-    navigate(`/stream/${authorId}/createPost`);
+    navigate(`/stream/${encodeURIComponent(currentAuthorId)}/createPost`);
   };
   const goShowAuthors = () => {
-    navigate(`/stream/${currentAuthorId}/authors`);
+    navigate(`/stream/${encodeURIComponent(currentAuthorId)}/authors`);
   }
   // log out the current user
   const goLogout = () => {
     localStorage.setItem("token", '');
     navigate("/login")
   }
-  // const matchId = (follow) => {
-  //   return follow.followed.toString() === localStorage.getItem("logged_in_id");
-  // };
-  // const matchPending = (follow) => {
-  //   return follow.pending === "yes";
-  // };
-  // const pendingFollows = follows.filter((follow) => matchId(follow) && matchPending(follow));
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   return (
@@ -209,8 +194,8 @@ export default function Stream() {
               currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
-                  ? navigate(`authors/${getAuthorId(post.id)}/posts/${getPostId(post.id)}`)
-                  : navigate(`/stream/${getAuthorId(post.id)}/${getAuthorId(post.id)}/edit`)
+                  ? navigate(`authors/${encodeURIComponent(post.author.id)}/posts/${encodeURIComponent(post.id)}`)
+                  : navigate(`/stream/${encodeURIComponent(post.author.id)}/${encodeURIComponent(post.id)}/edit`)
               }
               canShare={post.can_share}
             />
@@ -229,8 +214,8 @@ export default function Stream() {
               currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
-                  ? navigate(`authors/${getAuthorId(post.id)}/posts/${getPostId(post.id)}`)
-                  : navigate(`/stream/${getAuthorId(post.id)}/${getPostId(post.id)}/edit`)
+                  ? navigate(`authors/${encodeURIComponent(post.author.id)}/posts/${encodeURIComponent(post.id)}`)
+                  : navigate(`/stream/${encodeURIComponent(post.id)}/${encodeURIComponent(post.id)}/edit`)
               }
               canShare={post.can_share}
             />

@@ -42,15 +42,18 @@ def push(author, request, data):
     
     elif type == 'comment':
         post_fqid = data.get("post")
-        nodes_exists = Node.objects.filter(is_allowed=True, url__in=post_fqid).exists()
+        print(post_fqid)
+        url = post_fqid.split("/posts/")[0]
+        allowed_nodes = Node.objects.filter(is_allowed=True)
+        matching_nodes = [node for node in allowed_nodes if url.startswith(node.url)]
+        nodes_exists = bool(matching_nodes)
         if nodes_exists:
             print("send to remote post owner")
-            node = Node.objects.get(is_allowed=True, url__in=post_fqid)
+            node = matching_nodes[0]
             headers = create_hearders(node)
             try:
-                url = post_fqid.split("/posts/")[0] + "/"
                 response = requests.post(f"{url}/inbox", headers=headers, json=data)
-                if response.status_code == 201:
+                if response.status_code == 201 or response.status_code == 200:
                     response_data = f"Notify {url} in {node.url} with {response} Successfully"
                 else:
                     response_data = f"Failed to notify {url} in {node.url} with {response}"
@@ -65,21 +68,25 @@ def push(author, request, data):
             response = requests.post(f"{url}/inbox", headers=headers, json=data)
             response_data = f"Notify {url} in local with {response} Successfully"
         else:
-            response_data = f"Error fetching from {node.url}"
+            response_data = f"Error fetching from {url}"
         
         log.append(response_data)
     
     elif type == 'like':
         object_fqid = data.get("object")
-        nodes_exists = Node.objects.filter(is_allowed=True, url__in=object_fqid).exists()
+        serial = object_fqid.split('authors/')[1].split('/')[0]
+        print(object_fqid, serial)
+        url = object_fqid.split("/posts/")[0]
+        allowed_nodes = Node.objects.filter(is_allowed=True)
+        matching_nodes = [node for node in allowed_nodes if url.startswith(node.url)]
+        nodes_exists = bool(matching_nodes)
         if nodes_exists:
             print("send to remote post owner")
-            node = Node.objects.get(is_allowed=True, url__in=object_fqid)
+            node = node = matching_nodes[0]
             headers = create_hearders(node)
             try:
-                serial = object_fqid.split('authors/')[1].split('/')[0]
                 response = requests.post(f"{node.url}authors/{serial}/inbox", headers=headers, json=data)
-                if response.status_code == 201:
+                if response.status_code == 201 or response.status_code == 200:
                     response_data = f"Notify {node.url}authors/{serial} in {node.url} with {response} Successfully"
                 else:
                     response_data = f"Failed to notify {node.url}authors/{serial} in {node.url} with {response}"
@@ -89,11 +96,9 @@ def push(author, request, data):
                 return Response(f"Error notifying {node.url}authors/{serial} in {node.url}: {e}", status=status.HTTP_400_BAD_REQUEST)
             
         elif author.host in object_fqid:
-            serial = object_fqid.split('authors/')[1].split('/')[0]
             print("send to local post owner")
             headers = {"Authorization": f"Bearer {request.auth}"}
-            response = requests.post(f"{author.host}authors/{serial}/inbox", headers=headers, json=data)
-            response_data = f"Notify {author} in local with {response} Successfully"
+            response_data = f"Notify {author} in local Successfully"
         else:
             response_data = f"Error fetching from {author}"
         

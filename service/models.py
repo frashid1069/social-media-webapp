@@ -11,7 +11,10 @@ class Node(models.Model):
     is_allowed = models.BooleanField(default = False)
     
     def __str__(self):
-        return str(self.name)
+        if self.is_allowed:
+            return f"* {self.name}" 
+        else:
+            return str(self.name)
 
 class Follow(models.Model):
     '''Follower.objects.create(follower=author1, followed=author2) 

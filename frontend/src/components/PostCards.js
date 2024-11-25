@@ -12,7 +12,11 @@ export default function PostCards({ post, currenAuthor, onClick }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [newCommentContent, setNewCommentContent] = useState("");
-  const currentAuthorId = Stream.currentAuthorId;
+  const [CommentList, setCommentList] = useState("");
+  // const currentAuthorId = Stream.currentAuthorId;
+  const currentAuthorId = localStorage.getItem("currentAuthorId")
+  const encodedAuthorFqid = encodeURIComponent(currentAuthorId);
+  const encodedPostAuthorFqid = encodeURIComponent(post.author.id)
 
   const authorId = getAuthorId(post.id)
   const postId = getPostId(post.id)
@@ -64,17 +68,14 @@ export default function PostCards({ post, currenAuthor, onClick }) {
 
 
   const goProfile = () => {
-    navigate(`/stream/${authorId}/profile`);
+    navigate(`/stream/${encodedPostAuthorFqid}/profile`);
   };
 
 
   const submitComment = async (event) => {
     event.preventDefault();
-    const response = await cusFetch(`${apiUrl}authors/${authorId}/inbox`, {
+    const response = await cusFetch(`${apiUrl}authors/${authorId}/commented`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         type: "comment",
         comment: newCommentContent,
@@ -100,7 +101,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
 
   // if type is image then format the image url
   let imageURL = null;
-  if (post.contentType === "image/jpeg") {
+  if (post.contentType.startsWith("image/")) {
     imageURL = `${post.id}/image`;
   } else {
     imageURL = null;
@@ -126,7 +127,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
         object: `${apiUrl}authors/${authorId}/posts/${postId}`, // Reference to the post being liked
       };
   
-      const likeUrl = `${apiUrl}authors/${currenAuthor.id.split("/").pop()}/liked`;
+      const likeUrl = `${currentAuthorId}/liked`;
   
       try {
         const response = await cusFetch(likeUrl, {

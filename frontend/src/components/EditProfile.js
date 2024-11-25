@@ -18,6 +18,8 @@ function EditProfile() {
   });
 
   const token = localStorage.getItem('token');  
+  const currentAuthorId = localStorage.getItem("currentAuthorId")
+  const encodedCurrentAuthorFqid = encodeURIComponent(currentAuthorId);
 
   // Gets the authorId from the URL
   const { authorId } = useParams();
@@ -32,7 +34,7 @@ function EditProfile() {
   */
   useEffect(() => {
     // Fetch the current profile data and set it to formData
-    fetch(`${apiUrl}authors/${authorId}/`, {
+    fetch(`${currentAuthorId}/`, {
       method: 'GET',
       headers: {
         "token": `${token}`,
@@ -94,9 +96,9 @@ function EditProfile() {
       formDataToSend.forEach(function(value, key){
         object[key] = value;
       });
-  
+      alert(JSON.stringify(object))
       
-      fetch(`${apiUrl}authors/${authorId}/`, {
+      fetch(`${currentAuthorId}/`, {
         method: 'PUT',
         headers: {
           "token": `${token}`,
@@ -105,7 +107,7 @@ function EditProfile() {
         body: JSON.stringify(object)
       })
         .then(response => {if (response.ok) {
-          navigate(`/stream/${authorId}/profile`);
+          navigate(`/stream/${encodedCurrentAuthorFqid}/profile`);
         }})
         // .then(data => {
         //   console.log('Profile updated successfully:', data);

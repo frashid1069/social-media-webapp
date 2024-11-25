@@ -56,14 +56,14 @@ class PostSerializer(serializers.ModelSerializer):
         return paginated_response.data
     
     def get_comments(self, obj):
-        comments_queryset = Comment.objects.filter(post=obj.id)
+        comments_queryset = Comment.objects.filter(post=obj.fqid)
         paginator = CommentPagination()
         request = self.context.get('request', None)
         page = paginator.paginate_queryset(comments_queryset, request, view=None)
 
         url = self.context['request'].build_absolute_uri().strip('/')
         paginated_response = paginator.get_paginated_response(
-            CommentSerializer(page, many=True).data,
+            CommentSerializer(page, many=True, context={'request': request}).data,
             url=url
         )
         return paginated_response.data
@@ -77,6 +77,17 @@ class PostSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Invalid visibility value: {value}")
         return normalized_value
     
+    def validate_contentType(self, value):
+        """
+        Custom validator for contentType.
+        If the contentType is 'image/jpeg', convert it to 'image/png;base64'.
+        """
+        if value == 'image/jpeg':
+            return 'image/jpeg;base64'
+        elif value == 'image/png':
+            return 'image/png;base64'
+        return value
+    
     def to_representation(self, instance):
         """
         Override representation to return visibility in uppercase.
@@ -84,6 +95,8 @@ class PostSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['visibility'] = instance.visibility_display
         return representation
+    
+    
     
     def get_can_share(self, obj):
         # Only public posts are shareable

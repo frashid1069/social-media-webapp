@@ -52,7 +52,7 @@ function App() {
               path="/stream/:authorId/:postId/edit"
               element={<EditPost />}
             />
-            <Route path="/stream/:authorId/authors/:authorId/posts/:postId" element={<PostDetail />} />
+            <Route path="/stream/:authorId/authors/:authorFqid/posts/:postFqid" element={<PostDetail />} />
 
           </Routes>
         </Router>

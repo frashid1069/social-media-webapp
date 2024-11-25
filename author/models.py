@@ -20,6 +20,7 @@ class Author(models.Model):
     host = models.URLField(blank=True, null=True, max_length=200)
     post_count = models.PositiveIntegerField(default=0)
     like_count = models.PositiveIntegerField(default=0)
+    comment_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)

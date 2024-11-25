@@ -34,7 +34,6 @@ class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='posts')
     fqid = models.URLField(blank=True, null=True, max_length=200)
     serial = models.PositiveIntegerField(default=0)
-    comment_count = models.PositiveIntegerField(default=0)
     github_event_id = models.CharField(max_length=100, unique=True, blank=True, null=True)
     image_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
@@ -64,7 +63,7 @@ class Post(models.Model):
         super(Post, self).save(*args, **kwargs)
     
     def __str__(self):
-        return self.title
+        return f"{self.author.display_name}:  {self.title}"
     
     @property
     def visibility_display(self):

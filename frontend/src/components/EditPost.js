@@ -14,11 +14,16 @@ const EditPost = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
     const apiUrl = process.env.REACT_APP_API_URL
+
+    const decodedAuthorFqid = decodeURIComponent(authorId);
+    const decodedPostFqid = decodeURIComponent(postId);
+    const currentAuthorId = localStorage.getItem("currentAuthorId")
+    const encodedAuthorFqid = encodeURIComponent(currentAuthorId);
     
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await fetch(`${apiUrl}authors/posts/${apiUrl}authors/${authorId}/posts/${postId}`, {
+                const response = await fetch(`${decodedPostFqid}`, {
                     headers: {
                         "Content-Type": "application/json",
                         "token": token, // Add token to the request headers
@@ -58,7 +63,7 @@ const EditPost = () => {
             formData.append("content", selectedImage);
         }
 
-        const response = await fetch(`${apiUrl}authors/${authorId}/posts/${postId}`, {
+        const response = await fetch(`${decodedPostFqid}`, {
             method: "PUT",
             headers: {
                 "token": token, 
@@ -68,21 +73,21 @@ const EditPost = () => {
 
         if (response.ok) {
             alert("Post updated successfully");
-            navigate(`/stream/${authorId}`);
+            navigate(`/stream/${encodedAuthorFqid}`);
         } else {
             alert("Failed to update post. Please try again.");
         }
     };
 
     const goToStream = () => {
-        navigate(`/stream/${authorId}`);
+        navigate(`/stream/${encodedAuthorFqid}`);
     };
 
     const deletePost = async (event) => {
         event.preventDefault();
         const confirmDelete = window.confirm("Are you sure you want to delete this post?");
         if (confirmDelete) {
-            const response = await fetch(`${apiUrl}authors/${authorId}/posts/${postId}`, {
+            const response = await fetch(`${decodedPostFqid}`, {
                 method: "DELETE",
                 headers: {
                     "token": token, // Add token for DELETE request
@@ -91,7 +96,7 @@ const EditPost = () => {
 
             if (response.ok) {
                 alert("Post deleted successfully");
-                navigate(`/stream/${authorId}`);
+                navigate(`/stream/${encodedAuthorFqid}`);
             } else {
                 alert("Failed to delete post");
             }

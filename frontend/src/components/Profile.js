@@ -15,41 +15,38 @@ export default function Profile() {
   const [author, setAuthor] = useState([]);
   const [posts, setPosts] = useState([]);
   const [followers, setFollowers] = useState([]);
-  // const [isFollowing, setIsFollowing] = useState(() => {
-  //   const savedState = localStorage.getItem(`isFollowing_${authorId}`);
-  //   return savedState ? JSON.parse(savedState) : false;})
   const [isFollowing, setIsFollowing] = useState(false);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  // get the author id as an int
-  const authorIdInt = parseInt(authorId);
+  const decodedPostAuthorFqid = decodeURIComponent(authorId);
+
+  const currentAuthorId = localStorage.getItem("currentAuthorId")
+  const encodedCurrentAuthorFqid = encodeURIComponent(currentAuthorId);
+
+
 
   // https://stackoverflow.com/questions/63193114/how-do-i-call-a-function-automatically-when-page-loads-up-in-react-js-in-2020
   useEffect(() => {
     ownProfile();
   }, []);
 
-  // useEffect(() => {
-  //   localStorage.setItem(`isFollowing_${authorId}`, JSON.stringify(isFollowing));
-  // }, [isFollowing, authorId]);
-
   // get the author info
   useEffect(() => {
-    cusFetch(`${apiUrl}authors/${authorId}/`)
+    cusFetch(`${decodedPostAuthorFqid}`)
       .then((response) => response.json())
       .then((data) => setAuthor(data));
-  }, [authorId]);
+  }, []);
   // get the posts owned by the current user
   useEffect(() => {
-    cusFetch(`${apiUrl}authors/${authorIdInt}/posts/`)
+    cusFetch(`${decodedPostAuthorFqid}/posts/`)
       .then((response) => response.json())
       .then((data) => setPosts(data.src));
-  }, [authorIdInt]);
+  }, []);
 
   // get the follower list
   useEffect(() => {
-    cusFetch(`${apiUrl}authors/${authorIdInt}/followers`)
+    cusFetch(`${decodedPostAuthorFqid}/followers`)
       .then((response) => response.json())
       .then((data) => setFollowers(data.followers));
   }, []);
@@ -60,44 +57,16 @@ export default function Profile() {
   function getFollowerAuthor(f) {
     followerAuthors.push(f.displayName)
   };
-  
-
-  useEffect(() => {
-    // checkFollowingStatus();
-  }, [authorId]);
-
-  // // Check if the logged-in user is following the profile author
-  // const checkFollowingStatus = async () => {
-  //   const loggedIn = localStorage.getItem("logged_in_id");
-  //   try {
-  //     const response = await cusFetch(`${apiUrl}follow/?author_id=${authorId}&follower=${loggedIn}`);
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       if(data.length > 0) {
-  //         localStorage.setItem("follow_id", data[0].id)
-  //         setIsFollowing(true);
-  //       }
-  //       else {
-  //         // No follow relationship found, reset follow status
-  //         // localStorage.removeItem("follow_id");
-  //         setIsFollowing(false);
-  //       }
-  //     }
-  //   } 
-  //   catch (error) {
-  //     console.error("Error checking following status:", error);
-  //   }
-  // };
 
 
   // navigate to the edit profile page
   const handleEditProfile = () => {
-    navigate(`/stream/${authorId}/editProfile`);
+    navigate(`/stream/${encodedCurrentAuthorFqid}/editProfile`);
   };
 
   // go back to stream page
   const goBackStream = () => {
-    navigate(`/stream/${localStorage.getItem("logged_in_id")}`);
+    navigate(`/stream/${encodedCurrentAuthorFqid}`);
   };
   
   // Handle following
@@ -105,12 +74,8 @@ export default function Profile() {
     event.preventDefault();
       
     // Fetch the logged-in author's details
-    const actorResponse = await cusFetch(`${apiUrl}authors/${localStorage.getItem("logged_in_id")}/`, {
+    const actorResponse = await cusFetch(`${currentAuthorId}/`, {
       method: "GET",
-      headers: {
-        token: `${token}`,
-        "Content-Type": "application/json",
-      },
     });
   
     if (!actorResponse.ok) {
@@ -119,18 +84,14 @@ export default function Profile() {
     }
   
     const actor = await actorResponse.json();
-  
-    // Fetch the author to follow's details
-    const objectResponse = await cusFetch(`${author.id}/`, {
+
+
+    const objectResponse = await cusFetch(`${decodedPostAuthorFqid}/`, {
       method: "GET",
-      headers: {
-        token: `${token}`,
-        "Content-Type": "application/json",
-      },
     });
   
     if (!objectResponse.ok) {
-      alert("Failed to fetch author details for following.");
+      alert("Failed to fetch this author's details.");
       return;
     }
   
@@ -172,26 +133,70 @@ export default function Profile() {
   // Unfollow functionality
   const handleUnfollow = async (event) => {
     event.preventDefault();
-    // const follow_id = localStorage.getItem("follow_id");
-    // const response = await cusFetch(`${apiUrl}follow/${follow_id}/`, {
-    //   method: "DELETE",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // });
-    // if (response.ok) {
-    //   alert("You have unfollowed this author.");
-    //   await checkFollowingStatus(); // Refresh follow status after unfollowing
-    //   setIsFollowing(false); 
-    // }
+
+    // Fetch the logged-in author's details
+    const actorResponse = await cusFetch(`${currentAuthorId}/`, {
+      method: "GET",
+    });
+  
+    if (!actorResponse.ok) {
+      alert("Failed to fetch logged-in author's details.");
+      return;
+    }
+  
+    const actor = await actorResponse.json();
+
+
+    const objectResponse = await cusFetch(`${decodedPostAuthorFqid}/`, {
+      method: "GET",
+    });
+  
+    if (!objectResponse.ok) {
+      alert("Failed to fetch this author's details.");
+      return;
+    }
+  
+    const object = await objectResponse.json();
+  
+    // Construct the follow request object
+    const followRequest = {
+      type: "follow",
+      summary: `${actor.displayName} wants to follow ${object.displayName}`,
+      actor: {
+        type: "author",
+        ...actor,
+      },
+      object: {
+        type: "author",
+        ...object,
+      },
+    };
+  
+    // Send the follow request to the inbox
+    const response = await cusFetch(`${apiUrl}forward/`, {
+      method: "DELETE",
+      headers: {
+        token: `${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(followRequest),
+    });
+  
+    if (response.ok) {
+      alert("you have unfollowed this author");
+      // await checkFollowingStatus(); // Update follow status and follow_id after following
+      setIsFollowing(true);
+    } else {
+      alert("Failed to unfollow the author.");
+    }
   };
 
 
   const ownProfile = () => {
-    if(authorId == localStorage.getItem("logged_in_id")) {
+    if(decodedPostAuthorFqid == currentAuthorId) {
       document.getElementById("followButton").hidden = true;
     };
-    if(authorId !== localStorage.getItem("logged_in_id")) {
+    if(decodedPostAuthorFqid !== currentAuthorId) {
       document.getElementById("editButton").hidden = true;
     };
   };

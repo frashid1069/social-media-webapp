@@ -209,7 +209,7 @@ export default function Stream() {
               currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
-                  ? navigate(`authors/${getAuthorId(post.id)}/posts/${getPostId(post.id)}`)
+                  ? navigate(`authors/${encodeURIComponent(post.author.id)}/posts/${encodeURIComponent(post.id)}`)
                   : navigate(`/stream/${getAuthorId(post.id)}/${getAuthorId(post.id)}/edit`)
               }
               canShare={post.can_share}
@@ -229,7 +229,7 @@ export default function Stream() {
               currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
-                  ? navigate(`authors/${getAuthorId(post.id)}/posts/${getPostId(post.id)}`)
+                  ? navigate(`authors/${encodeURIComponent(post.author.id)}/posts/${encodeURIComponent(post.id)}`)
                   : navigate(`/stream/${getAuthorId(post.id)}/${getPostId(post.id)}/edit`)
               }
               canShare={post.can_share}

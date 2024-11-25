@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../editPost.css";
+import { cusFetch } from "./Login";
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function PostDetail() {
-    const { authorId, postId } = useParams();
+    // const { authorId, postId } = useParams();
+    const { authorFqid, postFqid } = useParams();
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const token = localStorage.getItem("token");
     const navigate = useNavigate();
+    const decodedAuthorFqid = decodeURIComponent(authorFqid);
+    const decodedPostFqid = decodeURIComponent(postFqid);
 
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await fetch(`${apiUrl}authors/posts/${apiUrl}authors/${authorId}/posts/${postId}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "token": token,
-                    },
+                const response = await cusFetch(`${apiUrl}posts/${decodedPostFqid}`, {
+                    method: "GET",
                 });
                 if (response.ok) {
                     const data = await response.json();
@@ -35,13 +36,13 @@ export default function PostDetail() {
         };
 
         fetchPost();
-    }, [authorId, postId]);
+    }, [decodedAuthorFqid, decodedPostFqid]);
 
     const deletePost = async (event) => {
         event.preventDefault();
         const confirmDelete = window.confirm("Are you sure you want to delete this post?");
         if (confirmDelete) {
-            const response = await fetch(`${apiUrl}authors/${authorId}/posts/${postId}`, {
+            const response = await fetch(`${decodedPostFqid}`, {
                 method: "DELETE",
                 headers: {
                     "token": token, // Add token for DELETE request
@@ -50,7 +51,7 @@ export default function PostDetail() {
 
             if (response.ok) {
                 alert("Post deleted successfully");
-                navigate(`/stream/${authorId}`);
+                navigate(`/stream/${decodedAuthorFqid}`);
             } else {
                 alert("Failed to delete post");
             }
@@ -58,11 +59,11 @@ export default function PostDetail() {
     };
 
     const goEditPost = () => {
-        navigate(`/stream/${authorId}/${postId}/edit`);
+        navigate(`/stream/${authorFqid}/${postFqid}/edit`);
     };
 
     const goToStream = () => {
-        navigate(`/stream/${authorId}`);
+        navigate(`/stream/${authorFqid}`);
     };
 
     if (loading) return <p>Loading post...</p>;

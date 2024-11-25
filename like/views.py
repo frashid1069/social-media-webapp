@@ -214,12 +214,6 @@ def things_liked_by_author(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
             else:
                 return Response({"detail": f"You are not authorized to create a like for this author {author}."}, status=status.HTTP_403_FORBIDDEN)
                 
-            
-
-                
-
-            
-            
     elif AUTHOR_FQID is not None:
         try:
             author = Author.objects.get(fqid=AUTHOR_FQID)

@@ -53,6 +53,7 @@ export default function Login() {
         localStorage.setItem("token", token);
         localStorage.setItem("logged_in_id", data.user.id);
         // fetchCurrentAuthor(data.user.id);
+        localStorage.setItem("currentAuthor", data.user.author);
         navigate(`/stream/${encodeURIComponent(data.user.author.id)}`);
       } else {
         //const data = await response.json();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "../loginStyles.css";
+import "./css/loginStyles.css";
 import Author from "./Author";
 const apiUrl = process.env.REACT_APP_API_URL
 /**
@@ -79,8 +79,6 @@ export default function Login() {
   return (
     <div className="login-page">
       <h2 className="page-subtitle">Welcome to the login page!</h2>
-
-      <img className="login-image" src="login-image.png" alt="login" />
 
       <input
         type="text"

@@ -1,0 +1,79 @@
+/* Login Page Container */
+.login-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(to bottom, #e0ffff, #7fffd4); /* Aquamarine gradient */
+  font-family: Arial, sans-serif;
+}
+
+/* Subtitle */
+.login-page .page-subtitle {
+  color: #005f5f; /* Darker shade of aquamarine */
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+/* Login Image */
+.login-page .login-image {
+  width: 150px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+/* Input Fields */
+.login-page .username,
+.login-page .password {
+  width: 80%;
+  max-width: 300px;
+  padding: 10px;
+  margin: 10px 0;
+  border: 2px solid #5fcdb6; /* Aquamarine border */
+  border-radius: 5px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.login-page .username:focus,
+.login-page .password:focus {
+  border-color: #2e8b8b; /* Darker aquamarine */
+  box-shadow: 0 0 5px rgba(47, 189, 185, 0.5); /* Subtle aquamarine glow */
+}
+
+/* Error Message */
+.login-page .error-message {
+  color: red;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+.login-page .login-button,
+.login-page .signup-button {
+  width: 80%;
+  max-width: 300px;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 1rem;
+  color: white;
+  background-color: #5fcdb6; /* Aquamarine */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-page .login-button:hover,
+.login-page .signup-button:hover {
+  background-color: #2e8b8b; /* Darker aquamarine */
+}
+
+.login-page .signup-button {
+  background-color: #2e8b8b; /* Slightly different shade for variety */
+}
+
+.login-page .signup-button:hover {
+  background-color: #005f5f; /* Even darker aquamarine on hover */
+}

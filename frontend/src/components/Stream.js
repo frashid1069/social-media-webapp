@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../streamStyle.css";
+import './css/streamStyle.css';
 import PostCards from "./PostCards";
 import { cusFetch } from "./Login";
 import Author from "./Author";
@@ -194,8 +194,8 @@ export default function Stream() {
               currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
-                  ? navigate(`authors/${encodeURIComponent(post.author.id)}/posts/${encodeURIComponent(post.id)}`)
-                  : navigate(`/stream/${encodeURIComponent(post.author.id)}/${encodeURIComponent(post.id)}/edit`)
+                  ? navigate(`/posts/${encodeURIComponent(post.id)}`)
+                  : navigate(`/posts/${encodeURIComponent(post.id)}/edit`)
               }
               canShare={post.can_share}
             />
@@ -214,8 +214,8 @@ export default function Stream() {
               currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
-                  ? navigate(`authors/${encodeURIComponent(post.author.id)}/posts/${encodeURIComponent(post.id)}`)
-                  : navigate(`/stream/${encodeURIComponent(post.id)}/${encodeURIComponent(post.id)}/edit`)
+                  ? navigate(`/posts/${encodeURIComponent(post.id)}`)
+                  : navigate(`/posts/${encodeURIComponent(post.id)}/edit`)
               }
               canShare={post.can_share}
             />

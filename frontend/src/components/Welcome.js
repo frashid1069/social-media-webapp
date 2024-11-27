@@ -1,5 +1,5 @@
 import React from "react";
-import "../loginStyles.css";
+import "./css/loginStyles.css";
 import { useNavigate } from "react-router-dom";
 /**
  * This a component for displaying the welcome page

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "../loginStyles.css";
+import "./css/loginStyles.css";
 import Author from "./Author";
 /**
  * This a component for displaying the sign up page
@@ -32,118 +32,6 @@ export default function SignUp() {
     setGithubUrl(e.target.value);
   };
 
-  // function handleSubmit() {
-  //   const requestOp = {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       username: username,
-  //       password: password,
-  //       display_name: displayName,
-  //       bio: bio,
-  //       profile_image: "http://localhost:8000/profile_pics/1.jpg",
-  //       github_url: githubUrl,
-  //       created_at: "2024-10-16T21:54:00Z",
-  //       updated_at: "2024-10-16T21:54:00Z",
-  //     }),
-  //   };
-  //   fetch("http://localhost:8000/service/author/", requestOp)
-  //     .then((response) => response.json())
-  //     .then((data) => console.log(data));
-  // }
-
-//   const handleSubmit = async (event) => {
-//     const apiUrl = process.env.REACT_APP_API_URL + 'author/';
-//     event.preventDefault();
-//     try {
-//       const response = await fetch(apiUrl, {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           username: username,
-//           password: password,
-//           display_name: displayName,
-//           bio: bio,
-//           profile_image: selectedImage,
-//           github_url: githubUrl,
-//           created_at: "2024-10-16T21:54:00Z",
-//           updated_at: "2024-10-16T21:54:00Z",
-//         }),
-//       })
-//         .then((responsess) => responsess.json())
-//         .then((data) => console.log(data));
-
-//       if (response.ok) {
-//         window.location.href = "/login"; // Redirect after saving
-//       } else {
-//         alert("Failed to update post");
-//       }
-//     } catch (error) {
-//       alert("Error updating post");
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <h2 className="app-subtitle">Welcome to the Sign Up page!</h2>
-//       <img className="login-image" src="login-image.png" alt="login" />
-//       <form onSubmit={handleSubmit}>
-//         <input
-//           type="text"
-//           className="username"
-//           placeholder="Username"
-//           value={username}
-//           onChange={handleUsernameChange}
-//         />
-//         <input
-//           type="text"
-//           className="password"
-//           placeholder="Password"
-//           value={password}
-//           onChange={handlePasswordChange}
-//         />
-//         <input
-//           type="text"
-//           className="display_name"
-//           placeholder="Display Name"
-//           value={displayName}
-//           onChange={handleDisplayNameChange}
-//         />
-//         <input
-//           type="text"
-//           className="bio"
-//           placeholder="Bio"
-//           value={bio}
-//           onChange={handleBioChange}
-//         />
-//         <input
-//           type="text"
-//           className="github_url"
-//           placeholder="Github Url"
-//           value={githubUrl}
-//           onChange={handleGithubUrlChange}
-//         />
-//         <input
-//           type="file"
-//           className="myImage"
-//           // Event handler to capture file selection and update the state
-//           onChange={(event) => {
-//             console.log(event.target.files[0]); // Log the selected file
-//             setSelectedImage(event.target.files[0]); // Update the state with the selected file
-//           }}
-//         />
-
-//         <button type="submit" className="signup-button">
-//           Submit
-//         </button>
-//       </form>
-//     </div>
-//   );
-// }
 const handleSubmit = async (event) => {
   const apiUrl = process.env.REACT_APP_API_URL + 'signup/';
   event.preventDefault();

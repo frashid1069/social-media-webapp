@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'post',                      # install app service
     'comment',                      # install app service  
     'like',        
+    'ai_assistant',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

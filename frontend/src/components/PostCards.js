@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked";
-import "../streamStyle.css";
+import "./css/streamStyle.css";
 import "../likes.css";
 import Comment from "./Comment";
 import { cusFetch } from './Login';
@@ -38,7 +38,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
 
   // Fetch likes for the post
   const cusFetchLikes = () => {
-    cusFetch(`${apiUrl}authors/${authorId}/posts/${postId}/likes`)
+    cusFetch(`${apiUrl}posts/${post.id}/likes`)
       .then((response) => response.json())
       .then((data) => {
         const postLikes = data.src || [];
@@ -74,7 +74,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
 
   const submitComment = async (event) => {
     event.preventDefault();
-    const response = await cusFetch(`${apiUrl}authors/${authorId}/commented`, {
+    const response = await cusFetch(`${currentAuthorId}/commented`, {
       method: "POST",
       body: JSON.stringify({
         type: "comment",
@@ -124,7 +124,7 @@ export default function PostCards({ post, currenAuthor, onClick }) {
           github: myProfile.github,
           profileImage: myProfile.profileImage || "https://default.image.url",
         },
-        object: `${apiUrl}authors/${authorId}/posts/${postId}`, // Reference to the post being liked
+        object: post.id, // Reference to the post being liked
       };
   
       const likeUrl = `${currentAuthorId}/liked`;

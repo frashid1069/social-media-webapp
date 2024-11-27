@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../streamStyle.css";
+import "./css/streamStyle.css";
 import PostCards from "./PostCards";
 import { cusFetch } from './Login';
 

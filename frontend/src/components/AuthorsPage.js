@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { cusFetch } from "./Login";
-import "../streamStyle.css";
+import "./css/streamStyle.css";
 import { getAuthorId } from "./Stream";
 const apiUrl = process.env.REACT_APP_API_URL;
 

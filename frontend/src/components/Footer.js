@@ -1,5 +1,5 @@
 import React from "react";
-import "../loginStyles.css";
+import "./css/loginStyles.css";
 /**
  * This is a component for displaying the footer
  *

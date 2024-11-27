@@ -9,7 +9,6 @@ and I fully understand all the code and its functionality.
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked"; // Import the Markdown library
-import "../loginStyles.css";
 const apiUrl = process.env.REACT_APP_API_URL
 
 export default function CreatePost() {

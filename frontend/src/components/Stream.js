@@ -7,14 +7,14 @@ import Author from "./Author";
 import { getCurrentAuthor } from "./Author";
 
 export const getAuthorId = (url) => {
-    const authorMatch = url.match(/authors\/(\d+)/);
-    return authorMatch ? authorMatch[1] : null;       // Returns author ID or null if not found
-  }
-  
+  const authorMatch = url.match(/authors\/(\d+)/);
+  return authorMatch ? authorMatch[1] : null;       // Returns author ID or null if not found
+}
+
 export const getPostId = (url) => {
-    const postMatch = url.match(/posts\/(\d+)/);
-    return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
-  }
+  const postMatch = url.match(/posts\/(\d+)/);
+  return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
+}
 
 /**
  * This is a component for displaying the personal stream page by using PostCards component.
@@ -49,21 +49,38 @@ export default function Stream() {
       });
   }, []);
 
+  // const handleChatSubmit = async () => {
+  //   const currentData = JSON.stringify(availableData); // Serialize data to send
+  //   const combinedPrompt = `${userInput}. Here's some data to consider: ${currentData}`;
+  //   try {
+  //     const res = await fetch('http://localhost:8000/api/chatgpt/', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ prompt: combinedPrompt }),
+  //     });
+  //     const data = await res.json();
+  //     setResponse(data.response || 'No response from AI');
+  //   } catch (error) {
+  //     console.error('Error fetching ChatGPT response:', error);
+  //     setResponse('Error occurred. Please try again.');
+  //   }
+  // };
+
   // Get the posts list
   useEffect(() => {
     cusFetch(`${apiUrl}posts/`)
       .then((response) => response.json())
       .then((data) => {
-          setstreamPosts(data.src);
+        setstreamPosts(data.src);
       });
   }, []);
-  
+
   // get the posts owned by the current user
   useEffect(() => {
     cusFetch(`${currentAuthorId}/posts/`)
       .then((response) => response.json())
       .then((data) => {
-          setEditablePosts(data.src);
+        setEditablePosts(data.src);
       });
   }, []);
 
@@ -78,8 +95,8 @@ export default function Stream() {
       })
       .catch((error) => {
         console.error("Error getting follow requests: ", error);
-      }) 
-    }, [currentAuthorId, pendingFollowRequests.length]);
+      })
+  }, [currentAuthorId, pendingFollowRequests.length]);
 
   // Handle accepting or declining follow requests
   const handleAccept = async (followRequest) => {
@@ -134,7 +151,7 @@ export default function Stream() {
       <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
 
       <div className="button-container">
-      <button className="show-authors" onClick={goShowAuthors}>
+        <button className="show-authors" onClick={goShowAuthors}>
           Show All Authors
         </button>
         <button className="edit-profile-btn" onClick={goEditableProfile}>
@@ -199,14 +216,14 @@ export default function Stream() {
               }
               canShare={post.can_share}
             />
-            ))
+          ))
           }
         </div>
       )}
       {!isVisible && (
         <div>
-          {!editablePosts && <p>Loading posts...</p>} 
-          {editablePosts && editablePosts.length === 0 && <p>No posts available.</p>} 
+          {!editablePosts && <p>Loading posts...</p>}
+          {editablePosts && editablePosts.length === 0 && <p>No posts available.</p>}
           {editablePosts && editablePosts.length > 0 && editablePosts.map((post) => (
             <PostCards
               post={post}
@@ -219,8 +236,8 @@ export default function Stream() {
               }
               canShare={post.can_share}
             />
-            ))
-          } 
+          ))
+          }
         </div>
       )}
     </div>

@@ -9,7 +9,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     host = serializers.URLField(required=True)
     displayName = serializers.CharField(source="display_name", required=True)
     github = serializers.URLField(source="github_url", required=False, allow_null=True, allow_blank=True)
-    profileImage = serializers.URLField(source="profile_image", required=False, allow_null=True, allow_blank=True)
+    profileImage = serializers.CharField(source="profile_image", required=False, allow_null=True, allow_blank=True)
     page = serializers.URLField(source='fqid', read_only=True)
     
     class Meta:

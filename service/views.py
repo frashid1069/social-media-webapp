@@ -103,7 +103,7 @@ class FollowView(ModelViewSet):
             queryset = queryset.filter(followed=author_id, follower=follower)
         return queryset
     
-@api_view(['POST'])
+@api_view(['POST', 'DELETE'])
 def forward_follow_request(request):
     if request.user.is_staff:
         return Response({"error": "Local api only"}, status=status.HTTP_403_FORBIDDEN)
@@ -115,76 +115,89 @@ def forward_follow_request(request):
         return Response({"error": "Type is not found in the feild."}, status=status.HTTP_400_BAD_REQUEST)
     
     if type == 'follow':
-        object_fqid = request.data.get("object", {}).get("id")
-        object_exists = Author.objects.filter(fqid=object_fqid, is_deleted=False).exists()
-        if object_exists:
-            object = get_object_or_404(Author, fqid=object_fqid, is_deleted=False)
-        else:
-            try:
-                serializer = AuthorSerializer(data=request.data.get("object", {}))
-                
-                if serializer.is_valid():
-                    object = serializer.save(fqid=object_fqid)
-                else:
-                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
-            except ValidationError as e:
-                print(f"Validation Error: {e.detail}")
-                return Response({"error": e.detail}, status=400)
-        
-        follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='no').exists() # already followed
-        accepted_follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='yes').exists()
-        mutual_follow = Follow.objects.filter(follower=object, followed=actor).exists() # becomes friend if object author followed actor
+        # send follow request
+        if request.method == 'POST':
+            object_fqid = request.data.get("object", {}).get("id")
+            object_exists = Author.objects.filter(fqid=object_fqid, is_deleted=False).exists()
+            
+            # create the object author's object if author doesn't exist
+            if object_exists:
+                object = get_object_or_404(Author, fqid=object_fqid, is_deleted=False)
+            else:
+                try:
+                    serializer = AuthorSerializer(data=request.data.get("object", {}))
+                    if serializer.is_valid():
+                        object = serializer.save(fqid=object_fqid)
+                    else:
+                        return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+                except ValidationError as e:
+                    print(f"Validation Error: {e.detail}")
+                    return Response({"error": e.detail}, status=400)
+            
+            follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='no').exists() # already followed
+            unapproved_follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='yes').exists() # not yet approved
+            mutual_follow = Follow.objects.filter(follower=object, followed=actor, pending='no').exists() # object author followed current already
 
-        if follow_exists and mutual_follow:
-            return Response({"detail": "Authors are already friends."}, status=status.HTTP_200_OK)
-        elif follow_exists:
-            return Response({"detail": "Already following."}, status=status.HTTP_409_CONFLICT)
-        elif accepted_follow_exists:
-            return Response({"detail": "Follow request already exists."}, status=status.HTTP_409_CONFLICT)
-        elif mutual_follow:
-            try:
-                Follow.objects.create(follower=actor, followed=object, pending='no')
-            except ValidationError as e:
-                print(f"Validation Error: {e.detail}")
-                return Response({"error": e.detail}, status=400)
-            return Response({"detail": f"You are now friends of {object.display_name}"}, status=status.HTTP_201_CREATED)
+            if follow_exists and mutual_follow:
+                return Response({"detail": "Authors are already friends."}, status=status.HTTP_200_OK)
+            elif follow_exists:
+                return Response({"detail": "Already following."}, status=status.HTTP_409_CONFLICT)
+            elif unapproved_follow_exists:
+                return Response({"detail": "Follow request already exists."}, status=status.HTTP_409_CONFLICT)
 
-        Follow.objects.create(follower=actor, followed=object, pending='yes')
-
-        response_data = {
-            "type": "follow",
-            "summary": f"{actor.display_name} wants to follow {object.display_name}",
-            "actor": AuthorSerializer(actor).data,
-            "object": AuthorSerializer(object).data,
-        }
-        
-        if object.host != actor.host:            
+            # assuming following for remote nodes and not for local
             nodes_exists = Node.objects.filter(is_allowed=True, url=object.host).exists()
             if nodes_exists:
-                node = Node.objects.get(is_allowed=True, url=object.host)                
-                print(node.username,node.password)
-                headers = create_hearders(node)
-                try:
-                    response = requests.post(f"{object.fqid}/inbox", headers=headers, json=request.data)
-                    
-                    if response.status_code == 201:
-                        try:
-                            response_data = response.json()
-                            
-                        except ValidationError as e:
-                            print(f"Validation Error: {e.detail}")
-                            return Response({"error": e.detail},  status=status.HTTP_400_BAD_REQUEST)
-                    else:
-                        print(f"Failed POST request to {node.url} with {response}")
-                        return Response(f"Failed POST request to  {node.url} with {response}", status=status.HTTP_400_BAD_REQUEST)
-                        
-                except requests.RequestException as e:
-                    print(f"Error forward follow request to {node.url}: {e}")
+                Follow.objects.create(follower=actor, followed=object, pending='no')
             else:
-                print(f"Error fetching from {node.url}")
+                Follow.objects.create(follower=actor, followed=object, pending='yes')
 
-        return Response(response_data, status=status.HTTP_201_CREATED)
-    
+            response_data = {
+                "type": "follow",
+                "summary": f"{actor.display_name} wants to follow {object.display_name}",
+                "actor": AuthorSerializer(actor).data,
+                "object": AuthorSerializer(object).data,
+            }
+            
+            # forward follow request
+            if object.host != actor.host:            
+                if nodes_exists:
+                    node = Node.objects.get(is_allowed=True, url=object.host)                
+                    print(node.username, node.password)
+                    headers = create_hearders(node)
+                    try:
+                        response = requests.post(f"{object.fqid}/inbox", headers=headers, json=request.data)
+                        
+                        if response.status_code == 201 or response.status_code == 200:
+                            try:
+                                response_data = response.json()
+                                
+                            except ValidationError as e:
+                                print(f"Validation Error: {e.detail}")
+                                return Response({"error": e.detail},  status=status.HTTP_400_BAD_REQUEST)
+                        else:
+                            print(f"Failed POST request to {node.url} with {response}")
+                            return Response(f"Failed POST request to  {node.url} with {response}", status=status.HTTP_400_BAD_REQUEST)
+                            
+                    except requests.RequestException as e:
+                        print(f"Error forward follow request to {node.url}: {e}")
+                else:
+                    print(f"Error fetching from {node.url}")
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        # unfollow request
+        elif request.method == 'DELETE':
+            object_fqid = request.data.get("object", {}).get("id")
+            object_author = get_object_or_404(Author, fqid=object_fqid, is_deleted=False)
+            
+            follow_object = get_object_or_404(Follow, follower=actor, followed=object_author)
+            follow_object.reject()
+            if not Follow.objects.filter(follower=actor, followed=object_author).exists():
+                return Response({"detail": "Reject the follow request"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Failed to reject the follow request"}, status=status.HTTP_400_BAD_REQUEST)
+            
     return Response({"error": "Type is not follow."}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
@@ -350,43 +363,37 @@ def inbox(request, AUTHOR_SERIAL):
             POST [remote]: send a follow request to AUTHOR_SERIAL
                 AUTHOR_SERIAL will be the object below
         """
-       
-        object_author = author    
+        
+        object_author = author
+        # create the actor author's object if author doesn't exist
         try:
             actor_fqid = request.data.get("actor", {}).get("id")
             actor_exists = Author.objects.filter(fqid=actor_fqid, is_deleted=False).exists()
             if actor_exists:
                 actor = get_object_or_404(Author, fqid=actor_fqid, is_deleted=False)
             else:
-                try:
-                    serializer = AuthorSerializer(data=request.data.get("actor", {}))
-                    
-                    if serializer.is_valid():
-                        actor = serializer.save(fqid=actor_fqid)
-                    else:
-                        return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
-                except ValidationError as e:
-                    print(f"Validation Error: {e.detail}")
-                    return Response({"error": e.detail}, status=400)
-            
+                serializer = AuthorSerializer(data=request.data.get("actor", {}))
+                if serializer.is_valid():
+                    actor = serializer.save(fqid=actor_fqid)
+                else:
+                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            print(f"Validation Error: {e.detail}")
+            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
         except Author.DoesNotExist:
             return Response({"detail": "Actor author not found."}, status=status.HTTP_404_NOT_FOUND)
-        # TODO: pendding condition
-        follow_exists = Follow.objects.filter(follower=actor, followed=object_author).exists() # already followed
-        mutual_follow = Follow.objects.filter(follower=object_author, followed=actor).exists() # becomes friend if object author followed actor
+        
+        follow_exists = Follow.objects.filter(follower=actor, followed=object_author, pending='no').exists() # already follow request already exists
+        unapproved_follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='yes').exists() # not yet approved
+        mutual_follow = Follow.objects.filter(follower=object_author, followed=actor, pending='no').exists() # object_author followed actor already
 
         if follow_exists and mutual_follow:
             return Response({"detail": "Authors are already friends."}, status=status.HTTP_200_OK)
         elif follow_exists:
+            return Response({"detail": "Already following."}, status=status.HTTP_409_CONFLICT)
+        elif unapproved_follow_exists:
             return Response({"detail": "Follow request already exists."}, status=status.HTTP_409_CONFLICT)
-        elif mutual_follow:
-            try:
-                Follow.objects.create(follower=actor, followed=object_author, pending='no')
-            except ValidationError as e:
-                print(f"Validation Error: {e.detail}")
-                return Response({"error": e.detail}, status=400)
-            return Response({"detail": f"You are now friends of {object_author.display_name}"}, status=status.HTTP_201_CREATED)
-
+            
         Follow.objects.create(follower=actor, followed=object_author, pending='yes')
 
         response_data = {

@@ -1,0 +1,94 @@
+.stream-page {
+  background: linear-gradient(to bottom, #e0ffff, #7fffd4);
+  /* Aquamarine gradient */
+  font-family: Arial, sans-serif;
+}
+
+
+.stream-page .button-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/*Chat GPT: PROMPT: Help look the css for my dropdown meny look clean and optimal, DATE: NOV2, 2024 */
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.stream-page .post-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 250px);
+  gap: 3rem 3rem;
+  padding: 1.5rem;
+  justify-content: center;
+}
+
+.stream-page .dropdown {
+  position: relative;
+  display: inline-block;
+  width: 200px; /* Fixed width for consistency */
+}
+
+.stream-page .dropdown-toggle {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  max-width: 400px; /* Matches select styling */
+}
+
+.stream-page .dropdown-menu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 5px;
+  width: 100%; /* Matches dropdown width */
+  max-height: 200px; /* Limits height to prevent page resizing */
+  overflow-y: auto; /* Enables scrolling if content is too long */
+  z-index: 1;
+}
+
+.stream-page .dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  font-size: 14px;
+  background-color: aliceblue;
+  transition: background-color 0.3s ease;
+}
+
+.stream-page .dropdown-item:hover {
+  background-color: #e8f4ff; /* Light blue highlight on hover */
+}
+
+.stream-page .tick-btn,
+.cross-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.stream-page .tick-btn {
+  color: green;
+}
+
+.stream-page .cross-btn {
+  color: red;
+}
+
+.stream-page .logout-btn{
+  background-color: red;
+}

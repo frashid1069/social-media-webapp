@@ -38,6 +38,8 @@ heroku run "python manage.py makemigrations" --app APPNAME
 
 heroku run "python manage.py migrate" --app APPNAME
 
+heroku run "python manage.py runapscheduler" --app APPNAME
+
 heroku run "python manage.py createsuperuser" --app APPNAME
 
 

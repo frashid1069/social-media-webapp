@@ -32,9 +32,9 @@ class Post(models.Model):
     # READ ONLY
     type = models.CharField(max_length=10, default="post", editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='posts')
-    fqid = models.URLField(blank=True, null=True, max_length=200)
+    fqid = models.URLField(blank=True, null=True, max_length=500)
     serial = models.PositiveIntegerField(default=0)
-    github_event_id = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    github_event_id = models.CharField(max_length=500, unique=True, blank=True, null=True)
     image_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)

@@ -57,7 +57,6 @@ export default function Login() {
         var author = user.author.id
         localStorage.setItem("currentAuthorId", author);
         const store = localStorage.getItem("currentAuthorId");
-        alert(store)
         navigate(`/stream/${encodeURIComponent(store)}`);
       } else {
         //const data = await response.json();

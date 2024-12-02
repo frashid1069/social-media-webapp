@@ -1,0 +1,251 @@
+.profile-img{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5%;
+    width: 100px;
+    height: 100px;
+}
+.post-card-image img {
+    max-width: 100%; /* Adjusts the image size to fit within the container */
+    height: auto; /* Keeps the aspect ratio intact */
+    display: block; /* Removes any inline behavior */
+    margin: 0 auto; /* Centers the image if needed */
+    object-fit: contain; /* Ensures the entire image is shown */
+  }
+  
+.post-card img {
+max-width: 100%; /* Makes sure the image does not exceed the container width */
+height: auto; /* Keeps the image's aspect ratio intact */
+display: block; /* Ensures the image is treated as a block element */
+margin: 0 auto; /* Centers the image horizontally */
+object-fit: contain; /* Ensures the image is fully visible */
+}
+  
+.post-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 250px);
+    gap: 3rem 3rem;  
+    padding: 1.5rem;
+    justify-content: center;
+}
+
+.post-card {
+    background-color:aliceblue;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out;
+    box-shadow: 0 10px 10px 0 rgba(0, 0, 0, .5);
+}
+
+.post-card:hover {
+    transform: scale(1.03);
+}
+
+.movie-card-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+.post-card-content {
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.post-card-update-date{
+    font-size: 0.7rem;
+}
+
+/* .post-edit-btn{
+    display: block;
+    margin: auto;
+} */
+.post-edit-btn, .edit-profile-btn, .show-authors, .go-create-post, .logout-btn, .dropdown-toggle {
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px 0 #99c9e2;
+    transition-duration: 0.4s;
+  }
+.post-edit-btn:hover, .edit-profile-btn:hover, .show-authors:hover, .go-create-post:hover{
+    background-color: lightblue;
+    color: white;
+}
+.logout-btn{
+    background-color: red;
+}
+.logout-btn:hover{
+    color: white;
+}
+/* .dropdown-toggle:hover{
+    color: black;
+} */
+.comment{
+    border-style: dashed;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; 
+    margin-top: 10px; 
+}
+
+.post-card-author {
+    background-color: lightblue;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    text-align: center;
+}
+
+.post-card-author:hover {
+    background-color: dodgerblue;
+    transform: scale(1.05);
+}
+
+.post-card-author {
+    font-weight: bold;
+}
+
+select{
+    padding: 10px 15px;
+    background-color: #007bff; /* Choose a suitable color */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    max-width: 400px;
+}
+
+/*Chat GPT: PROMPT: Help look the css for my dropdown meny look clean and optimal, DATE: NOV2, 2024 */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; 
+    margin-top: 10px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    width: 200px; /* Fixed width for consistency */
+}
+
+.dropdown-toggle {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+    text-align: center;
+    max-width: 400px; /* Matches select styling */
+}
+
+.dropdown-menu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 5px;
+    width: 100%; /* Matches dropdown width */
+    max-height: 200px; /* Limits height to prevent page resizing */
+    overflow-y: auto; /* Enables scrolling if content is too long */
+    z-index: 1;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    font-size: 14px;
+    background-color: aliceblue;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #e8f4ff; /* Light blue highlight on hover */
+}
+
+.tick-btn,
+.cross-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.tick-btn {
+    color: green;
+}
+
+.cross-btn {
+    color: red;
+}
+
+/* Existing styling */
+select {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    max-width: 400px;
+}
+
+/* #followButton {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    font-weight: bold;
+    display: inline-block;
+    margin: 10px auto;
+    text-align: center;
+}
+
+#followButton:hover {
+    background-color: dodgerblue;
+    transform: scale(1.05);
+} */
+
+/* #unfollowButton {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    font-weight: bold;
+    display: inline-block;
+    margin: 10px auto;
+    text-align: center;
+} */
+
+/* #unfollowButton:hover {
+    background-color: darkred;
+    transform: scale(1.05);
+} */
+
+#unfollowButton {
+    background-color: red;
+}
+

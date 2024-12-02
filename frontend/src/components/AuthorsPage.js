@@ -36,7 +36,7 @@ export default function AuthorsPage() {
   }, []);
 
   const goBackStream = () => {
-    navigate(`/stream/${authorId}`);
+    navigate(`/stream/${encodeURIComponent(currentAuthorId)}`);
   };
 
   // Handle following

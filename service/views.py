@@ -384,7 +384,7 @@ def inbox(request, AUTHOR_SERIAL):
             return Response({"detail": "Actor author not found."}, status=status.HTTP_404_NOT_FOUND)
         
         follow_exists = Follow.objects.filter(follower=actor, followed=object_author, pending='no').exists() # already follow request already exists
-        unapproved_follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='yes').exists() # not yet approved
+        unapproved_follow_exists = Follow.objects.filter(follower=actor, followed=object_author, pending='yes').exists() # not yet approved
         mutual_follow = Follow.objects.filter(follower=object_author, followed=actor, pending='no').exists() # object_author followed actor already
 
         if follow_exists and mutual_follow:

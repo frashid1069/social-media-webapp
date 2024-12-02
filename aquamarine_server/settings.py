@@ -41,7 +41,7 @@ STATIC_URL = "/static/"
 
 # Application definition
 
-INSTALLED_APPS = [
+INSTALLED_APPS = [ 
     'author',                      # install app service
     'post',                      # install app service
     'comment',                      # install app service  
@@ -56,8 +56,9 @@ INSTALLED_APPS = [
     'rest_framework',               # install rest_framework
     'corsheaders',                  # install django-cors-headers 
     'drf_spectacular',    
-    'background_task',              # for github activity 
+                 # for github activity 
     'service',  
+    'django_apscheduler',
 ]
 
 MIDDLEWARE = [
@@ -230,6 +231,12 @@ TEMPLATES = [
 ]
 
 
-BACKGROUND_TASK_RUN_ASYNC = True
-MAX_ATTEMPTS = 1
-BACKGROUND_TASK_ASYNC_THREADS = 1
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+
+# Maximum run time allowed for jobs that are triggered manually via the Django admin site, which
+# prevents admin site HTTP requests from timing out.
+# 
+# Longer running jobs should probably be handed over to a background task processing library
+# that supports multiple background worker processes instead (e.g. Dramatiq, Celery, Django-RQ,
+# etc. See: https://djangopackages.org/grids/g/workers-queues-tasks/ for popular options).
+APSCHEDULER_RUN_NOW_TIMEOUT = 25  # Seconds

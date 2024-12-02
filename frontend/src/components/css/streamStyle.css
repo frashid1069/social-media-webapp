@@ -55,12 +55,32 @@ object-fit: contain; /* Ensures the image is fully visible */
     font-size: 0.7rem;
 }
 
-.post-edit-btn{
+/* .post-edit-btn{
     display: block;
     margin: auto;
+} */
+.post-edit-btn, .edit-profile-btn, .show-authors, .go-create-post, .logout-btn, .dropdown-toggle {
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px 0 #99c9e2;
+    transition-duration: 0.4s;
+  }
+.post-edit-btn:hover, .edit-profile-btn:hover, .show-authors:hover, .go-create-post:hover{
+    background-color: lightblue;
+    color: white;
 }
-
-
+.logout-btn{
+    background-color: red;
+}
+.logout-btn:hover{
+    color: white;
+}
+/* .dropdown-toggle:hover{
+    color: black;
+} */
 .comment{
     border-style: dashed;
 }
@@ -228,6 +248,4 @@ select {
 #unfollowButton {
     background-color: red;
 }
-.logout-btn{
-    background-color: red;
-}
+

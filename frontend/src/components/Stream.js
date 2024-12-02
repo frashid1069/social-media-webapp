@@ -166,7 +166,7 @@ export default function Stream() {
         >
           {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
         </button>
-        <button className="logout-btn" onClick={goLogout}>Logout</button>
+        
         {/* Custom dropdown for follow requests 
             CHAT GPT: Prompt help me create a custom dropdown that shows the follow requestsindividually and along with
             options to accept or decline. Date: NOV 2, 2024*/}
@@ -197,6 +197,7 @@ export default function Stream() {
             </div>
           )}
         </div>
+        <button className="logout-btn" onClick={goLogout}>Logout</button>
       </div>
 
 

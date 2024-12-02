@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { cusFetch } from "./Login";
-import "../editPost.css";
+import "./css/editPost.css";
 
 const EditPost = () => {
     const { postFqid } = useParams();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../editPost.css";
+import "./css/editPost.css";
 import { cusFetch } from "./Login";
 
 const apiUrl = process.env.REACT_APP_API_URL;

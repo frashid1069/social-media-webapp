@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./css/loginStyles.css";
+import "./css/login.css";
 import Author from "./Author";
 const apiUrl = process.env.REACT_APP_API_URL
 /**

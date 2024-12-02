@@ -1,0 +1,26 @@
+@keyframes pulseBackground {
+    0% {
+        background-color: #ffffff;
+    }
+    50% {
+        background-color: #7fffd4;
+    }
+    100% {
+        background-color: #ffffff;
+    }
+}
+
+
+  /* Gradient Color Shift Animation */
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+

@@ -24,3 +24,18 @@
     }
   }
 
+  @keyframes meteorMove {
+    0% {
+      top: var(--start-top); /* Randomized top starting position */
+      left: var(--start-left); /* Randomized left starting position */
+      opacity: 1; /* Fully visible at the start */
+    }
+    50% {
+      opacity: 0.8; /* Slight fade in the middle */
+    }
+    100% {
+      top: calc(var(--start-top) + 300%); /* Moves diagonally off-screen */
+      left: calc(var(--start-left) - 300%); /* Moves diagonally off-screen */
+      opacity: 0; /* Gradual fade out */
+    }
+  }

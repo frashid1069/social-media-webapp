@@ -1,8 +1,11 @@
 .stream-page {
+  overflow: hidden; /* Prevents margin collapse */
   background: linear-gradient(to bottom, #e0ffff, #7fffd4);
+  padding: 10px;
   /* Aquamarine gradient */
   font-family: Arial, sans-serif;
 }
+
 
 
 /*Chat GPT: PROMPT: Help look the css for my dropdown meny look clean and optimal, DATE: NOV2, 2024 */

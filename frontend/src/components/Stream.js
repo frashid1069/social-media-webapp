@@ -148,7 +148,7 @@ export default function Stream() {
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   return (
     <div className="stream-page">
-      <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
+      <h2 className="page-subtitle">{isVisible ? "Distributed Social Networking - Aquamarine" : "Edit Page"}</h2>
 
       <div className="button-container">
         <button className="show-authors" onClick={goShowAuthors}>

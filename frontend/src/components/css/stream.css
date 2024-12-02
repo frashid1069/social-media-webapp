@@ -5,6 +5,7 @@
 }
 
 
+/*Chat GPT: PROMPT: Help look the css for my dropdown meny look clean and optimal, DATE: NOV2, 2024 */
 .stream-page .button-container {
   display: flex;
   justify-content: center;
@@ -12,12 +13,20 @@
   margin-top: 10px;
 }
 
-/*Chat GPT: PROMPT: Help look the css for my dropdown meny look clean and optimal, DATE: NOV2, 2024 */
-.button-container {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
+.stream-page .button-container button{
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  border: none;
+  border-radius: 6px;
+  box-shadow: 0 4px 15px 0 #99c9e2;
+  transition-duration: 0.4s;
+}
+
+
+.stream-page .button-container button:hover {
+  background-color: lightblue;
+  color: white;
 }
 
 .stream-page .post-grid {
@@ -91,4 +100,16 @@
 
 .stream-page .logout-btn{
   background-color: red;
+}
+
+.post-edit-btn:hover, .edit-profile-btn:hover, .show-authors:hover, .go-create-post:hover{
+  background-color: lightblue;
+  color: white;
+}
+
+.logout-btn{
+  background-color: red;
+}
+.logout-btn:hover{
+  color: white;
 }

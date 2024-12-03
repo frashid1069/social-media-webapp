@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "./css/stream.css";
 const apiUrl = process.env.REACT_APP_API_URL
 
 /*

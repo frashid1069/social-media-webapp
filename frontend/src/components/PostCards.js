@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked";
-import "./css/postCard.css";
 import "../likes.css";
 import Comment from "./Comment";
 import { cusFetch } from './Login';

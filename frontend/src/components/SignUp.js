@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import "./css/login.css";
 import Author from "./Author";
 /**
  * This a component for displaying the sign up page

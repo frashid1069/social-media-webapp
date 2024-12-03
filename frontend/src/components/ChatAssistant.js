@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { cusFetch } from "./Login";
-import '../ChatAssistant.css'; 
 
 const ChatAssistant = () => {
     const [isOpen, setIsOpen] = useState(false);

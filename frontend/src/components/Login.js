@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./css/login.css";
 import Author from "./Author";
 import MeteorShower from "./MeteorShower";
 const apiUrl = process.env.REACT_APP_API_URL

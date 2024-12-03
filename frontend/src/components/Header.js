@@ -1,7 +1,7 @@
 
 
 const Header = ({ subtitle }) => {
-    const logoPath = "/logo.png";
+    const logoPath = `${process.env.PUBLIC_URL}/logo.png`;
     const websiteName = "Aquamarine";
 
 

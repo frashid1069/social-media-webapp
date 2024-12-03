@@ -72,6 +72,7 @@ def chatgpt_response(request):
                         json={
                             'title': title,
                             'content': content,
+                            'description': 'This is a post made by Aqua AI',
                             'contentType': content_type,
                             'visibility': 'PUBLIC'
                         },

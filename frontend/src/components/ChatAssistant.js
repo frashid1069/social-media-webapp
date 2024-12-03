@@ -60,7 +60,7 @@ const ChatAssistant = () => {
                     <span className="close-icon">✖</span> // Close button
                 ) : (
                     <img
-                        src="/cute.png" // Replace with the actual path to your logo
+                        src={`${process.env.PUBLIC_URL}/cute.png`} // Replace with the actual path to your logo
                         alt="Open Chat"
                         className="chat-icon"
                     />

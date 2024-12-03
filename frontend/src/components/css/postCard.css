@@ -5,7 +5,7 @@
     padding: 10px;
     /* Make the post take up available width */
     width: 100%;
-    max-width: 600px;
+    max-width: 450px;
     /* Set a maximum width for the posts */
     height: 700px;
     overflow: hidden;
@@ -47,7 +47,7 @@
 
 
 .post-card-content {
-    margin: 15px 0;
+    margin: 15px 10px;
     font-size: 1rem;
     color: #555;
     /* Neutral gray for body text */
@@ -91,7 +91,7 @@
 }
 
 .post-card img {
-    max-width: 100%;
+    max-width: 50%;
     /* Makes sure the image does not exceed the container width */
     height: auto;
     /* Keeps the image's aspect ratio intact */

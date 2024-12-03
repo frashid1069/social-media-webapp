@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "../loginStyles.css";
-import Author from "./Author";
+import MeteorShower from "./utils/MeteorShower";
 const apiUrl = process.env.REACT_APP_API_URL
 /**
  * This is a component for displaying the login page
@@ -49,7 +48,7 @@ export default function Login() {
         //{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJpZCI6NiwidXNlcm5hbWUiOiJkZCIsImV4cCI6MTczNTgyNjEyNX0.TtEw79FiozqpvXogephO_-IpfCNZQku97rJ7V-1vOcc",
         //"user":{"id":6,"username":"dd","display_name":"dd"}}
         const data = await response.json();
-        const token = data.token;        
+        const token = data.token;
         localStorage.setItem("token", token);
         localStorage.setItem("logged_in_id", data.user.id);
         // fetchCurrentAuthor(data.user.id);
@@ -57,7 +56,6 @@ export default function Login() {
         var author = user.author.id
         localStorage.setItem("currentAuthorId", author);
         const store = localStorage.getItem("currentAuthorId");
-        alert(store)
         navigate(`/stream/${encodeURIComponent(store)}`);
       } else {
         //const data = await response.json();
@@ -76,37 +74,45 @@ export default function Login() {
 
 
 
+
   return (
     <div className="login-page">
-      <h2 className="page-subtitle">Welcome to the login page!</h2>
+      <h2 className="page-subtitle">Welcome to Aquamarine!</h2>
+      <div className="login-window">
+      <h2 className="page-subtitle">Login</h2>
+        <input
+          type="text"
+          className="username"
+          placeholder="Username"
+          value={username}
+          onChange={handleUsernameChange}
+        />
 
-      <img className="login-image" src="login-image.png" alt="login" />
+        <input
+          type="password"
+          className="password"
+          placeholder="Password"
+          value={password}
+          onChange={handlePasswordChange}
+        />
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
 
-      <input
-        type="text"
-        className="username"
-        placeholder="Username"
-        value={username}
-        onChange={handleUsernameChange}
-      />
+        <button type="submit" className="login-button" onClick={verify}>
+          Login
+        </button>
 
-      <input
-        type="password"
-        className="password"
-        placeholder="Password"
-        value={password}
-        onChange={handlePasswordChange}
-      />
+        <button type="submit" className="signup-button" onClick={goSignUp}>
+          Sign Up
+        </button>
 
-      {errorMessage && <p className="error-message">{errorMessage}</p>}
+      </div>
 
-      <button type="submit" className="login-button" onClick={verify}>
-        Login
-      </button>
 
-      <button type="submit" className="signup-button" onClick={goSignUp}>
-        Sign Up
-      </button>
+
+      <div className="App">
+        <MeteorShower count={6} /> {/* Adjust count to change meteor density */}
+      </div>
+
     </div>
   );
 }

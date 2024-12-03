@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { cusFetch } from "./Login";
-import "../streamStyle.css";
 import { getAuthorId } from "./Stream";
+import Header from "./Header";
 const apiUrl = process.env.REACT_APP_API_URL;
 
 
@@ -13,17 +13,18 @@ export default function AuthorsPage() {
   const { authorId } = useParams();
   const navigate = useNavigate();
   const currentAuthorId = localStorage.getItem("currentAuthorId");
+  const subtitle = "Author List";
 
   useEffect(() => {
     const fetchAuthors = async () => {
       const response = await cusFetch(`${apiUrl}authors/`);
       const data = await response.json();
-  
+
       if (data && data.authors && data.authors.length > 0) {
         setAuthors(data.authors);
       }
     };
-  
+
     fetchAuthors();
   }, [currentAuthorId]);
 
@@ -36,7 +37,7 @@ export default function AuthorsPage() {
   }, []);
 
   const goBackStream = () => {
-    navigate(`/stream/${authorId}`);
+    navigate(`/stream/${encodeURIComponent(currentAuthorId)}`);
   };
 
   // Handle following
@@ -45,16 +46,16 @@ export default function AuthorsPage() {
     const actorResponse = await cusFetch(`${currentAuthorId}/`, {
       method: "GET",
     });
-  
+
     if (!actorResponse.ok) {
       alert("Failed to fetch logged-in author's details.");
       return;
     }
-  
+
     const actor = await actorResponse.json();
-  
+
     const object = authors.find((author) => author.id === authorID)
-  
+
     // Construct the follow request object
     const followRequest = {
       type: "follow",
@@ -68,13 +69,13 @@ export default function AuthorsPage() {
         ...object,
       },
     };
-  
+
     // Send the follow request to the inbox
     const response = await cusFetch(`${apiUrl}forward/`, {
       method: "POST",
       body: JSON.stringify(followRequest),
     });
-  
+
     if (response.ok) {
       alert(`You have sent a follow request to this author`);
       setIsFollowing((prev) => ({ ...prev, [authorID]: true })); // Mark this author as followed
@@ -82,24 +83,24 @@ export default function AuthorsPage() {
       alert("Failed to follow the author.");
     }
   };
-    
-  
+
+
   // Unfollow functionality
   const handleUnfollow = async (authorID) => {
     // Fetch the logged-in author's details
     const actorResponse = await cusFetch(`${currentAuthorId}/`, {
       method: "GET",
     });
-  
+
     if (!actorResponse.ok) {
       alert("Failed to fetch logged-in author's details.");
       return;
     }
-  
+
     const actor = await actorResponse.json();
-  
+
     const object = authors.find((author) => author.id === authorID)
-  
+
     // Construct the follow request object
     const followRequest = {
       type: "follow",
@@ -113,13 +114,13 @@ export default function AuthorsPage() {
         ...object,
       },
     };
-  
+
     // Send the follow request to the inbox
     const response = await cusFetch(`${apiUrl}forward/`, {
       method: "DELETE",
       body: JSON.stringify(followRequest),
     });
-  
+
     if (response.ok) {
       alert(`You have unfollowed this author`);
       setIsFollowing((prev) => ({ ...prev, [authorID]: true })); // Mark this author as followed
@@ -130,14 +131,14 @@ export default function AuthorsPage() {
 
 
   return (
-  <div className="authors-page">
-      <h2 className="page-subtitle">List of Authors</h2>
+    <div className="authors-page">
+      <Header subtitle={subtitle} />
       <button className="authors-goBackBtn" onClick={goBackStream}>
-      Back To Stream
+        Back To Stream
       </button>
       <h4 className="author-txt">Authors:</h4>
       {authors.map((author) => (
-      <div className="author-item" key={author.id}>
+        <div className="author-item" key={author.id}>
           <span className="author-name">{author.displayName}</span>
           {author.id !== currentAuthorId && ( // Follow/Unfollow button is not shown for the current author
             isFollowing[author.id] ? (
@@ -158,8 +159,8 @@ export default function AuthorsPage() {
               </button>
             )
           )}
-      </div>
+        </div>
       ))}
-  </div>
+    </div>
   );
 }

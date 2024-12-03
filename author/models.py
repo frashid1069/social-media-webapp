@@ -9,15 +9,15 @@ from django.contrib.auth.models import User
 class Author(models.Model):
     display_name = models.CharField(max_length=20)
     bio = models.TextField(blank=True, null=True)
-    github_url = models.URLField(blank=True, null=True, max_length=200)
-    profile_image = models.ImageField(upload_to="profile_pics", blank=True, null=True) # From https://www.devhandbook.com/django/user-profile/
+    github_url = models.URLField(blank=True, null=True, max_length=500)
+    profile_image = models.URLField(blank=True, null=True, max_length=500) # From https://www.devhandbook.com/django/user-profile/
     
     # READ ONLY
     type = models.CharField(max_length=10, default="author", editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True) # Link to Django's User model
     serial = models.PositiveIntegerField(default=0)
-    fqid = models.URLField(blank=True, null=True, max_length=200, unique=True)
-    host = models.URLField(blank=True, null=True, max_length=200)
+    fqid = models.URLField(blank=True, null=True, max_length=500, unique=True)
+    host = models.URLField(blank=True, null=True, max_length=500)
     post_count = models.PositiveIntegerField(default=0)
     like_count = models.PositiveIntegerField(default=0)
     comment_count = models.PositiveIntegerField(default=0)

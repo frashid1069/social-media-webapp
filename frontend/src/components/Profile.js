@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../streamStyle.css";
 import PostCards from "./PostCards";
 import { cusFetch } from './Login';
-
+import Header from "./Header";
 const apiUrl = process.env.REACT_APP_API_URL
 
 /**
@@ -23,6 +22,7 @@ export default function Profile() {
 
   const currentAuthorId = localStorage.getItem("currentAuthorId")
   const encodedCurrentAuthorFqid = encodeURIComponent(currentAuthorId);
+  const subtitle = "Profile";
 
 
 
@@ -68,35 +68,35 @@ export default function Profile() {
   const goBackStream = () => {
     navigate(`/stream/${encodedCurrentAuthorFqid}`);
   };
-  
+
   // Handle following
   const handleFollow = async (event) => {
     event.preventDefault();
-      
+
     // Fetch the logged-in author's details
     const actorResponse = await cusFetch(`${currentAuthorId}/`, {
       method: "GET",
     });
-  
+
     if (!actorResponse.ok) {
       alert("Failed to fetch logged-in author's details.");
       return;
     }
-  
+
     const actor = await actorResponse.json();
 
 
     const objectResponse = await cusFetch(`${decodedPostAuthorFqid}/`, {
       method: "GET",
     });
-  
+
     if (!objectResponse.ok) {
       alert("Failed to fetch this author's details.");
       return;
     }
-  
+
     const object = await objectResponse.json();
-  
+
     // Construct the follow request object
     const followRequest = {
       type: "follow",
@@ -110,7 +110,7 @@ export default function Profile() {
         ...object,
       },
     };
-  
+
     // Send the follow request to the inbox
     const response = await cusFetch(`${apiUrl}forward/`, {
       method: "POST",
@@ -120,7 +120,7 @@ export default function Profile() {
       },
       body: JSON.stringify(followRequest),
     });
-  
+
     if (response.ok) {
       alert("you have sent a follow request to this author");
       // await checkFollowingStatus(); // Update follow status and follow_id after following
@@ -138,26 +138,26 @@ export default function Profile() {
     const actorResponse = await cusFetch(`${currentAuthorId}/`, {
       method: "GET",
     });
-  
+
     if (!actorResponse.ok) {
       alert("Failed to fetch logged-in author's details.");
       return;
     }
-  
+
     const actor = await actorResponse.json();
 
 
     const objectResponse = await cusFetch(`${decodedPostAuthorFqid}/`, {
       method: "GET",
     });
-  
+
     if (!objectResponse.ok) {
       alert("Failed to fetch this author's details.");
       return;
     }
-  
+
     const object = await objectResponse.json();
-  
+
     // Construct the follow request object
     const followRequest = {
       type: "follow",
@@ -171,7 +171,7 @@ export default function Profile() {
         ...object,
       },
     };
-  
+
     // Send the follow request to the inbox
     const response = await cusFetch(`${apiUrl}forward/`, {
       method: "DELETE",
@@ -181,7 +181,7 @@ export default function Profile() {
       },
       body: JSON.stringify(followRequest),
     });
-  
+
     if (response.ok) {
       alert("you have unfollowed this author");
       // await checkFollowingStatus(); // Update follow status and follow_id after following
@@ -193,16 +193,16 @@ export default function Profile() {
 
 
   const ownProfile = () => {
-    if(decodedPostAuthorFqid == currentAuthorId) {
+    if (decodedPostAuthorFqid == currentAuthorId) {
       document.getElementById("followButton").hidden = true;
     };
-    if(decodedPostAuthorFqid !== currentAuthorId) {
+    if (decodedPostAuthorFqid !== currentAuthorId) {
       document.getElementById("editButton").hidden = true;
     };
   };
   return (
     <div className="profile-page">
-      <h2 className="page-subtitle">Welcome to the Profile page!</h2>
+      <Header subtitle={subtitle} />
       <button className="profile-goBackBtn" onClick={goBackStream}>
         Back To Stream
       </button>
@@ -211,8 +211,8 @@ export default function Profile() {
       <h4 className="profile-txt">Github URL: </h4>
       <p className="profile-git">{author.github}</p>
       <h4 className="profile-txt">Followers: </h4>
-      {followerAuthors.map((f)=> (<p>{f}</p>))}
-      <button id = "editButton" onClick={handleEditProfile}>Edit Profile</button>
+      {followerAuthors.map((f) => (<p>{f}</p>))}
+      <button id="editButton" onClick={handleEditProfile}>Edit Profile</button>
       {isFollowing ? (
         <button id="unfollowButton" onClick={handleUnfollow}>Unfollow</button>
       ) : (

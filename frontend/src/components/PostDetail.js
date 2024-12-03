@@ -1,25 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../editPost.css";
 import { cusFetch } from "./Login";
+import Header from "./Header";
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 export default function PostDetail() {
     // const { authorId, postId } = useParams();
-    const { authorFqid, postFqid } = useParams();
+    const { postFqid } = useParams();
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const token = localStorage.getItem("token");
     const navigate = useNavigate();
-    const decodedAuthorFqid = decodeURIComponent(authorFqid);
-    const decodedPostFqid = decodeURIComponent(postFqid);
+    const currentAuthorId = localStorage.getItem("currentAuthorId");
+    const encodedCurrentAuthorId = encodeURIComponent(currentAuthorId);
+    const encodedPostFqid = encodeURIComponent(postFqid);
+    const subtitle = "Post Detail";
 
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await cusFetch(`${apiUrl}posts/${decodedPostFqid}`, {
+                const response = await cusFetch(`${apiUrl}posts/${postFqid}`, {
                     method: "GET",
                 });
                 if (response.ok) {
@@ -36,13 +38,13 @@ export default function PostDetail() {
         };
 
         fetchPost();
-    }, [decodedAuthorFqid, decodedPostFqid]);
+    }, [postFqid]);
 
     const deletePost = async (event) => {
         event.preventDefault();
         const confirmDelete = window.confirm("Are you sure you want to delete this post?");
         if (confirmDelete) {
-            const response = await fetch(`${decodedPostFqid}`, {
+            const response = await fetch(`${postFqid}`, {
                 method: "DELETE",
                 headers: {
                     "token": token, // Add token for DELETE request
@@ -51,7 +53,7 @@ export default function PostDetail() {
 
             if (response.ok) {
                 alert("Post deleted successfully");
-                navigate(`/stream/${decodedAuthorFqid}`);
+                navigate(`/stream/${encodedCurrentAuthorId}`);
             } else {
                 alert("Failed to delete post");
             }
@@ -59,11 +61,11 @@ export default function PostDetail() {
     };
 
     const goEditPost = () => {
-        navigate(`/stream/${authorFqid}/${postFqid}/edit`);
+        navigate(`/posts/${encodedPostFqid}/edit`);
     };
 
     const goToStream = () => {
-        navigate(`/stream/${authorFqid}`);
+        navigate(`/stream/${encodedCurrentAuthorId}`);
     };
 
     if (loading) return <p>Loading post...</p>;
@@ -71,6 +73,7 @@ export default function PostDetail() {
 
     return (
         <div className="post-detail">
+            <Header subtitle={subtitle} />
             {post ? (
                 <>
                     <h2>{post.title}</h2>

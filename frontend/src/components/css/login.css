@@ -1,0 +1,148 @@
+/* Login Page Container */
+@import url(./animation.css);
+
+.login-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(45deg, #e0ffff, #7fffd4, #00ced1, #20b2aa);
+  background-size: 300% 300%;
+  animation: gradientShift 5s infinite ease-in-out;
+  font-family: Arial, sans-serif;
+}
+
+.login-page .login-window{
+  width: 350px;
+  padding: 20px;
+  margin: 50px auto; /* Center horizontally */
+  background: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
+  border: 1px solid rgba(0, 0, 0, 0.2); /* Subtle border */
+  border-radius: 15px; /* Rounded corners */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1); /* Elevation effect */
+  position: relative; /* To ensure it overlays the meteors correctly */
+  z-index: 2; /* Above the meteors */
+  text-align: center; /* Align text centrally */
+  font-family: Arial, sans-serif; /* Font styling */
+}
+
+/* Subtitle */
+.login-page .page-subtitle {
+  color: #005f5f; /* Darker shade of aquamarine */
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+/* Login Image */
+.login-page .login-image {
+  width: 150px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+/* Input Fields */
+.login-page .username,
+.login-page .password {
+  width: 80%;
+  max-width: 300px;
+  padding: 10px;
+  margin: 10px 0;
+  border: 2px solid #5fcdb6; /* Aquamarine border */
+  border-radius: 5px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.login-page .username:focus,
+.login-page .password:focus {
+  border-color: #2e8b8b; /* Darker aquamarine */
+  box-shadow: 0 0 5px rgba(47, 189, 185, 0.5); /* Subtle aquamarine glow */
+}
+
+/* Error Message */
+.login-page .error-message {
+  color: red;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+.login-page .login-button,
+.login-page .signup-button {
+  width: 80%;
+  max-width: 300px;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 1rem;
+  color: white;
+  background-color: #5fcdb6; /* Aquamarine */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-page .login-button:hover,
+.login-page .signup-button:hover {
+  background-color: #2e8b8b; /* Darker aquamarine */
+}
+
+.login-page .signup-button {
+  background-color: #2e8b8b; /* Slightly different shade for variety */
+}
+
+.login-page .signup-button:hover {
+  background-color: #005f5f; /* Even darker aquamarine on hover */
+}
+
+.login-page  .meteor {
+  position: absolute;
+  width: 4px;
+  height: 300px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0)); /* Gradual fade from head to tail */
+  border-radius: 50%;
+  transform: rotate(-120deg); /* Align meteor for top-right to bottom-left */
+  animation: meteorMove 3s linear infinite;
+  opacity: 0.7;
+  z-index: 0;
+}
+
+
+
+/* Generating multiple meteors with different timings and positions */
+.login-page .meteor:nth-child(1) {
+  --start-top: 10%;
+  --start-left: 90%;
+  animation-delay: 0s;
+}
+
+.login-page .meteor:nth-child(2) {
+  --start-top: 20%;
+  --start-left: 85%;
+  animation-delay: 1.2s;
+}
+
+.login-page .meteor:nth-child(3) {
+  --start-top: 15%;
+  --start-left: 80%;
+  animation-delay: 2.3s;
+}
+
+.login-page .meteor:nth-child(4) {
+  --start-top: 30%;
+  --start-left: 75%;
+  animation-delay: 3s;
+}
+
+.login-page .meteor:nth-child(5) {
+  --start-top: 25%;
+  --start-left: 70%;
+  animation-delay: 0.8s;
+}
+
+.login-page .meteor:nth-child(6) {
+  --start-top: 35%;
+  --start-left: 65%;
+  animation-delay: 1.7s;
+}

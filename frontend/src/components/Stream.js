@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../streamStyle.css";
 import PostCards from "./PostCards";
 import { cusFetch } from "./Login";
-import Author from "./Author";
-import { getCurrentAuthor } from "./Author";
+import Header from "./Header";
 
 export const getAuthorId = (url) => {
-    const authorMatch = url.match(/authors\/(\d+)/);
-    return authorMatch ? authorMatch[1] : null;       // Returns author ID or null if not found
-  }
-  
+  const authorMatch = url.match(/authors\/(\d+)/);
+  return authorMatch ? authorMatch[1] : null;       // Returns author ID or null if not found
+}
+
 export const getPostId = (url) => {
-    const postMatch = url.match(/posts\/(\d+)/);
-    return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
-  }
+  const postMatch = url.match(/posts\/(\d+)/);
+  return postMatch ? postMatch[1] : null;       // Returns post ID or null if not found
+}
 
 /**
  * This is a component for displaying the personal stream page by using PostCards component.
@@ -38,6 +36,7 @@ export default function Stream() {
   const [streamPosts, setstreamPosts] = useState([]);
   const [pendingFollowRequests, setPendingFollowRequests] = useState([]);
   const currentAuthorId = localStorage.getItem("currentAuthorId")
+  const subtitle = "Stream";
 
   // get the current author object
   const [currentAuthor, setCurrentAuthor] = useState([]);
@@ -49,21 +48,38 @@ export default function Stream() {
       });
   }, []);
 
+  // const handleChatSubmit = async () => {
+  //   const currentData = JSON.stringify(availableData); // Serialize data to send
+  //   const combinedPrompt = `${userInput}. Here's some data to consider: ${currentData}`;
+  //   try {
+  //     const res = await fetch('http://localhost:8000/api/chatgpt/', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ prompt: combinedPrompt }),
+  //     });
+  //     const data = await res.json();
+  //     setResponse(data.response || 'No response from AI');
+  //   } catch (error) {
+  //     console.error('Error fetching ChatGPT response:', error);
+  //     setResponse('Error occurred. Please try again.');
+  //   }
+  // };
+
   // Get the posts list
   useEffect(() => {
     cusFetch(`${apiUrl}posts/`)
       .then((response) => response.json())
       .then((data) => {
-          setstreamPosts(data.src);
+        setstreamPosts(data.src);
       });
   }, []);
-  
+
   // get the posts owned by the current user
   useEffect(() => {
     cusFetch(`${currentAuthorId}/posts/`)
       .then((response) => response.json())
       .then((data) => {
-          setEditablePosts(data.src);
+        setEditablePosts(data.src);
       });
   }, []);
 
@@ -78,8 +94,8 @@ export default function Stream() {
       })
       .catch((error) => {
         console.error("Error getting follow requests: ", error);
-      }) 
-    }, [currentAuthorId, pendingFollowRequests.length]);
+      })
+  }, [currentAuthorId, pendingFollowRequests.length]);
 
   // Handle accepting or declining follow requests
   const handleAccept = async (followRequest) => {
@@ -131,56 +147,60 @@ export default function Stream() {
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   return (
     <div className="stream-page">
-      <h2 className="page-subtitle">{isVisible ? "Welcome to the Stream Page!" : "Edit Page"}</h2>
-
+      <Header subtitle={subtitle} />
       <div className="button-container">
-      <button className="show-authors" onClick={goShowAuthors}>
-          Show All Authors
+        <button id="go-create-post" onClick={goCreatePost}>
+          Create a Post 
         </button>
-        <button className="edit-profile-btn" onClick={goEditableProfile}>
-          Profile
-        </button>
-        <button className="go-create-post" onClick={goCreatePost}>
-          Make a Post
-        </button>
-        <button
-          className="post-edit-btn"
-          onClick={() => setIsVisible(!isVisible)}
-        >
-          {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
-        </button>
-        <button className="logout-btn" onClick={goLogout}>Logout</button>
-        {/* Custom dropdown for follow requests 
-            CHAT GPT: Prompt help me create a custom dropdown that shows the follow requestsindividually and along with
-            options to accept or decline. Date: NOV 2, 2024*/}
-        <div className="dropdown">
-          <button className="dropdown-toggle" onClick={toggleDropdown}>
-            {pendingFollowRequests.length} pending follow requests
+        <div className="right-buttons">
+          <button className="show-authors" onClick={goShowAuthors}>
+            Show All Authors
+          </button>
+          <button className="edit-profile-btn" onClick={goEditableProfile}>
+            Profile
+          </button>
+          <button
+            className="post-edit-btn"
+            onClick={() => setIsVisible(!isVisible)}
+          >
+            {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
           </button>
 
-          {dropdownOpen && (
-            <div className="dropdown-menu">
-              {pendingFollowRequests.map((followRequest) => (
-                <div key={followRequest.id} className="dropdown-item">
-                  <span>{followRequest.follower.displayName}</span> {/* Display follower's name */}
-                  <button
-                    className="tick-btn"
-                    onClick={(e) => { handleAccept(followRequest) }}
-                  >
-                    ✔️
-                  </button>
-                  <button
-                    className="cross-btn"
-                    onClick={(e) => { handleDecline(followRequest) }}
-                  >
-                    ❌
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Custom dropdown for follow requests 
+            CHAT GPT: Prompt help me create a custom dropdown that shows the follow requestsindividually and along with
+            options to accept or decline. Date: NOV 2, 2024*/}
+          <div className="dropdown">
+            <button className="dropdown-toggle" onClick={toggleDropdown}>
+              {pendingFollowRequests.length} pending follow requests
+            </button>
+
+            {dropdownOpen && (
+              <div className="dropdown-menu">
+                {pendingFollowRequests.map((followRequest) => (
+                  <div key={followRequest.id} className="dropdown-item">
+                    <span>{followRequest.follower.displayName}</span> {/* Display follower's name */}
+                    <button
+                      className="tick-btn"
+                      onClick={(e) => { handleAccept(followRequest) }}
+                    >
+                      ✔️
+                    </button>
+                    <button
+                      className="cross-btn"
+                      onClick={(e) => { handleDecline(followRequest) }}
+                    >
+                      ❌
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <button className="logout-btn" onClick={goLogout}>Logout</button>
         </div>
+
       </div>
+
 
 
       {isVisible && (
@@ -194,19 +214,19 @@ export default function Stream() {
               currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
-                  ? navigate(`authors/${encodeURIComponent(post.author.id)}/posts/${encodeURIComponent(post.id)}`)
-                  : navigate(`/stream/${encodeURIComponent(post.author.id)}/${encodeURIComponent(post.id)}/edit`)
+                  ? navigate(`/posts/${encodeURIComponent(post.id)}`)
+                  : navigate(`/posts/${encodeURIComponent(post.id)}/edit`)
               }
               canShare={post.can_share}
             />
-            ))
+          ))
           }
         </div>
       )}
       {!isVisible && (
         <div>
-          {!editablePosts && <p>Loading posts...</p>} 
-          {editablePosts && editablePosts.length === 0 && <p>No posts available.</p>} 
+          {!editablePosts && <p>Loading posts...</p>}
+          {editablePosts && editablePosts.length === 0 && <p>No posts available.</p>}
           {editablePosts && editablePosts.length > 0 && editablePosts.map((post) => (
             <PostCards
               post={post}
@@ -214,13 +234,13 @@ export default function Stream() {
               currenAuthor={currentAuthor}
               onClick={() =>
                 isVisible
-                  ? navigate(`authors/${encodeURIComponent(post.author.id)}/posts/${encodeURIComponent(post.id)}`)
-                  : navigate(`/stream/${encodeURIComponent(post.id)}/${encodeURIComponent(post.id)}/edit`)
+                  ? navigate(`/posts/${encodeURIComponent(post.id)}`)
+                  : navigate(`/posts/${encodeURIComponent(post.id)}/edit`)
               }
               canShare={post.can_share}
             />
-            ))
-          } 
+          ))
+          }
         </div>
       )}
     </div>

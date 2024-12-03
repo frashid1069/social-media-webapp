@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../editPost.css";
+import { cusFetch } from "./Login";
+import Header from "./Header";
 
 const EditPost = () => {
-    const { authorId, postId } = useParams();
+    const { postFqid } = useParams();
     const [postContent, setPostContent] = useState("");
     const [postContentType, setPostContentType] = useState("text/markdown");
     const [postTitle, setPostTitle] = useState("");
@@ -15,19 +16,15 @@ const EditPost = () => {
     const token = localStorage.getItem("token");
     const apiUrl = process.env.REACT_APP_API_URL
 
-    const decodedAuthorFqid = decodeURIComponent(authorId);
-    const decodedPostFqid = decodeURIComponent(postId);
     const currentAuthorId = localStorage.getItem("currentAuthorId")
     const encodedAuthorFqid = encodeURIComponent(currentAuthorId);
-    
+    const subtitle = "Post Edition";
+
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await fetch(`${decodedPostFqid}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "token": token, // Add token to the request headers
-                    },
+                const response = await cusFetch(`${postFqid}`, {
+                    method: "GET",
                 });
 
                 if (response.ok) {
@@ -46,7 +43,7 @@ const EditPost = () => {
         };
 
         fetchPost();
-    }, [authorId, postId]);
+    }, [postFqid]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -58,19 +55,18 @@ const EditPost = () => {
 
         if (postContentType === "text/markdown") {
             formData.append("content", postContent);
-        } 
+        }
         else if (postContentType === "image/jpeg" && selectedImage) {
             formData.append("content", selectedImage);
         }
-
-        const response = await fetch(`${decodedPostFqid}`, {
+        const response = await fetch(`${postFqid}`, {
             method: "PUT",
             headers: {
-                "token": token, 
+                "token": token,
             },
             body: formData,
         });
-
+        console.log(formData)
         if (response.ok) {
             alert("Post updated successfully");
             navigate(`/stream/${encodedAuthorFqid}`);
@@ -87,11 +83,8 @@ const EditPost = () => {
         event.preventDefault();
         const confirmDelete = window.confirm("Are you sure you want to delete this post?");
         if (confirmDelete) {
-            const response = await fetch(`${decodedPostFqid}`, {
+            const response = await cusFetch(`${postFqid}`, {
                 method: "DELETE",
-                headers: {
-                    "token": token, // Add token for DELETE request
-                },
             });
 
             if (response.ok) {
@@ -109,7 +102,7 @@ const EditPost = () => {
 
     return (
         <div className="post-edit">
-            <h2>Edit Post</h2>
+            <Header subtitle={subtitle} />
             <form onSubmit={handleSubmit}>
                 <div className="form-div">
                     <label>Title:</label>
@@ -167,7 +160,7 @@ const EditPost = () => {
                             onChange={(e) => setPostContent(e.target.value)}
                             required
                         />
-                        ) : (
+                    ) : (
                         <input
                             type="file"
                             accept="image/jpeg"

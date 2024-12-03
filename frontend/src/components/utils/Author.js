@@ -1,4 +1,4 @@
-import { getAuthorId } from "./Stream";
+import { getAuthorId } from "../Stream";
 
 export default class Author {
     constructor(author) {

@@ -10,10 +10,9 @@ import EditProfile from "./components/EditProfile";
 import CreatePost from "./components/CreatePost";
 import Likes from "./components/Likes";
 import Welcome from "./components/Welcome";
-import PostDetail from "./components/PostDetail"; 
+import PostDetail from "./components/PostDetail";
 import AuthorsPage from "./components/AuthorsPage";
-import ImageDisplay from './components/ImageDisplay';
-
+import ChatAssistant from './components/ChatAssistant';
 /**
  * You can put path for components
  *
@@ -26,7 +25,6 @@ function App() {
       <div className="login">
         <Router basename="/home">
           <Routes>
-            <Route path="image" element={<ImageDisplay/>}></Route>
             <Route path="/" element={<Welcome />}></Route>
             <Route path="/login" element={<Login />}></Route>
             <Route path="/signup" element={<SignUp />}></Route>
@@ -49,14 +47,15 @@ function App() {
               element={<AuthorsPage />}
             ></Route>
             <Route
-              path="/stream/:authorId/:postId/edit"
+              path="/posts/:postFqid/edit"
               element={<EditPost />}
             />
-            <Route path="/stream/:authorId/authors/:authorFqid/posts/:postFqid" element={<PostDetail />} />
+            <Route path="/posts/:postFqid" element={<PostDetail />} />
 
           </Routes>
         </Router>
       </div>
+      <ChatAssistant />
       <Footer></Footer>
     </div>
   );

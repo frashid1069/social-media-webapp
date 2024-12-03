@@ -1,13 +1,76 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+ @import url('./components/css/authorsPage.css');
+ @import url('./components/css/ChatAssistant.css');
+ @import url("./components/css/comment.css");
+ @import url("./components/css/editPost.css");
+ @import url("./components/css/login.css");
+ @import url("./components/css/postCard.css");
+ @import url("./components/css/stream.css");
+ @import url("./components/css/header.css");
+ @import url("./components/css/createPost.css");
+
+
+
+ body {
+   margin: 0;
+   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+     sans-serif;
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
+   overflow-x: hidden;
+   /* Prevents margin collapse */
+   height: 100vh;
+   background: linear-gradient(to bottom, #e0ffff, #7fffd4);
+   padding: 10px;
+   /* Aquamarine gradient */
+   font-family: Arial, sans-serif;
+ }
+
+ code {
+   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+     monospace;
+ }
+
+/* Title styling */
+h2 {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 50px;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+ .page-subtitle {
+   color: #363a3e;
+   /* Darker shade of aquamarine */
+   font-size: 1.5rem;
+   margin-bottom: 20px;
+ }
+
+
+ button {
+   text-align: center;
+   text-decoration: none;
+   display: inline-block;
+   border: none;
+   border-radius: 6px;
+   box-shadow: 0 4px 15px 0 #99c9e2;
+   transition-duration: 0.4s;
+ }
+
+
+ button:hover {
+   background-color: lightblue;
+   color: white;
+ }
+
+
+ select {
+  width: 100%; 
+  padding: 10px;
+  margin:10px;
+  font-size: 16px; 
+  border-radius: 5px; 
+  border: 1px solid #ccc; 
+  text-align: center;
 }

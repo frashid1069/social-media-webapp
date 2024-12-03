@@ -1,0 +1,108 @@
+#create-post-window {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* Separate left and right button groups */
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.create-post-page .form-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+    max-width: 800px;
+    margin: 40px auto;
+    background: rgba(152, 255, 152, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px 30px;
+  }
+
+
+  .create-post-page .form-group {
+    margin-bottom: 20px;
+    width: 90%;
+  }
+  .create-post-page label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 1rem;
+    color: #555;
+  }
+  .create-post-page input,
+  .create-post-page select {
+    width: 90%;
+    padding: 10px;
+    margin: 10px;
+    font-size: 1rem;
+    border: 3px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+
+  .create-post-page textarea {
+    width: 90%;
+    padding: 10px;
+    margin: 10px;
+    font-size: 1rem;
+    border: 3px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.3s ease;
+    min-height: 150px;
+    resize: vertical; 
+  }
+
+  .create-post-page input:focus,
+  .create-post-page select:focus,
+  .create-post-page textarea:focus {
+    border-color: #5b9bd5;
+  }
+  
+  .create-post-page .preview {
+    background: #f4f4f4;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+  }
+  .create-post-page .button-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .create-post-page .submit-btn,
+  .create-post-page .cancel-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  .create-post-page .submit-btn {
+  background-color: #3da281;
+  color: white;
+}
+
+  .create-post-page .submit-btn:hover {
+    background-color: #065239;
+    transform: translateY(-2px);
+  }
+  .create-post-page .cancel-btn {
+    background-color: #d9534f;
+    color: white;
+  }
+
+  .create-post-page .cancel-btn:hover {
+    background-color: #c9302c;
+    transform: translateY(-2px);
+  }

@@ -1,3 +1,11 @@
+.stream-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensure it takes up at least the full viewport height */
+  background: linear-gradient(to bottom, #e0ffff, #7fffd4);
+  overflow: hidden; /* Prevent horizontal overflow */
+}
+
 
 /*Chat GPT: PROMPT: Help look the css for my dropdown meny look clean and optimal, DATE: NOV2, 2024 */
 .stream-page .button-container {

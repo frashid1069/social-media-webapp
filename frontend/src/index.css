@@ -5,6 +5,7 @@
  @import url("./components/css/login.css");
  @import url("./components/css/postCard.css");
  @import url("./components/css/stream.css");
+ @import url("./components/css/header.css");
 
 
 
@@ -28,6 +29,15 @@
    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
      monospace;
  }
+
+/* Title styling */
+h2 {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 50px;
+}
 
  .page-subtitle {
    color: #363a3e;

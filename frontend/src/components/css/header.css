@@ -1,0 +1,43 @@
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: linear-gradient(45deg, #7fffd4, #20b2aa);
+    /* Aquamarine gradient */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Slight shadow for depth */
+    color: white;
+    font-family: Arial, sans-serif;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    /* Ensure the header stays on top */
+}
+
+.page-header .header-left {
+    display: flex;
+    align-items: center;
+}
+
+.page-header .header-logo {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    /* Spacing between logo and name */
+    border-radius: 50%;
+    /* Optional: makes the logo circular */
+
+}
+
+.page-header .website-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.page-header .header-subtitle {
+    font-size: 1.2rem;
+    text-align: center;
+    margin: 0;
+    /* Remove default margin */
+}

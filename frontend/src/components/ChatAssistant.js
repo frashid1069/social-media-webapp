@@ -42,7 +42,7 @@ const ChatAssistant = () => {
 
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US'; 
+            utterance.lang = 'en-US';
 
             // Update speaking state when speech starts and ends
             utterance.onstart = () => setSpeaking(true);
@@ -57,7 +57,15 @@ const ChatAssistant = () => {
     return (
         <div id="chat-assistant">
             <button id="chat-toggle" onClick={toggleChat}>
-                {isOpen ? '✖' : '💬'}
+                {isOpen ? (
+                    <span className="close-icon">✖</span> // Close button
+                ) : (
+                    <img
+                        src="/cute.png" // Replace with the actual path to your logo
+                        alt="Open Chat"
+                        className="chat-icon"
+                    />
+                )}
             </button>
             {isOpen && (
                 <div id="chat-window">

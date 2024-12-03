@@ -9,6 +9,7 @@ and I fully understand all the code and its functionality.
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked"; // Import the Markdown library
+import Header from "./Header";
 const apiUrl = process.env.REACT_APP_API_URL
 
 export default function CreatePost() {
@@ -22,22 +23,23 @@ export default function CreatePost() {
   const navigate = useNavigate();
   const currentAuthorId = localStorage.getItem("currentAuthorId");
   const encodedAuthorFqid = encodeURIComponent(currentAuthorId);
+  const subtitle = "Post Creation";
 
   const handlePostTypeChange = (event) => {
     setPostType(event.target.value);
-    if(event.target.value === "image") {
+    if (event.target.value === "image") {
       document.getElementById("post-content").hidden = true;
       document.getElementById("image-upload").hidden = false;
     }
-    else { 
+    else {
       document.getElementById("post-content").hidden = false;
       document.getElementById("image-upload").hidden = true;
     }
   }
-  
+
   const createPost = async (event) => {
     event.preventDefault();
-  
+
     // Create FormData to include file (if any)
     const formData = new FormData();
     formData.append("title", postTitle);
@@ -46,13 +48,13 @@ export default function CreatePost() {
     formData.append("description", postDescription)
     formData.append("visibility", visibility);
     // formData.append("author", parseInt(authorId));
-  
+
     // Append the image file if an image is selected
     if (selectedImage) {
       formData.set("content", selectedImage);
       formData.set("contentType", "image/jpeg;base64");
     }
-  
+
     try {
       const response = await fetch(`${currentAuthorId}/posts/`, {
         method: "POST",
@@ -61,7 +63,7 @@ export default function CreatePost() {
         },
         body: formData, // Pass FormData directly
       });
-  
+
       if (response.ok) {
         navigate(`/stream/${encodedAuthorFqid}`);
       } else {
@@ -73,7 +75,7 @@ export default function CreatePost() {
       alert("Error creating post");
     }
   };
-  
+
 
   // Handle cancel action
   const cancelPostCreation = () => {
@@ -87,10 +89,10 @@ export default function CreatePost() {
 
   return (
     <div className="create-post-page">
-      <h2 className="page-subtitle">Create a New Post</h2>
+      <Header subtitle={subtitle} />
       <form onSubmit={createPost}>
         <div>
-        <select
+          <select
             className="posttype-dropdown"
             id="posttype"
             value={posttype}

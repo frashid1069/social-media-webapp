@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PostCards from "./PostCards";
 import { cusFetch } from "./Login";
+import Header from "./Header";
 import Author from "./Author";
 import { getCurrentAuthor } from "./Author";
 
@@ -37,6 +38,7 @@ export default function Stream() {
   const [streamPosts, setstreamPosts] = useState([]);
   const [pendingFollowRequests, setPendingFollowRequests] = useState([]);
   const currentAuthorId = localStorage.getItem("currentAuthorId")
+  const subtitle = "Stream";
 
   // get the current author object
   const [currentAuthor, setCurrentAuthor] = useState([]);
@@ -147,8 +149,7 @@ export default function Stream() {
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   return (
     <div className="stream-page">
-      <h2 className="page-subtitle">{isVisible ? "Distributed Social Networking - Aquamarine" : "Edit Page"}</h2>
-
+      <Header subtitle={subtitle} />
       <div className="button-container">
         <button className="show-authors" onClick={goShowAuthors}>
           Show All Authors

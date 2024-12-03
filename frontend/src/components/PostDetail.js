@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { cusFetch } from "./Login";
+import Header from "./Header";
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -15,6 +16,7 @@ export default function PostDetail() {
     const currentAuthorId = localStorage.getItem("currentAuthorId");
     const encodedCurrentAuthorId = encodeURIComponent(currentAuthorId);
     const encodedPostFqid = encodeURIComponent(postFqid);
+    const subtitle = "Post Detail";
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -71,6 +73,7 @@ export default function PostDetail() {
 
     return (
         <div className="post-detail">
+            <Header subtitle={subtitle} />
             {post ? (
                 <>
                     <h2>{post.title}</h2>

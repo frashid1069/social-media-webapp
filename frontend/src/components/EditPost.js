@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { cusFetch } from "./Login";
+import Header from "./Header";
 
 const EditPost = () => {
     const { postFqid } = useParams();
@@ -17,7 +18,8 @@ const EditPost = () => {
 
     const currentAuthorId = localStorage.getItem("currentAuthorId")
     const encodedAuthorFqid = encodeURIComponent(currentAuthorId);
-    
+    const subtitle = "Post Edition";
+
     useEffect(() => {
         const fetchPost = async () => {
             try {
@@ -53,14 +55,14 @@ const EditPost = () => {
 
         if (postContentType === "text/markdown") {
             formData.append("content", postContent);
-        } 
+        }
         else if (postContentType === "image/jpeg" && selectedImage) {
             formData.append("content", selectedImage);
         }
         const response = await fetch(`${postFqid}`, {
             method: "PUT",
             headers: {
-                "token": token, 
+                "token": token,
             },
             body: formData,
         });
@@ -100,7 +102,7 @@ const EditPost = () => {
 
     return (
         <div className="post-edit">
-            <h2>Edit Post</h2>
+            <Header subtitle={subtitle} />
             <form onSubmit={handleSubmit}>
                 <div className="form-div">
                     <label>Title:</label>
@@ -158,7 +160,7 @@ const EditPost = () => {
                             onChange={(e) => setPostContent(e.target.value)}
                             required
                         />
-                        ) : (
+                    ) : (
                         <input
                             type="file"
                             accept="image/jpeg"

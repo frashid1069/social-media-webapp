@@ -9,28 +9,12 @@
     max-width: 400px;
 }
 
-.post-edit {
-    display: flex;
-    flex-direction: column;
-    align-items: center;        /* Center elements horizontally */
-    justify-content: center;    /* Center elements vertically */
-    height: 100vh;              /* Fill the whole viewport height */
-    padding: 20px;
-}
-
 /* Hover effect for the post-edit form
 .post-edit:hover {
     transform: scale(1.05); 
 } */
 
-/* Title styling */
-h2 {
-    text-align: center;
-    font-size: 3rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 50px;
-}
+
 
 .form-div {
     display: flex;

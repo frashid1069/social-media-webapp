@@ -10,7 +10,7 @@
     /* Slight shadow for depth */
     color: white;
     font-family: Arial, sans-serif;
-    position: sticky;
+    position: static;
     top: 0;
     z-index: 10;
     /* Ensure the header stays on top */

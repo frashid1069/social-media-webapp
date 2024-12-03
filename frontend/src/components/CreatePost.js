@@ -90,79 +90,82 @@ export default function CreatePost() {
   return (
     <div className="create-post-page">
       <Header subtitle={subtitle} />
-      <form onSubmit={createPost}>
-        <div>
-          <select
-            className="posttype-dropdown"
-            id="posttype"
-            value={posttype}
-            onChange={handlePostTypeChange}
-          >
-            <option value="post">Markdown Post</option>
-            <option value="image">Image Post</option>
-            <option value="simple">Regular Post</option>
-          </select>
-          <input
-            className="new-post-title"
-            type="text"
-            placeholder="Title"
-            value={postTitle}
-            onChange={(e) => setPostTitle(e.target.value)}
-            required
+      <section id="create-post-window">
+        <form className="form-container"onSubmit={createPost}>
+          <div className="form-group">
+            <select
+              className="posttype-dropdown"
+              id="posttype"
+              value={posttype}
+              onChange={handlePostTypeChange}
+            >
+              <option value="post">Markdown Post</option>
+              <option value="image">Image Post</option>
+              <option value="simple">Regular Post</option>
+            </select>
+            <input
+              className="new-post-title"
+              type="text"
+              placeholder="Title"
+              value={postTitle}
+              onChange={(e) => setPostTitle(e.target.value)}
+              required
+            />
+            <input
+              className="new-post-description"
+              type="text"
+              placeholder="Description"
+              value={postDescription}
+              onChange={(e) => setPostDescription(e.target.value)}
+              required
+            />
+          </div>
+          <textarea
+            className="new-post-content"
+            id="post-content"
+            placeholder="Write your post content in Markdown..."
+            value={postContent}
+            onChange={(e) => setPostContent(e.target.value)}
           />
-          <input
-            className="new-post-description"
-            type="text"
-            placeholder="Description"
-            value={postDescription}
-            onChange={(e) => setPostDescription(e.target.value)}
-            required
-          />
-        </div>
-        <textarea
-          className="new-post-content"
-          id="post-content"
-          placeholder="Write your post content in Markdown..."
-          value={postContent}
-          onChange={(e) => setPostContent(e.target.value)}
-        />
-        {/* Markdown Preview */}
-        <div className="markdown-preview">
-          <h3>Preview</h3>
-          <div className="preview"
-            dangerouslySetInnerHTML={getMarkdownPreview()} // Render the Markdown content as HTML 
-          ></div>
-        </div>
-        <div>
-          <label htmlFor="image-upload">Upload an image (optional):</label>
-          <input
-            id="image-upload"
-            type="file"
-            accept="image/jpeg"
-            onChange={(e) => setSelectedImage(e.target.files[0])}
-          />
-        </div>
-        <div className="new-post-visibility">
-          <label htmlFor="visi">Visibility:</label>
-          <select
-            className="visibility-dropdown"
-            id="visi"
-            value={visibility}
-            onChange={(e) => setVisibility(e.target.value)}
-          >
-            <option value="public">Public</option>
-            <option value="friends">Friend Only</option>
-            <option value="unlisted">Unlisted</option>
-          </select>
-        </div>
-        <div className="button-container">
-          <button type="submit">Send</button>
-          {/* Cancel button */}
-          <button type="button" onClick={cancelPostCreation} className="cancel-btn">
-            Cancel
-          </button>
-        </div>
-      </form>
+          {/* Markdown Preview */}
+          <div className="markdown-preview">
+            <h3>Preview</h3>
+            <div className="preview"
+              dangerouslySetInnerHTML={getMarkdownPreview()} // Render the Markdown content as HTML 
+            ></div>
+          </div>
+          <div>
+            <label htmlFor="image-upload">Upload an image (optional):</label>
+            <input
+              id="image-upload"
+              type="file"
+              accept="image/jpeg"
+              onChange={(e) => setSelectedImage(e.target.files[0])}
+            />
+          </div>
+          <div className="new-post-visibility">
+            <label htmlFor="visi">Visibility:</label>
+            <select
+              className="visibility-dropdown"
+              id="visi"
+              value={visibility}
+              onChange={(e) => setVisibility(e.target.value)}
+            >
+              <option value="public">Public</option>
+              <option value="friends">Friend Only</option>
+              <option value="unlisted">Unlisted</option>
+            </select>
+          </div>
+          <div className="button-container">
+            <button type="submit" className="submit-btn">Send</button>
+            {/* Cancel button */}
+            <button type="button" onClick={cancelPostCreation} className="cancel-btn">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </section>
+
     </div>
   );
 }

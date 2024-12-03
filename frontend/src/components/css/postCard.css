@@ -1,46 +1,79 @@
-
-.post-card-image img {
-    max-width: 100%; /* Adjusts the image size to fit within the container */
-    height: auto; /* Keeps the aspect ratio intact */
-    display: block; /* Removes any inline behavior */
-    margin: 0 auto; /* Centers the image if needed */
-    object-fit: contain; /* Ensures the entire image is shown */
-  }
-  
-.post-card img {
-max-width: 100%; /* Makes sure the image does not exceed the container width */
-height: auto; /* Keeps the image's aspect ratio intact */
-display: block; /* Ensures the image is treated as a block element */
-margin: 0 auto; /* Centers the image horizontally */
-object-fit: contain; /* Ensures the image is fully visible */
-}
-
-
 .post-card {
-    background-color:aliceblue;
+    background-color: aliceblue;
+    border: 1px solid #ddd;
     border-radius: 8px;
+    padding: 10px;
+    /* Make the post take up available width */
+    width: 100%;
+    max-width: 600px;
+    /* Set a maximum width for the posts */
+    height: 700px;
     overflow: hidden;
     transition: transform 0.2s ease-in-out;
     box-shadow: 0 10px 10px 0 rgba(0, 0, 0, .5);
+    display: flex;
+    flex-direction: column;
+    justify-content:start;
+
 }
 
 .post-card:hover {
-    transform: scale(1.03);
+    transform: scale(1.02);
 }
+
+
+.post-card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+    /* Darker text for good contrast */
+    overflow: hidden;
+    /* Hide overflowed text */
+    text-overflow: ellipsis;
+    /* Show ellipsis for truncated text */
+    display: -webkit-box;
+    /* Enables multiline truncation */
+    -webkit-line-clamp: 2;
+    /* Limit to 2 lines */
+    -webkit-box-orient: vertical;
+    /* Orient box vertically */
+    line-height: 1.2;
+    /* Adjust line spacing */
+    min-height: 2.4em;
+    /* Force height for two lines (1.2 line-height * 2) */
+}
+
 
 
 .post-card-content {
-    font-size: 0.9rem;
+    margin: 15px 0;
+    font-size: 1rem;
+    color: #555;
+    /* Neutral gray for body text */
     text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Show ellipsis for truncated content */
+    display: -webkit-box;
+    /* Use WebKit box model */
+    -webkit-line-clamp: 5;
+    /* Limit content to 3 lines */
+    -webkit-box-orient: vertical;
+    /* Specify vertical orientation */
 }
 
-.post-card-update-date{
+.post-card p {
+    margin: 0 auto;
+}
+
+.post-card-update-date {
     font-size: 0.7rem;
 }
 
 
 .post-card-author {
-    background-color: lightblue;
+    background-color: #00CED1;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -49,6 +82,7 @@ object-fit: contain; /* Ensures the image is fully visible */
     cursor: pointer;
     transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
     text-align: center;
+    font-weight: bold;
 }
 
 .post-card-author:hover {
@@ -56,6 +90,65 @@ object-fit: contain; /* Ensures the image is fully visible */
     transform: scale(1.05);
 }
 
-.post-card-author {
+.post-card img {
+    max-width: 100%;
+    /* Makes sure the image does not exceed the container width */
+    height: auto;
+    /* Keeps the image's aspect ratio intact */
+    display: block;
+    /* Ensures the image is treated as a block element */
+    margin: 0 auto;
+    /* Centers the image horizontally */
+    object-fit: contain;
+    /* Ensures the image is fully visible */
+}
+
+.post-card-update-date {
+    font-size: 0.85rem;
+    color: #888;
+    /* Muted color for less important information */
+    margin-top: 10px;
+}
+
+.post-card .comment-grid {
+    padding: 10px;
+    background: #f9f9f9;
+    /* Light gray background for comment section */
+    border-radius: 5px;
+    border: 1px solid #eee;
+    /* Subtle border */
+}
+
+.post-card .comment-title {
+    margin: 0;
+    font-size: 1rem;
+    color: #555;
     font-weight: bold;
+}
+
+.post-card textarea {
+    width: 90%;
+    border: 3px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 1rem;
+    margin-top: 10px;
+    transition: border-color 0.3s ease;
+    outline: none;
+    resize: none;
+}
+
+.post-card textarea:focus {
+    border-color: #5b9bd5;
+}
+
+.post-card .btn-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.post-card button[type="submit"]:hover {
+    background: #91e6a3;
+    /* Darker green on hover */
 }

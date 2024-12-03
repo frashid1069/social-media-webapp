@@ -149,54 +149,58 @@ export default function Stream() {
     <div className="stream-page">
       <Header subtitle={subtitle} />
       <div className="button-container">
-        <button className="show-authors" onClick={goShowAuthors}>
-          Show All Authors
+        <button id="go-create-post" onClick={goCreatePost}>
+          Create a Post 
         </button>
-        <button className="edit-profile-btn" onClick={goEditableProfile}>
-          Profile
-        </button>
-        <button className="go-create-post" onClick={goCreatePost}>
-          Make a Post
-        </button>
-        <button
-          className="post-edit-btn"
-          onClick={() => setIsVisible(!isVisible)}
-        >
-          {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
-        </button>
-        
-        {/* Custom dropdown for follow requests 
-            CHAT GPT: Prompt help me create a custom dropdown that shows the follow requestsindividually and along with
-            options to accept or decline. Date: NOV 2, 2024*/}
-        <div className="dropdown">
-          <button className="dropdown-toggle" onClick={toggleDropdown}>
-            {pendingFollowRequests.length} pending follow requests
+        <div className="right-buttons">
+          <button className="show-authors" onClick={goShowAuthors}>
+            Show All Authors
+          </button>
+          <button className="edit-profile-btn" onClick={goEditableProfile}>
+            Profile
+          </button>
+          <button
+            className="post-edit-btn"
+            onClick={() => setIsVisible(!isVisible)}
+          >
+            {isVisible ? "Go to Edit Mode" : "Go to Stream Mode"}
           </button>
 
-          {dropdownOpen && (
-            <div className="dropdown-menu">
-              {pendingFollowRequests.map((followRequest) => (
-                <div key={followRequest.id} className="dropdown-item">
-                  <span>{followRequest.follower.displayName}</span> {/* Display follower's name */}
-                  <button
-                    className="tick-btn"
-                    onClick={(e) => { handleAccept(followRequest) }}
-                  >
-                    ✔️
-                  </button>
-                  <button
-                    className="cross-btn"
-                    onClick={(e) => { handleDecline(followRequest) }}
-                  >
-                    ❌
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Custom dropdown for follow requests 
+            CHAT GPT: Prompt help me create a custom dropdown that shows the follow requestsindividually and along with
+            options to accept or decline. Date: NOV 2, 2024*/}
+          <div className="dropdown">
+            <button className="dropdown-toggle" onClick={toggleDropdown}>
+              {pendingFollowRequests.length} pending follow requests
+            </button>
+
+            {dropdownOpen && (
+              <div className="dropdown-menu">
+                {pendingFollowRequests.map((followRequest) => (
+                  <div key={followRequest.id} className="dropdown-item">
+                    <span>{followRequest.follower.displayName}</span> {/* Display follower's name */}
+                    <button
+                      className="tick-btn"
+                      onClick={(e) => { handleAccept(followRequest) }}
+                    >
+                      ✔️
+                    </button>
+                    <button
+                      className="cross-btn"
+                      onClick={(e) => { handleDecline(followRequest) }}
+                    >
+                      ❌
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <button className="logout-btn" onClick={goLogout}>Logout</button>
         </div>
-        <button className="logout-btn" onClick={goLogout}>Logout</button>
+
       </div>
+
 
 
       {isVisible && (

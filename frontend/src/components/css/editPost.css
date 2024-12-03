@@ -78,7 +78,7 @@ select {
     margin-top: 20px;
 }
   
-.button-container button {
+.post-edit .button-container button {
     flex: 1;               
     margin-right: 10px;         
 }

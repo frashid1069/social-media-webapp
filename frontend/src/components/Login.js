@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Author from "./Author";
-import MeteorShower from "./MeteorShower";
+import MeteorShower from "./utils/MeteorShower";
 const apiUrl = process.env.REACT_APP_API_URL
 /**
  * This is a component for displaying the login page

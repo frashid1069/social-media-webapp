@@ -3,8 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import PostCards from "./PostCards";
 import { cusFetch } from "./Login";
 import Header from "./Header";
-import Author from "./Author";
-import { getCurrentAuthor } from "./Author";
 
 export const getAuthorId = (url) => {
   const authorMatch = url.match(/authors\/(\d+)/);

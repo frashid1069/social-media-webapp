@@ -68,23 +68,28 @@ class AuthorView(ModelViewSet):
                     response = requests.get(f"{node.url}authors/", headers=headers, timeout=10)
                     response.raise_for_status()
                     if response.status_code == 200:
-                        try:
-                            authors = response.json().get("authors", [])
-                            for author in authors:
-                                fqid = author.get("id")
-                                author_exists = Author.objects.filter(fqid=fqid).exists()
-                                if author_exists:
-                                    continue
+                        authors = response.json().get("authors", [])
+                        for author in authors:
+                            fqid = author.get("id")
+                            author_exists = Author.objects.filter(fqid=fqid).exists()
+                            if author_exists:
+                                continue
+                            try:
                                 serializer = AuthorSerializer(data=author)
 
                                 if serializer.is_valid():
                                     serializer.save()   
                                 else:
-                                    print(f"errorsAuthor validation failed on host:{node.url}:{serializer.errors}")
-                            
-                        except ValidationError as e:
-                            print(f"Validation Error: {e.detail}")
-                            return Response({"error": e.detail},  status=status.HTTP_400_BAD_REQUEST)
+                                    print(f"Author validation failed {serializer.errors}")
+                                    return Response({'errors': f"Author validation failed{node.url}: {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+                        
+                            except ValidationError as e:
+                                print(f"Validation Error: {e.detail}")
+                                return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+                            except Exception as e:
+                                print(f"Unexpected Error: {e}")
+                                print(f"Problematic Data: {author}")
+                                return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                     else:
                         print(f"Failed to fetch authors from {node.url}: {response.status_code}")
                         

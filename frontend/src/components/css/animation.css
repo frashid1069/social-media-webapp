@@ -37,3 +37,23 @@
       opacity: 0; /* Fade out */
     }
   }
+
+  /* Keyframe for text color animation */
+@keyframes textColorShift {
+  0% {
+      color: #8A2BE2; 
+  }
+  25% {
+      color: #ff69b4; /* Pink */
+  }
+  50% {
+      color: #ffd700; /* Gold */
+  }
+  75% {
+      color: #7FFF00; /* Dark Turquoise */
+  }
+  100% {
+      color: #8A2BE2; 
+  }
+}
+

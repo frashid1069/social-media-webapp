@@ -17,6 +17,7 @@ export default function Profile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const getFollowingKey = () => `followingState:${currentAuthorId}`;
 
   const decodedPostAuthorFqid = decodeURIComponent(authorId);
 
@@ -30,6 +31,11 @@ export default function Profile() {
   useEffect(() => {
     ownProfile();
   }, []);
+
+  useEffect(() => {
+    const storedFollowing = JSON.parse(localStorage.getItem(getFollowingKey())) || {};
+    setIsFollowing(storedFollowing[decodedPostAuthorFqid] || false);
+  }, [currentAuthorId, decodedPostAuthorFqid]);
 
   // get the author info
   useEffect(() => {
@@ -123,7 +129,10 @@ export default function Profile() {
 
     if (response.ok) {
       alert("you have sent a follow request to this author");
-      // await checkFollowingStatus(); // Update follow status and follow_id after following
+      // Update state and localStorage
+      const storedFollowing = JSON.parse(localStorage.getItem(getFollowingKey())) || {};
+      storedFollowing[decodedPostAuthorFqid] = true;
+      localStorage.setItem(getFollowingKey(), JSON.stringify(storedFollowing));
       setIsFollowing(true);
     } else {
       alert("Failed to follow the author.");
@@ -184,8 +193,11 @@ export default function Profile() {
 
     if (response.ok) {
       alert("you have unfollowed this author");
-      // await checkFollowingStatus(); // Update follow status and follow_id after following
-      setIsFollowing(true);
+      // Update state and localStorage
+      const storedFollowing = JSON.parse(localStorage.getItem(getFollowingKey())) || {};
+      delete storedFollowing[decodedPostAuthorFqid];
+      localStorage.setItem(getFollowingKey(), JSON.stringify(storedFollowing));
+      setIsFollowing(false);
     } else {
       alert("Failed to unfollow the author.");
     }
@@ -224,7 +236,6 @@ export default function Profile() {
         ))}
 
       </div>
-
     </div>
   );
 }

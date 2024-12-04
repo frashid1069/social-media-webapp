@@ -91,7 +91,7 @@ export default function CreatePost() {
     <div className="create-post-page">
       <Header subtitle={subtitle} />
       <section id="create-post-window">
-        <form className="form-container"onSubmit={createPost}>
+        <form className="form-container" onSubmit={createPost}>
           <div className="form-group">
             <select
               className="posttype-dropdown"
@@ -157,11 +157,11 @@ export default function CreatePost() {
             </select>
           </div>
           <div className="button-container">
-            <button type="submit" className="submit-btn">Send</button>
             {/* Cancel button */}
             <button type="button" onClick={cancelPostCreation} className="cancel-btn">
               Cancel
             </button>
+            <button type="submit" className="submit-btn">Create</button>
           </div>
         </form>
       </section>

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "../likes.css";
 import { cusFetch } from './Login';
 const apiUrl = process.env.REACT_APP_API_URL
 

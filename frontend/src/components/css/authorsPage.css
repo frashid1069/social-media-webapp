@@ -1,0 +1,92 @@
+/* Ensure the footer is always at the bottom of the page */
+
+.authors-page {
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Ensure it takes up at least the full viewport height */
+    background: linear-gradient(to bottom, #e0ffff, #7fffd4);
+}
+
+.authors-txt { 
+    text-align: center; 
+    width: 100%; /* Ensure the header spans the full width */ 
+    margin-bottom: 20px; /* Add some space below the header */ 
+} 
+
+.authors-list { 
+    /* flex: 1;  */
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; /* Center all content horizontally */ 
+    padding: 20px; 
+    width: 100%; 
+    flex-grow: 1; /* Ensure it grows to fill available space */ 
+}
+
+.author-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e0ffff;
+    padding: 12px 15px;
+    margin: 10px;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px 0 #99c9e2;
+    width: 80%; /* Ensure consistent width for all items */
+    max-width: 300px;
+    height: 40px; /* Set a fixed height for all author items */
+}
+
+.author-name {
+    text-align: left;
+    flex: 1;
+    margin-right: 20px; /* Space between name and button */
+}
+
+.follow-btn,
+.unfollow-btn,
+.authors-goBackBtn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Follow button styling */
+.follow-btn {
+    background-color: aliceblue;
+    color: black;
+}
+
+.follow-btn:hover {
+    background-color: rgb(65, 230, 65);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Unfollow button styling */
+.unfollow-btn {
+    background-color: #ff6347; /* Tomato */
+    color: white; 
+}
+
+.unfollow-btn:hover {
+    background-color: #ff6347;
+    transform: scale(1.1);
+}
+
+/* Back to Stream button styling */
+.authors-goBackBtn {
+    background-color: aliceblue;
+    color: black; /* Ensure the text color is readable */
+    align-self: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.authors-goBackBtn:hover {
+    background-color: lightblue;
+    transform: scale(1.1);
+}

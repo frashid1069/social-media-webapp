@@ -7,6 +7,7 @@
  @import url("./components/css/stream.css");
  @import url("./components/css/header.css");
  @import url("./components/css/createPost.css");
+ @import url("./components/css/postDetail.css");
 
 
 
@@ -63,6 +64,11 @@ h2 {
    background-color: lightblue;
    color: white;
  }
+
+ button[type="submit"]:hover {
+  background: #91e6a3;
+  /* Darker green on hover */
+}
 
 
  select {

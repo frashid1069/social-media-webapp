@@ -14,6 +14,8 @@ export default function AuthorsPage() {
   const navigate = useNavigate();
   const currentAuthorId = localStorage.getItem("currentAuthorId");
   const subtitle = "Author List";
+  const getFollowingKey = () => `followingState:${currentAuthorId}`;
+
 
   useEffect(() => {
     const fetchAuthors = async () => {
@@ -26,6 +28,11 @@ export default function AuthorsPage() {
     };
 
     fetchAuthors();
+  }, [currentAuthorId]);
+
+  useEffect(() => {
+    const storedFollowing = JSON.parse(localStorage.getItem(getFollowingKey())) || {};
+    setIsFollowing(storedFollowing);
   }, [currentAuthorId]);
 
   useEffect(() => {
@@ -78,6 +85,10 @@ export default function AuthorsPage() {
 
     if (response.ok) {
       alert(`You have sent a follow request to this author`);
+      // Update state and localStorage
+      const storedFollowing = JSON.parse(localStorage.getItem(getFollowingKey())) || {};
+      storedFollowing[authorID] = true;
+      localStorage.setItem(getFollowingKey(), JSON.stringify(storedFollowing));
       setIsFollowing((prev) => ({ ...prev, [authorID]: true })); // Mark this author as followed
     } else {
       alert("Failed to follow the author.");
@@ -123,7 +134,10 @@ export default function AuthorsPage() {
 
     if (response.ok) {
       alert(`You have unfollowed this author`);
-      setIsFollowing((prev) => ({ ...prev, [authorID]: true })); // Mark this author as followed
+      const storedFollowing = JSON.parse(localStorage.getItem(getFollowingKey())) || {};
+      delete storedFollowing[authorID];
+      localStorage.setItem(getFollowingKey(), JSON.stringify(storedFollowing));
+      setIsFollowing((prev) => ({ ...prev, [authorID]: false })); // Mark this author as unfollowed
     } else {
       alert("Failed to unfollow the author.");
     }
@@ -133,34 +147,36 @@ export default function AuthorsPage() {
   return (
     <div className="authors-page">
       <Header subtitle={subtitle} />
+      <h4 className="author-txt">Authors:</h4>
+      <div className="authors-list">
+        {authors.map((author) => (
+          <div className="author-item" key={author.id}>
+            <span className="author-name">{author.displayName}</span>
+            {author.id !== currentAuthorId && ( // Follow/Unfollow button is not shown for the current author
+              isFollowing[author.id] ? (
+                <button
+                  id="unfollowButton"
+                  className="unfollow-btn"
+                  onClick={() => handleUnfollow(author.id)}
+                >
+                  Unfollow
+                </button>
+              ) : (
+                <button
+                  id="followButton"
+                  className="follow-btn"
+                  onClick={() => handleFollow(author.id)}
+                >
+                  Follow
+                </button>
+              )
+            )}
+          </div>
+        ))}
+      </div>
       <button className="authors-goBackBtn" onClick={goBackStream}>
         Back To Stream
       </button>
-      <h4 className="author-txt">Authors:</h4>
-      {authors.map((author) => (
-        <div className="author-item" key={author.id}>
-          <span className="author-name">{author.displayName}</span>
-          {author.id !== currentAuthorId && ( // Follow/Unfollow button is not shown for the current author
-            isFollowing[author.id] ? (
-              <button
-                id="unfollowButton"
-                className="follow-btn"
-                onClick={() => handleUnfollow(author.id)}
-              >
-                Unfollow
-              </button>
-            ) : (
-              <button
-                id="followButton"
-                className="follow-btn"
-                onClick={() => handleFollow(author.id)}
-              >
-                Follow
-              </button>
-            )
-          )}
-        </div>
-      ))}
     </div>
   );
 }

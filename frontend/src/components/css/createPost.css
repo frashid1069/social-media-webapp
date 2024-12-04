@@ -1,10 +1,10 @@
-body { 
+.create-post-page {
   margin: 0; 
   padding: 0; 
-  min-height: 135vh; 
-  background: linear-gradient(to bottom, #a8e6cf, #dcedc1); /* Adjust colors as needed */ 
-  background-size: cover; 
-} 
+  min-height: 130vh; 
+  background: linear-gradient(to bottom, #e0ffff, #7fffd4);
+  background-size: cover;
+}
 
 #create-post-window {
     display: flex;

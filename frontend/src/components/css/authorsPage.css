@@ -56,13 +56,14 @@
 
 /* Follow button styling */
 .follow-btn {
-    background-color: aliceblue;
-    color: black;
+    background-color: rgb(8, 160, 8);
+    color: white;
+    
 }
 
 .follow-btn:hover {
     background-color: rgb(65, 230, 65);
-    color: white;
+    color: black;
     transform: scale(1.1);
 }
 
@@ -74,6 +75,7 @@
 
 .unfollow-btn:hover {
     background-color: #ff6347;
+    color: black;
     transform: scale(1.1);
 }
 

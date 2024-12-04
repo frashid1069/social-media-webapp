@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cusFetch } from "./Login";
+import { DynamicPlaceholder } from "./utils/WordAnimation"
 
 const ChatAssistant = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -7,6 +8,7 @@ const ChatAssistant = () => {
     const [input, setInput] = useState('');
     const [speaking, setSpeaking] = useState(false);
     const apiUrl = process.env.REACT_APP_API_URL;
+    const dynamicPlaceholder = new DynamicPlaceholder('home-stock-input');
 
     const toggleChat = () => setIsOpen(!isOpen);
 
@@ -30,12 +32,21 @@ const ChatAssistant = () => {
         }
     };
 
-    const readAloud = (text) => {
+    useEffect(() => {
+        if (isOpen) {
+            // Initialize DynamicPlaceholder when the chat is opened
+            const dynamicPlaceholder = new DynamicPlaceholder("chat-input");
+            dynamicPlaceholder.init();
+        }
+    }, [isOpen]);
+
+    const readAloud = (text, buttonRef) => {
         const synth = window.speechSynthesis;
 
         if (speaking) {
             synth.cancel();
             setSpeaking(false);
+            buttonRef.classList.remove('speaking');
             return;
         }
 
@@ -44,8 +55,14 @@ const ChatAssistant = () => {
             utterance.lang = 'en-US';
 
             // Update speaking state when speech starts and ends
-            utterance.onstart = () => setSpeaking(true);
-            utterance.onend = () => setSpeaking(false);
+            utterance.onstart = () => {
+                setSpeaking(true);
+                buttonRef.classList.add('speaking');
+            };
+            utterance.onend = () => {
+                setSpeaking(false);
+                buttonRef.classList.remove('speaking');
+            };
 
             synth.speak(utterance);
         } else {
@@ -68,15 +85,29 @@ const ChatAssistant = () => {
             </button>
             {isOpen && (
                 <div id="chat-window">
-                    <div id="chat-header">Chat with AI</div>
+                    <div id="chat-header">Chat with Aqua AI</div>
                     <div id="chat-messages">
                         {messages.map((msg, index) => (
-                            <div key={index} className={`chat-message ${msg.sender}`}>
-                                {msg.text}
+                            <div 
+                            key={index} 
+                            className={`chat-message ${msg.sender}`}
+                            style={{
+                                flexDirection: msg.sender === 'bot' ? 'row' : 'row-reverse',
+                                alignItems: 'center',
+                            }}
+                            >
+                                <img
+                                    src={msg.sender === 'bot' 
+                                        ? `${process.env.PUBLIC_URL}/chat-logo.jpg` 
+                                        : `${process.env.PUBLIC_URL}/login-image.png`}
+                                    alt={`${msg.sender} logo`}
+                                    className="chat-logo"
+                                />
+                                <span>{msg.text}</span>
                                 {msg.sender === 'bot' && (
                                     <button
                                         className="read-aloud-btn"
-                                        onClick={() => readAloud(msg.text)}
+                                        onClick={(e) => readAloud(msg.text, e.currentTarget)}
                                     >
                                         🔊 Read Aloud
                                     </button>
@@ -86,12 +117,12 @@ const ChatAssistant = () => {
                     </div>
                     <div id="chat-input-container">
                         <input
+                            id='chat-input'
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Type a message..."
                         />
-                        <button onClick={sendMessage}>Send</button>
+                        <button type="submit" onClick={sendMessage}>Send</button>
                     </div>
                 </div>
             )}

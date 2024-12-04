@@ -39,7 +39,6 @@ def chatgpt_response(request):
             #     "contentType": "text/markdown"
             # }'''
             print(reply)
-            print(type(reply))
             # Check if the reply is JSON-like for post creation
             if key:
                 try:
@@ -79,14 +78,14 @@ def chatgpt_response(request):
                         headers={'Authorization': f'Bearer {request.auth}'}  
                     )
                     if post_response.status_code == 201:
-                        return JsonResponse({'response': f'{reply} Post created successfully!'})
+                        return JsonResponse({'response': f'Post created successfully!'})
                     else:
-                        return JsonResponse({'error': 'Failed to create post in backend.'}, status=500)
+                        return JsonResponse({'response': 'Someone tell Rex there is a problem with my AI.'}, status=500)
 
                 except json.JSONDecodeError:
                     return JsonResponse({'response': json.JSONDecodeError})  # Return the original response if parsing fails
             else:
-                return JsonResponse({'response': "else"})
+                return JsonResponse({'response': reply})
 
         except Exception as e:
             print(f"Error: {e}")

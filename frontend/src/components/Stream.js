@@ -106,7 +106,9 @@ export default function Stream() {
       });
       if (response.ok) {
         alert(`Accepted follow request from ${followRequest.follower.displayName}`);
-        pendingFollowRequests.filter(request => request.id !== followRequest.id)
+        setPendingFollowRequests((prevRequests) =>
+          prevRequests.filter((request) => request.id !== followRequest.id)
+        );
       }
     } catch (error) {
       console.error("Error declining follow request:", error);
@@ -121,7 +123,9 @@ export default function Stream() {
       });
       if (response.ok) {
         alert(`Declined follow request from ${followRequest.follower.displayName}`);
-        pendingFollowRequests.filter(request => request.id !== followRequest.id)
+        setPendingFollowRequests((prevRequests) =>
+          prevRequests.filter((request) => request.id !== followRequest.id)
+        );
       }
     } catch (error) {
       console.error("Error declining follow request:", error);

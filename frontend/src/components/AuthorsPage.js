@@ -14,6 +14,8 @@ export default function AuthorsPage() {
   const navigate = useNavigate();
   const currentAuthorId = localStorage.getItem("currentAuthorId");
   const subtitle = "Author List";
+  const getFollowingKey = () => `followingState:${currentAuthorId}`;
+
 
   useEffect(() => {
     const fetchAuthors = async () => {
@@ -26,6 +28,11 @@ export default function AuthorsPage() {
     };
 
     fetchAuthors();
+  }, [currentAuthorId]);
+
+  useEffect(() => {
+    const storedFollowing = JSON.parse(localStorage.getItem(getFollowingKey())) || {};
+    setIsFollowing(storedFollowing);
   }, [currentAuthorId]);
 
   useEffect(() => {
@@ -78,6 +85,10 @@ export default function AuthorsPage() {
 
     if (response.ok) {
       alert(`You have sent a follow request to this author`);
+      // Update state and localStorage
+      const storedFollowing = JSON.parse(localStorage.getItem(getFollowingKey())) || {};
+      storedFollowing[authorID] = true;
+      localStorage.setItem(getFollowingKey(), JSON.stringify(storedFollowing));
       setIsFollowing((prev) => ({ ...prev, [authorID]: true })); // Mark this author as followed
     } else {
       alert("Failed to follow the author.");
@@ -123,7 +134,10 @@ export default function AuthorsPage() {
 
     if (response.ok) {
       alert(`You have unfollowed this author`);
-      setIsFollowing((prev) => ({ ...prev, [authorID]: true })); // Mark this author as followed
+      const storedFollowing = JSON.parse(localStorage.getItem(getFollowingKey())) || {};
+      delete storedFollowing[authorID];
+      localStorage.setItem(getFollowingKey(), JSON.stringify(storedFollowing));
+      setIsFollowing((prev) => ({ ...prev, [authorID]: false })); // Mark this author as unfollowed
     } else {
       alert("Failed to unfollow the author.");
     }

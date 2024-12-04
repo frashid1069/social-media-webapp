@@ -10,9 +10,14 @@ const apiUrl = process.env.REACT_APP_API_URL
 export default function Comment({ comment }) {
 
   return (
-    <div key={comment.id} className="comment">
-      <p className="comment-content">{comment.comment}</p>
-      <p className="comment-author">{comment.author.displayName}</p>
+    <div class="dialogbox">
+      <p className="comment-content"></p>
+      <div class="body">
+        <span class="tip tip-left"></span>
+        <div class="message">
+          <span>{comment.author.displayName}: {comment.comment}</span>
+        </div>
+      </div>
     </div>
   );
 }

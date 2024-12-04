@@ -33,29 +33,25 @@ def chatgpt_response(request):
 
             # Extract the assistant's reply
             reply = response.choices[0].message['content']
-            # reply = r'''{
-            #     "title": "Tips for Getting Good Sleep",
-            #     "content": "1. Stick to a consistent sleep schedule by going to bed and waking up at the same time every day.\n2. Create a relaxing bedtime routine to signal to your body that it's time to wind down.\n3. Keep your bedroom dark, quiet, and cool to create an optimal sleep environment.\n4. Limit exposure to screens (TV, phone, computer) before bed as the blue light can disrupt your sleep.\n5. Avoid caffeine and heavy meals close to bedtime.\n6. Exercise regularly, but avoid vigorous activity too close to bedtime.\n7. Manage stress through relaxation techniques such as meditation or deep breathing.\n8. Invest in a comfortable mattress, pillows, and bedding to enhance your sleep quality.",
-            #     "contentType": "text/markdown"
-            # }'''
+
             print(reply)
             # Check if the reply is JSON-like for post creation
             if key:
                 try:
                     # Use a regular expression to extract the JSON object
-                    json_match = re.search(r'\{.*?\}', reply, re.DOTALL)
-                    if json_match:
-                        json_str = json_match.group()
-                        json_str = json_str.replace("'", '"')
-                        # Escape the newline characters
-                        json_str_fixed = json_str.replace('\n', '\\n')
-                        try:
-                            reply_data = json.loads(json_str_fixed)
-                            print("Parsed JSON:", reply_data)
-                        except json.JSONDecodeError as e:
-                            print("Error decoding JSON:", e)
-                    else:
-                        print("No JSON object found in the reply")
+                    # json_match = re.search(r'\{.*?\}', reply, re.DOTALL)
+                    # if json_match:
+                    #     json_str = json_match.group()
+                    #     json_str = json_str.replace("'", '"')
+                    #     # Escape the newline characters
+                    #     json_str_fixed = json_str.replace('\n', '\\n')
+                    #     try:
+                    #         reply_data = json.loads(json_str_fixed)
+                    #         print("Parsed JSON:", reply_data)
+                    #     except json.JSONDecodeError as e:
+                    #         print("Error decoding JSON:", e)
+                    # else:
+                    #     print("No JSON object found in the reply")
                     reply_data = json.loads(reply)
                     title = reply_data.get('title', '')
                     content = reply_data.get('content', '')
@@ -78,7 +74,7 @@ def chatgpt_response(request):
                         headers={'Authorization': f'Bearer {request.auth}'}  
                     )
                     if post_response.status_code == 201:
-                        return JsonResponse({'response': f'Post created successfully!'})
+                        return JsonResponse({'response': f'I created a post with title: {title}'})
                     else:
                         return JsonResponse({'response': 'Someone tell Rex there is a problem with my AI.'}, status=500)
 
@@ -89,7 +85,8 @@ def chatgpt_response(request):
 
         except Exception as e:
             print(f"Error: {e}")
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({'response': "Someone tell Rex there is a problem with my AI"}, status=500)
 
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
+    print({'error': 'Invalid request method'})
+    return JsonResponse({'response': 'Someone tell Rex there is a problem with my AI'}, status=405)
 

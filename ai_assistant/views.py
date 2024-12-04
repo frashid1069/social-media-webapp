@@ -4,6 +4,8 @@ from django.urls import reverse
 from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.test.client import RequestFactory
+from post.views import post_list
 import json
 import re
 import os
@@ -62,18 +64,20 @@ def chatgpt_response(request):
                     relative_url  = reverse('post_list', args=[request.user.author.serial])  
                     backend_url = request.build_absolute_uri(relative_url)
                     
-                    post_response = requests.post(
-                        backend_url,
-                        json={
+                    factory = RequestFactory()
+                    internal_request = factory.post(
+                        reverse('post_list', args=[request.user.author.serial]),
+                        data={
                             'title': title,
                             'content': content,
                             'description': 'This is a post made by Aqua AI',
                             'contentType': content_type,
                             'visibility': 'PUBLIC'
                         },
-                        headers={'Authorization': f'Bearer {request.auth}'}  
+                        HTTP_AUTHORIZATION=f'Bearer {request.auth}'
                     )
-                    if post_response.status_code == 201:
+                    response = post_list(internal_request, AUTHOR_SERIAL=request.user.author.serial)
+                    if response.status_code == 201:
                         return JsonResponse({'response': f'I created a post with title: {title}'})
                     else:
                         return JsonResponse({'response': 'Someone tell Rex there is a problem with my AI.'}, status=500)

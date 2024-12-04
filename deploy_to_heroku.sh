@@ -3,7 +3,7 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-APP_NAME="aqua-rex6"
+APP_NAME="aqua-rex4"
 
 
 # Define the branch to deploy (default is "main")

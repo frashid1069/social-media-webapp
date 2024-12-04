@@ -1,4 +1,6 @@
 import React from "react";
+import './css/footer.css';
+
 /**
  * This is a component for displaying the footer
  *

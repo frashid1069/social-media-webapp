@@ -37,8 +37,15 @@
 }
 
 .page-header .header-subtitle {
-    font-size: 1.2rem;
+    /* font-size: 1.2rem; */
     text-align: center;
     margin: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.5em;
+    /* font-weight: normal;
+    color: black; */
+    white-space: nowrap; /* Prevent text from wrapping */
     /* Remove default margin */
 }

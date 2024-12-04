@@ -147,34 +147,36 @@ export default function AuthorsPage() {
   return (
     <div className="authors-page">
       <Header subtitle={subtitle} />
+      <h4 className="author-txt">Authors:</h4>
+      <div className="authors-list">
+        {authors.map((author) => (
+          <div className="author-item" key={author.id}>
+            <span className="author-name">{author.displayName}</span>
+            {author.id !== currentAuthorId && ( // Follow/Unfollow button is not shown for the current author
+              isFollowing[author.id] ? (
+                <button
+                  id="unfollowButton"
+                  className="unfollow-btn"
+                  onClick={() => handleUnfollow(author.id)}
+                >
+                  Unfollow
+                </button>
+              ) : (
+                <button
+                  id="followButton"
+                  className="follow-btn"
+                  onClick={() => handleFollow(author.id)}
+                >
+                  Follow
+                </button>
+              )
+            )}
+          </div>
+        ))}
+      </div>
       <button className="authors-goBackBtn" onClick={goBackStream}>
         Back To Stream
       </button>
-      <h4 className="author-txt">Authors:</h4>
-      {authors.map((author) => (
-        <div className="author-item" key={author.id}>
-          <span className="author-name">{author.displayName}</span>
-          {author.id !== currentAuthorId && ( // Follow/Unfollow button is not shown for the current author
-            isFollowing[author.id] ? (
-              <button
-                id="unfollowButton"
-                className="follow-btn"
-                onClick={() => handleUnfollow(author.id)}
-              >
-                Unfollow
-              </button>
-            ) : (
-              <button
-                id="followButton"
-                className="follow-btn"
-                onClick={() => handleFollow(author.id)}
-              >
-                Follow
-              </button>
-            )
-          )}
-        </div>
-      ))}
     </div>
   );
 }

@@ -7,8 +7,8 @@
     width: 100%;
     max-width: 450px;
     /* Set a maximum width for the posts */
-    height: 700px;
-    overflow: hidden;
+    height: 550px;
+    overflow: auto;
     transition: transform 0.2s ease-in-out;
     box-shadow: 0 10px 10px 0 rgba(0, 0, 0, .5);
     display: flex;
@@ -116,6 +116,7 @@
     /* Light gray background for comment section */
     border-radius: 5px;
     border: 1px solid #eee;
+    text-align: center; /* Center align the comments */
     /* Subtle border */
 }
 
@@ -152,3 +153,31 @@
     background: #91e6a3;
     /* Darker green on hover */
 }
+
+.btn-like {
+    background: transparent;
+    border: none;
+    color: #555; /* Neutral color for the heart */
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.3s ease;
+}
+  
+.btn-like.liked {
+    color: red; /* Red for liked state */
+}
+
+.btn-like.liked:hover {
+    color: white; /* Red for liked state */
+}
+  
+.btn-like i {
+    margin-right: 5px; /* Space between the heart and the count */
+}
+
+.btn-like:hover {
+    background-color: rgb(240, 85, 111); /* Slightly lighter red on hover */
+}  

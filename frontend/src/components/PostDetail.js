@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { cusFetch } from "./Login";
 import Header from "./Header";
+import { getAdapter } from "axios";
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -11,6 +12,7 @@ export default function PostDetail() {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isCurrentAuthor, setIsCurrentAuthor] = useState(false);
     const token = localStorage.getItem("token");
     const navigate = useNavigate();
     const currentAuthorId = localStorage.getItem("currentAuthorId");
@@ -27,6 +29,7 @@ export default function PostDetail() {
                 if (response.ok) {
                     const data = await response.json();
                     setPost(data);
+                    setIsCurrentAuthor(data.author.id === currentAuthorId);
                 } else {
                     setError("Failed to fetch post. Please check if the post exists.");
                 }
@@ -88,20 +91,20 @@ export default function PostDetail() {
                     ) : (
                         <div>{post.content}</div>
                     )}
-                    {/* {post.image_content && (
-                        <img
-                            src={post.image_content}
-                            alt={post.title}
-                            style={{ maxWidth: "100%", height: "auto" }}
-                        />
-                    )} */}
                     <p>Posted on: {new Date(post.published).toLocaleString()}</p>
                     {/* <p>Last updated: {new Date(post.updated_at).toLocaleString()}</p> */}
-                    <div className="btn-container">
-                        <button className="edit-btn" type="submit" onClick={goEditPost}>Edit</button>
-                        <button className="delete-btn" type="button" onClick={deletePost}>Delete</button>
-                        <button className="cancel-btn" type="button" onClick={goToStream}>Go Back</button>
-                    </div>
+                    {isCurrentAuthor ? 
+                        <div className="btn-container">
+                            <button className="edit-btn" type="submit" onClick={goEditPost}>Edit</button>
+                            <button className="delete-btn" type="button" onClick={deletePost}>Delete</button>
+                            <button className="cancel-btn" type="button" onClick={goToStream}>Go Back</button>
+                        </div>
+                        : 
+                        <div className="btn-container">
+                            <button className="cancel-btn" type="button" onClick={goToStream}>Go Back</button>
+                        </div>
+                    }
+                    
                 </>
             ) : (
                 <p>Post not found.</p>

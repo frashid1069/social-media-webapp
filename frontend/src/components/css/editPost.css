@@ -5,7 +5,13 @@
     transform: scale(1.05); 
 } */
 
-
+.post-edit {
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    height: 90vh; /* Ensure it takes up at least the full viewport height */
+    background: linear-gradient(to bottom, #e0ffff, #7fffd4);
+}
 
 
 .form-div {

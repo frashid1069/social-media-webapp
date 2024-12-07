@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import PostCards from "./PostCards";
 import { cusFetch } from './Login';
 import Header from "./Header";
+import './css/profile.css'
 const apiUrl = process.env.REACT_APP_API_URL
 
 /**
@@ -25,12 +26,6 @@ export default function Profile() {
   const encodedCurrentAuthorFqid = encodeURIComponent(currentAuthorId);
   const subtitle = "Profile";
 
-
-
-  // https://stackoverflow.com/questions/63193114/how-do-i-call-a-function-automatically-when-page-loads-up-in-react-js-in-2020
-  useEffect(() => {
-    ownProfile();
-  }, []);
 
   useEffect(() => {
     const storedFollowing = JSON.parse(localStorage.getItem(getFollowingKey())) || {};
@@ -203,38 +198,38 @@ export default function Profile() {
     }
   };
 
-
-  const ownProfile = () => {
-    if (decodedPostAuthorFqid == currentAuthorId) {
-      document.getElementById("followButton").hidden = true;
-    };
-    if (decodedPostAuthorFqid !== currentAuthorId) {
-      document.getElementById("editButton").hidden = true;
-    };
-  };
   return (
     <div className="profile-page">
       <Header subtitle={subtitle} />
-      <button className="profile-goBackBtn" onClick={goBackStream}>
-        Back To Stream
-      </button>
-      <h4 className="profile-txt">Name: </h4>
-      <p className="profile-name">{author.displayName}</p>
-      <h4 className="profile-txt">Github URL: </h4>
-      <p className="profile-git">{author.github}</p>
-      <h4 className="profile-txt">Followers: </h4>
-      {followerAuthors.map((f) => (<p>{f}</p>))}
-      <button id="editButton" onClick={handleEditProfile}>Edit Profile</button>
-      {isFollowing ? (
-        <button id="unfollowButton" onClick={handleUnfollow}>Unfollow</button>
-      ) : (
-        <button id="followButton" onClick={handleFollow}>Follow</button>
-      )}
+      <div className="profile-content">
+        <h4 className="profile-txt">Name: <span className="profile-txt-content">{author.displayName}</span></h4>
+        <h4 className="profile-txt">Github URL: <span className="profile-txt-content">{author.github}</span></h4>
+      </div>
+      <div className="followers-content">
+        <h4 className="followers-header">Followers:</h4>
+        {followerAuthors.map((f, index) => (
+          <p className="follower-name" key={index}>{f}</p>
+        ))}
+      </div>
+      <div className="buttons-container">
+        {decodedPostAuthorFqid === currentAuthorId && (
+          <button className="edit-profile-btn" onClick={handleEditProfile}>Edit Profile</button>
+        )}
+        {decodedPostAuthorFqid !== currentAuthorId && (
+          isFollowing ? (
+            <button className="unfollow-btn" onClick={handleUnfollow}>Unfollow</button>
+        ) : (
+            <button className="follow-btn" onClick={handleFollow}>Follow</button>
+        ))}
+        <button className="profile-goBackBtn" onClick={goBackStream}>
+          Back To Stream
+        </button>
+      </div>
+      
       <div className="post-grid">
         {posts.map((post) => (
-          <PostCards post={post} key={post.id} editable={false}></PostCards>
+          <PostCards className="profile-postcard" post={post} key={post.id} editable={false}></PostCards>
         ))}
-
       </div>
     </div>
   );

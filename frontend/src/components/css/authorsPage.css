@@ -1,7 +1,6 @@
 /* Ensure the footer is always at the bottom of the page */
 
 .authors-page {
-    overflow: auto;
     display: flex;
     flex-direction: column;
     height: 100%; /* Ensure it takes up at least the full viewport height */

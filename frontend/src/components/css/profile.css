@@ -1,0 +1,122 @@
+/* Profile Page Styles */
+.profile-page {
+    min-height: 100vh; /* Ensure the container spans at least the full viewport height */
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(to bottom, #e0ffff, #7fffd4);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    box-sizing: border-box; 
+}
+
+.profile-postcard {
+    background-color: aliceblue;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    /* Make the post take up available width */
+    width: 100%;
+    max-width: 350px;
+    /* Set a maximum width for the posts */
+    height: 350px;
+    overflow: auto;
+    transition: transform 0.2s ease-in-out;
+    box-shadow: 0 10px 10px 0 rgba(0, 0, 0, .5);
+    display: flex;
+    flex-direction: column;
+    justify-content:start;
+}
+
+.profile-postcard:hover {
+    transform: scale(1.02);
+}
+
+.post-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 400px);
+    gap: 3rem 5rem;
+    padding: 1.5rem;
+    justify-content:center;
+    text-align: center;    
+}
+
+.profile-txt-content {
+    font-weight: normal;
+}
+
+.followers-content {
+    display: flex;
+    flex-direction: column; /* Stack header and followers vertically */
+    align-items: center;    /* Center horizontally */
+    text-align: center;     /* Center-align text inside */
+}
+  
+.followers-header {
+    font-weight: bold;
+}
+  
+.follower-name {
+    margin: 5px 0;          /* Add spacing between follower names */
+    font-size: 1rem;        /* Optional: Adjust follower name styling */
+}
+
+/* Align the Edit and Back buttons side by side */
+.buttons-container {
+    display: flex;
+    justify-content: center; /* Center the buttons horizontally */
+    gap: 10px; /* Add space between buttons */
+    margin-top: 20px; /* Optional: Adjust spacing above */
+}
+  
+
+.follow-btn,
+.unfollow-btn,
+.edit-profile-btn,
+.profile-goBackBtn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    height: 40px; 
+    text-align: center; 
+    display: inline-block; 
+}
+
+/* Follow button styling */
+.follow-btn {
+    background-color: rgb(8, 160, 8);
+    color: white;
+    
+}
+
+.follow-btn:hover {
+    background-color: rgb(65, 230, 65);
+    color: black;
+    transform: scale(1.1);
+}
+
+/* Unfollow button styling */
+.unfollow-btn {
+    background-color: #ff6347; /* Tomato */
+    color: white; 
+}
+
+.unfollow-btn:hover {
+    background-color: #ff6347;
+    color: black;
+    transform: scale(1.1);
+}
+
+/* Back to Stream button styling */
+.profile-goBackBtn {
+    background-color: aliceblue;
+    color: black; /* Ensure the text color is readable */
+    align-self: center;
+}
+
+.profile-goBackBtn:hover,
+.edit-profile-btn:hover {
+    background-color: lightblue;
+    transform: scale(1.1);
+}

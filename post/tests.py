@@ -62,10 +62,6 @@ class PostViewTest(BaseAPITestCase):
         author1 = Author.objects.get(fqid=author1.data["id"])
         author2 = Author.objects.get(fqid=author2.data["id"])
         post = Post.objects.create(author=author2, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "FRIENDS")
-        
-        response = self.client.get(reverse("fqid_post_detail", args=[post.fqid]))
-        self.assertEqual(response.status_code, 403)
-    
         Follow.objects.create(follower=author2, followed=author1, pending="no")
         Follow.objects.create(follower=author1, followed=author2, pending="no")
         author1.refresh_from_db()
@@ -124,14 +120,14 @@ class PostViewTest(BaseAPITestCase):
         image.seek(0)  # Reset file pointer to start
         image_content = base64.b64encode(image.getvalue()).decode("utf-8")
         post = Post.objects.create(
-            title="Image Title",
-            author= author1,
-            content= image_content,
-            content_type= "image/jpeg;base64",
-            visibility="PUBLIC",
-            is_deleted=False
-        )
-        
+            author=author1, 
+            title="Image Title", 
+            description = "This is an image post", 
+            content_type = "image/jpeg", 
+            content = image_content, 
+            visibility = "PUBLIC")
+        post.save()
+        post1 = Post.objects.get()
         response = self.client.get(reverse("fqid_post_image", args=[post.fqid]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 

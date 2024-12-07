@@ -25,7 +25,7 @@ class BaseAPITestCase(APITestCase):
         user.is_active = True
         user.save()
         validated_data = {"display_name":"test user", "bio":"bio", "github_url":"http://localhost:3000/home/signup"}
-        author = Author.objects.create(user=user, host="http://test/api/", fqid=f"http://test/api/{user.id}", **validated_data)
+        author = Author.objects.create(user=user, host="http://test/api/", fqid=f"http://test/api/authors/{user.id}", **validated_data)
         return user, author
 
     def login_and_get_token(self):

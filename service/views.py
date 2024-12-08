@@ -117,22 +117,8 @@ def forward_follow_request(request):
     if type == 'follow':
         # send follow request
         if request.method == 'POST':
-            object_fqid = request.data.get("object", {}).get("id")
-            object_exists = Author.objects.filter(fqid=object_fqid, is_deleted=False).exists()
-            
             # create the object author's object if author doesn't exist
-            if object_exists:
-                object = get_object_or_404(Author, fqid=object_fqid, is_deleted=False)
-            else:
-                try:
-                    serializer = AuthorSerializer(data=request.data.get("object", {}))
-                    if serializer.is_valid():
-                        object = serializer.save(fqid=object_fqid)
-                    else:
-                        return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
-                except ValidationError as e:
-                    print(f"Validation Error: {e.detail}")
-                    return Response({"error": e.detail}, status=400)
+            object = get_or_create_copy_author_object(data=request.data.get("object", {}))
             
             follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='no').exists() # already followed
             unapproved_follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='yes').exists() # not yet approved
@@ -225,9 +211,6 @@ def handle_follow_request(request, FOLLOW_ID=None):
     return Response({"error": "Incorret follow id ."}, status=status.HTTP_400_BAD_REQUEST)
             
         
-
-
-
 @api_view(['GET'])
 def get_followers(request, AUTHOR_SERIAL=None):
     '''
@@ -320,41 +303,7 @@ def inbox(request, AUTHOR_SERIAL):
         return Response({"error": "Type is not found in the feild."}, status=status.HTTP_400_BAD_REQUEST)
     
     if type == 'like':
-        object = request.data.get("object")
-        if object is not None and str(author.host) in object:
-            sender_fqid = request.data.get("author", {}).get("id")
-            sender_host = request.data.get("author", {}).get("host")
-            like_fqid = request.data.get("id")
-            author_exists = Author.objects.filter(fqid=sender_fqid, is_deleted=False).exists()
-        else:
-            return Response({"error": f"object is not own by {author}."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # create an author copy if author doesn't exists
-        if author_exists:
-            sender = get_object_or_404(Author, fqid=sender_fqid, is_deleted=False)
-        else:
-            try:
-                serializer = AuthorSerializer(data=request.data.get("author", {}))
-                if serializer.is_valid():
-                    sender = serializer.save(fqid=sender_fqid)
-                    print(f"Author copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
-                    
-                # error handling
-                else:
-                    print(f"Author validation failed {serializer.errors}")
-                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
-            except ValidationError as e:
-                print(f"Validation Error: {e.detail}")
-                return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                print(f"Unexpected Error: {e}")
-                return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        print(f"{author} received a like from {sender}")
-        serializer = LikeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(author=sender, fqid=like_fqid)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return handle_like_inbox(request, author)
         
     
     elif type == 'follow':
@@ -364,177 +313,158 @@ def inbox(request, AUTHOR_SERIAL):
                 AUTHOR_SERIAL will be the object below
         """
         
-        object_author = author
-        # create the actor author's object if author doesn't exist
-        try:
-            actor_fqid = request.data.get("actor", {}).get("id")
-            actor_exists = Author.objects.filter(fqid=actor_fqid, is_deleted=False).exists()
-            if actor_exists:
-                actor = get_object_or_404(Author, fqid=actor_fqid, is_deleted=False)
-            else:
-                serializer = AuthorSerializer(data=request.data.get("actor", {}))
-                if serializer.is_valid():
-                    actor = serializer.save(fqid=actor_fqid)
-                else:
-                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
-        except ValidationError as e:
-            print(f"Validation Error: {e.detail}")
-            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-        except Author.DoesNotExist:
-            return Response({"detail": "Actor author not found."}, status=status.HTTP_404_NOT_FOUND)
+        return handle_follow_inbox(request, author)
+
+    elif type == 'comment':
+        return handle_comment_inbox(request, author)
+    
+    elif type == 'post':
+        return handle_post_inbox(request, author)
+       
+    return Response({"error": "Nothing matched with feild 'type'"},status=status.HTTP_400_BAD_REQUEST)
+
+def handle_like_inbox(request, author):
+    object = request.data.get("object")
+    if not object and str(author.host) not in object:
+        return Response({"error": f"object is not own by {author}."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    like_fqid = request.data.get("id")
+    sender = get_or_create_copy_author_object(request.data.get("author", {}))
+    print(f"{author} received a like from {sender}")
+    serializer = LikeSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(author=sender, fqid=like_fqid)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+def handle_follow_inbox(request, author):
+    object_author = author
+
+    actor = get_or_create_copy_author_object(request.data.get("actor", {}))
+    
+    follow_exists = Follow.objects.filter(follower=actor, followed=object_author, pending='no').exists() # already follow request already exists
+    unapproved_follow_exists = Follow.objects.filter(follower=actor, followed=object_author, pending='yes').exists() # not yet approved
+    mutual_follow = Follow.objects.filter(follower=object_author, followed=actor, pending='no').exists() # object_author followed actor already
         
-        follow_exists = Follow.objects.filter(follower=actor, followed=object_author, pending='no').exists() # already follow request already exists
-        unapproved_follow_exists = Follow.objects.filter(follower=actor, followed=object_author, pending='yes').exists() # not yet approved
-        mutual_follow = Follow.objects.filter(follower=object_author, followed=actor, pending='no').exists() # object_author followed actor already
-
-        if follow_exists and mutual_follow:
-            return Response({"detail": "Authors are already friends."}, status=status.HTTP_200_OK)
-        elif follow_exists:
-            return Response({"detail": "Already following."}, status=status.HTTP_409_CONFLICT)
-        elif unapproved_follow_exists:
-            return Response({"detail": "Follow request already exists."}, status=status.HTTP_409_CONFLICT)
-            
-        Follow.objects.create(follower=actor, followed=object_author, pending='yes')
-
-        response_data = {
+    if follow_exists and mutual_follow:
+        return Response({"detail": "Authors are already friends."}, status=status.HTTP_200_OK)
+    elif follow_exists:
+        return Response({"detail": "Already following."}, status=status.HTTP_409_CONFLICT)
+    elif unapproved_follow_exists:
+        return Response({"detail": "Follow request already exists."}, status=status.HTTP_409_CONFLICT)    
+    
+    Follow.objects.create(follower=actor, followed=object_author, pending='yes')
+    
+    response_data = {
             "type": "follow",
             "summary": f"{actor.display_name} wants to follow {object_author.display_name}",
             "actor": AuthorSerializer(actor).data,
             "object": AuthorSerializer(object_author).data,
         }
 
-        return Response(response_data, status=status.HTTP_201_CREATED)
-
-    elif type == 'comment':
-        # check if post exists
-        post_fqid = request.data.get("post")
-        print(request.data)
-        post_exists = Post.objects.filter(fqid=post_fqid, is_deleted=False).exists()
-        if not post_exists:
-            return Response({"error": "post field is required."}, status=status.HTTP_400_BAD_REQUEST)
-        post = get_object_or_404(Post, fqid=post_fqid, is_deleted=False)
-
-        sender_fqid = request.data.get("author", {}).get("id")
-        author_exists = Author.objects.filter(fqid=sender_fqid, is_deleted=False).exists()
-        
-        # create an author copy if author doesn't exists
-        if author_exists:
-            sender = get_object_or_404(Author, fqid=sender_fqid, is_deleted=False)
-        else:
-            try:
-                serializer = AuthorSerializer(data=request.data.get("author", {}))
-                if serializer.is_valid():
-                    sender = serializer.save(fqid=sender_fqid)
-                    print(f"Author copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
-                       
-                # error handling
-                else:
-                    print(f"Author validation failed {serializer.errors}")
-                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
-            except ValidationError as e:
-                print(f"Validation Error: {e.detail}")
-                return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                print(f"Unexpected Error: {e}")
-                return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        print(f"{author} received a comment from {sender}")
-        
-        comment_fqid = request.data.get("id")
-        comment_exists = Comment.objects.filter(fqid=comment_fqid, is_deleted=False).exists()
-
-        # create a comment copy if comment doesn't exists
-        if not comment_exists:
-            try:
-                serializer = CommentSerializer(data=request.data, context={'request': request})
-                if serializer.is_valid():
-                    serializer.save(author=sender, fqid=comment_fqid)
-                    print(f"Comment copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-            
-            # error handling
-                else:
-                    print(f"Comment validation failed {serializer.errors}")
-                    return Response({'errors': f"Comment validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
-            except ValidationError as e:
-                print(f"Validation Error: {e.detail}")
-                return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                print(f"Unexpected Error: {e}")
-                return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        else:
-            print("Comment copy need updates")
-        serializer = CommentSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save(post=post, author=sender)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        
-        return Response({"error": "Post doesn't matched with AUTHOR_SERIAL"},status=status.HTTP_400_BAD_REQUEST)
+    return Response(response_data, status=status.HTTP_201_CREATED)
     
-    elif type == 'post':
-        
-        sender_fqid = request.data.get("author", {}).get("id")
-        author_exists = Author.objects.filter(fqid=sender_fqid, is_deleted=False).exists()
-        
-        # create an author copy if author doesn't exists
-        if author_exists:
-            sender = get_object_or_404(Author, fqid=sender_fqid, is_deleted=False)
-        else:
-            try:
-                serializer = AuthorSerializer(data=request.data.get("author", {}))
-                if serializer.is_valid():
-                    sender = serializer.save(fqid=sender_fqid)
-                    print(f"Author copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
-                       
-                # error handling
-                else:
-                    print(f"Author validation failed {serializer.errors}")
-                    return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
-            except ValidationError as e:
-                print(f"Validation Error: {e.detail}")
-                return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                print(f"Unexpected Error: {e}")
-                return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        print(f"{author} received a post from {sender}")
-        post_fqid = request.data.get("id")
-        post_exists = Post.objects.filter(fqid=post_fqid, is_deleted=False).exists()
-        # create a post copy if post doesn't exists
-        if not post_exists:
-            try:
-                serializer = PostSerializer(data=request.data, context={'request': request})
-                if serializer.is_valid():
-                    serializer.save(author=sender, fqid=post_fqid)
-                    print(f"Post copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-                              
-                # error handling
-                else:
-                    print(f"Post validation failed {serializer.errors}")
-                    return Response({'errors': f"Post validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
-            except ValidationError as e:
-                print(f"Validation Error: {e.detail}")
-                return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                print(f"Unexpected Error: {e}")
-                return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-        # update a post
-        else:
-            post = get_object_or_404(Post, fqid=post_fqid, is_deleted=False)
-            serializer = PostSerializer(post, data=request.data, partial=True)
+def handle_comment_inbox(request, author):
+    # check if post exists
+    post_fqid = request.data.get("post")
+    print(request.data)
+    post_exists = Post.objects.filter(fqid=post_fqid, is_deleted=False).exists()
+    if not post_exists:
+        return Response({"error": "post field is required."}, status=status.HTTP_400_BAD_REQUEST)
+    post = get_object_or_404(Post, fqid=post_fqid, is_deleted=False)
+
+    # create an author copy if author doesn't exists
+    sender = get_or_create_copy_author_object(request.data.get("author", {}))
+    
+    print(f"{author} received a comment from {sender}")
+    
+    comment_fqid = request.data.get("id")
+    comment_exists = Comment.objects.filter(fqid=comment_fqid, is_deleted=False).exists()
+    
+    if not comment_exists:
+        try:
+            serializer = CommentSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
-                serializer.save()
-                print(f"Post copy updated successfully: {sender.display_name} (fqid: {sender.fqid})")
-                return Response({"detail": f"Post already exists with fqid {post_fqid}.", "post": PostSerializer(post, context={'request': request}).data},
-                                status=status.HTTP_200_OK,)
+                serializer.save(author=sender, fqid=comment_fqid)
+                print(f"Comment copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        # error handling
             else:
-                print(f"Author validation failed {serializer.errors}")
-                return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+                print(f"Comment validation failed {serializer.errors}")
+                return Response({'errors': f"Comment validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            print(f"Validation Error: {e.detail}")
+            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"Unexpected Error: {e}")
+            return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    return Response({"error": "Nothing matched with feild 'type'"},status=status.HTTP_400_BAD_REQUEST)
+    else:
+        print("Comment copy need updates")
+    serializer = CommentSerializer(data=request.data, context={'request': request})
+    if serializer.is_valid():
+        serializer.save(post=post, author=sender)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    return Response({"error": "Post doesn't matched with AUTHOR_SERIAL"},status=status.HTTP_400_BAD_REQUEST)
+ 
+def handle_post_inbox(request, author):
+    # create an author copy if author doesn't exists
+    sender = get_or_create_copy_author_object(request.data.get("author", {}))
+    
+    print(f"{author} received a post from {sender}")
+    post_fqid = request.data.get("id")
+    post_exists = Post.objects.filter(fqid=post_fqid, is_deleted=False).exists()
+    # create a post copy if post doesn't exists
+    if not post_exists:
+        try:
+            serializer = PostSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                serializer.save(author=sender, fqid=post_fqid)
+                print(f"Post copy created successfully: {sender.display_name} (fqid: {sender.fqid})")
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                            
+            # error handling
+            else:
+                print(f"Post validation failed {serializer.errors}")
+                return Response({'errors': f"Post validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            print(f"Validation Error: {e.detail}")
+            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"Unexpected Error: {e}")
+            return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    # update a post
+    else:
+        post = get_object_or_404(Post, fqid=post_fqid, is_deleted=False)
+        serializer = PostSerializer(post, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            print(f"Post copy updated successfully: {sender.display_name} (fqid: {sender.fqid})")
+            return Response({"detail": f"Post already exists with fqid {post_fqid}.", "post": PostSerializer(post, context={'request': request}).data},
+                            status=status.HTTP_200_OK,)
+        else:
+            print(f"Author validation failed {serializer.errors}")
+            return Response({'errors': f"Author validation failed {serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
+    
+def get_or_create_copy_author_object(author_data):
+    fqid = author_data.get("id")
+    
+    if Author.objects.filter(fqid=fqid, is_deleted=False).exists():
+        return get_object_or_404(Author, fqid=fqid, is_deleted=False)
+    else:
+        serializer = AuthorSerializer(data=author_data)
+        if serializer.is_valid():
+            author = serializer.save(fqid=fqid)
+            print(f"Author copy created successfully: {author.display_name} (fqid: {author.fqid})")
+            return author
+        else:
+            raise ValidationError(serializer.errors)
+            
+
 
 
 '''

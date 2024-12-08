@@ -47,6 +47,10 @@ deploy_to_heroku() {
     echo "Running migrations for $APP_NAME"
     heroku run "python3 manage.py migrate" --app $APP_NAME
 
+    # Scale the Worker
+    echo "Scale the Worker"
+    heroku ps:scale worker=1 --app $APP_NAME
+
 }
 
 deploy_to_heroku $APP_NAME

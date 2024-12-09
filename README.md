@@ -63,6 +63,9 @@ all has 1 public post
 
 1,3 are friends
 
+### citation
+https://chatgpt.com/
+
 # Frontend set up
 ## Frontend dependency install
 ```

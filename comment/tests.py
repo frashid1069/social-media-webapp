@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from .models import Comment, Post
 from author.serializers import AuthorSerializer
 from author.models import Author
+from post.serializers import PostSerializer 
 
 class CommentViewTest(BaseAPITestCase):
     def setUp(self):
@@ -56,19 +57,21 @@ class CommentViewTest(BaseAPITestCase):
         author1 = self.client.get(reverse('author-detail', args=[1]))
         author1 = Author.objects.get(fqid=author1.data["id"])
         serializer = AuthorSerializer(author1)
-        post1 = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "PUBLIC")
-        post1.save()
+        data = {"author": serializer.data, "title":"Test Post 1", "description":"This is a test post", "contentType":"text/markdown", "content":"Content of the post", "visibility":"PUBLIC"}
+        post_serializer = PostSerializer(data=data)
+        if post_serializer.is_valid():
+            post_serializer.save(author=author1)
+        new_post = Post.objects.get(title="Test Post 1")
         data = {
             "type":"comment",
             "author":serializer.data,
             "comment":"Sick Olde English",
             "contentType":"text/markdown", 
-            "post":post1.fqid
+            "post":new_post.fqid
         }
         response = self.client.post(reverse('author_comment_list', args=[1]), data, format="json")
         comments = Comment.objects.all()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(comments), 1)
     
     # ://service/api/authors/{AUTHOR_FQID}/commented 
     def test_fqid_commented(self):

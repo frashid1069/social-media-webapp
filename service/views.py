@@ -118,7 +118,7 @@ def forward_follow_request(request):
         # send follow request
         if request.method == 'POST':
             # create the object author's object if author doesn't exist
-            object = get_or_create_copy_author_object(data=request.data.get("object", {}))
+            object = get_or_create_copy_author_object(request.data.get("object", {}))
             
             follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='no').exists() # already followed
             unapproved_follow_exists = Follow.objects.filter(follower=actor, followed=object, pending='yes').exists() # not yet approved

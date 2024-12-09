@@ -114,14 +114,31 @@ Likes API
 @api_view(['GET'])
 def who_liked_this_post(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
     """
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/likes
-    eg. http://localhost:8000/api/authors/1/posts/1/likes
-    eg. http://localhost:8000/api/authors/1/posts/1/likes?page=2&size=1
-        GET [local, remote] a list of likes from other authors on author_id's post post_id
-    URL: ://service/api/posts/{POST_FQID}/likes
-    eg. http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/likes
-    eg. http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/likes?page=2&size=1
-        GET [local] a list of likes from other authors on AUTHOR_SERIAL's post POST_SERIAL
+    Retrieves a paginated list of likes on a specific post.
+
+    URL Patterns:
+    1. ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/likes
+       Example:
+       - http://localhost:8000/api/authors/1/posts/1/likes
+       - http://localhost:8000/api/authors/1/posts/1/likes?page=2&size=1
+       - GET [local, remote]: Retrieves likes from other authors on the post identified by
+         `AUTHOR_SERIAL` and `POST_SERIAL`.
+
+    2. ://service/api/posts/{POST_FQID}/likes
+       Example:
+       - http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/likes
+       - http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/likes?page=2&size=1
+       - GET [local]: Retrieves likes on the post identified by its fully qualified identifier (FQID).
+
+    Parameters:
+    - AUTHOR_SERIAL: Numeric identifier for the author.
+    - POST_SERIAL: Numeric identifier for the post (local).
+    - POST_FQID: Fully qualified identifier (FQID) for the post.
+
+    Returns:
+    - HTTP 200 with paginated serialized likes if successful.
+    - HTTP 404 if the post or likes are not found.
+    - HTTP 400 if the request is invalid.
     """
     
     if AUTHOR_SERIAL is not None and POST_SERIAL is not None:
@@ -149,10 +166,27 @@ def who_liked_this_post(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID
 @api_view(['GET'])
 def who_liked_this_comment(request, AUTHOR_SERIAL, POST_SERIAL, COMMENT_FQID):
     """
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments/{COMMENT_FQID}/likes
-    eg. http://localhost:8000/api/authors/1/posts/1/comments/http://127.0.0.1:8000/api/authors/3/commented/1/likes
-    eg. http://localhost:8000/api/authors/1/posts/1/comments/http://127.0.0.1:8000/api/authors/3/commented/1/likes?page=1&size=1
-        GET [local, remote] a list of likes from other authors on AUTHOR_SERIAL's post POST_SERIAL comment COMMENT_SERIAL
+    Retrieves a paginated list of likes on a specific comment.
+
+    URL Pattern:
+    - ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments/{COMMENT_FQID}/likes
+    Example:
+    - http://localhost:8000/api/authors/1/posts/1/comments/http://127.0.0.1:8000/api/authors/3/commented/1/likes
+    - http://localhost:8000/api/authors/1/posts/1/comments/http://127.0.0.1:8000/api/authors/3/commented/1/likes?page=1&size=1
+
+    Parameters:
+    - AUTHOR_SERIAL: Numeric identifier for the author.
+    - POST_SERIAL: Numeric identifier for the post (local).
+    - COMMENT_FQID: Fully qualified identifier (FQID) for the comment.
+
+    Behavior:
+    - Retrieves likes associated with the specified comment based on the `COMMENT_FQID`.
+    - Only likes related to the provided post and author are considered.
+
+    Returns:
+    - HTTP 200 with paginated serialized likes if successful.
+    - HTTP 404 if the author, post, or comment is not found.
+    - HTTP 500 if an unexpected error occurs.
     """
     post = get_object_or_404(Post, serial=POST_SERIAL, author__serial=AUTHOR_SERIAL)
     comment = get_object_or_404(Comment, fqid=COMMENT_FQID, post__id=post.id)
@@ -171,15 +205,46 @@ Liked API
 @api_view(['GET', 'POST'])
 def things_liked_by_author(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
     """
-    "Things Liked By Author"
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/liked
-    eg. http://localhost:8000/api/authors/1/liked
-    eg. http://localhost:8000/api/authors/1/liked?page=1&size=1
-        GET [local, remote] a list of likes by AUTHOR_SERIAL
-    URL: ://service/api/authors/{AUTHOR_FQID}/liked
-    eg. http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/1/liked
-    eg. http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/1/liked?page=1&size=1
-        GET [local] a list of likes by AUTHOR_FQID
+    Handles retrieval and creation of likes associated with an author.
+
+    URL Patterns:
+    1. ://service/api/authors/{AUTHOR_SERIAL}/liked
+    Example:
+    - http://localhost:8000/api/authors/1/liked
+    - http://localhost:8000/api/authors/1/liked?page=1&size=1
+    - GET [local, remote]: Retrieves a paginated list of items liked by the author identified by `AUTHOR_SERIAL`.
+    - POST [local]: Creates a new like for the current authenticated author.
+
+    2. ://service/api/authors/{AUTHOR_FQID}/liked
+    Example:
+    - http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/1/liked
+    - http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/1/liked?page=1&size=1
+    - GET [local]: Retrieves a paginated list of items liked by the author identified by `AUTHOR_FQID`.
+
+    Behavior:
+    - GET:
+    - Retrieves likes associated with the specified author, identified by either `AUTHOR_SERIAL` or `AUTHOR_FQID`.
+    - Paginates the list of likes for large datasets.
+
+    - POST:
+    - Creates a new like for the authenticated author (current user).
+    - Pushes the created like to the author's inbox.
+    - Handles validation errors and returns appropriate error messages.
+
+    Parameters:
+    - AUTHOR_SERIAL: Numeric identifier for the author (local).
+    - AUTHOR_FQID: Fully qualified identifier (FQID) for the author (remote).
+
+    Returns:
+    - GET:
+    - HTTP 200 with paginated serialized likes if successful.
+    - HTTP 404 if the author is not found.
+    - HTTP 405 if neither `AUTHOR_SERIAL` nor `AUTHOR_FQID` is provided.
+    - POST:
+    - HTTP 201 with serialized like data if successful.
+    - HTTP 403 if the user is not authorized to create a like for the specified author.
+    - HTTP 400 for validation errors.
+    - HTTP 500 for unexpected errors.
     """
     if AUTHOR_SERIAL is not None:
         if request.method == 'GET':
@@ -233,12 +298,32 @@ def things_liked_by_author(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
 @api_view(['GET'])
 def like_detail(request, AUTHOR_SERIAL=None, LIKE_SERIAL=None, LIKE_FQID=None):
     """
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/liked/{LIKE_SERIAL}
-    eg. http://localhost:8000/api/authors/3/liked/1
-        GET [local, remote] a single like
-    URL: ://service/api/liked/{LIKE_FQID}
-    eg. http://localhost:8000/api/liked/http://127.0.0.1:8000/api/authors/3/liked/1
-        GET [local] a single like
+    Retrieves the details of a specific like.
+
+    URL Patterns:
+    1. ://service/api/authors/{AUTHOR_SERIAL}/liked/{LIKE_SERIAL}
+    Example:
+    - http://localhost:8000/api/authors/3/liked/1
+    - GET [local, remote]: Retrieves the like identified by `LIKE_SERIAL`, associated with the author identified by `AUTHOR_SERIAL`.
+
+    2. ://service/api/liked/{LIKE_FQID}
+    Example:
+    - http://localhost:8000/api/liked/http://127.0.0.1:8000/api/authors/3/liked/1
+    - GET [local]: Retrieves the like identified by its fully qualified identifier (FQID).
+
+    Parameters:
+    - AUTHOR_SERIAL: Numeric identifier for the author.
+    - LIKE_SERIAL: Numeric identifier for the like (local).
+    - LIKE_FQID: Fully qualified identifier (FQID) for the like.
+
+    Behavior:
+    - Fetches the specified like based on the provided parameters.
+    - Returns the serialized details of the like if found.
+
+    Returns:
+    - HTTP 200 with serialized like data if successful.
+    - HTTP 404 if the like is not found using the provided parameters.
+    - HTTP 400 if neither `AUTHOR_SERIAL`/`LIKE_SERIAL` nor `LIKE_FQID` is provided.
     """
     if LIKE_FQID is not None:
         try:

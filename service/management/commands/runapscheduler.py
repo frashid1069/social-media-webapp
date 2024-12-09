@@ -22,7 +22,7 @@ def fetch_github_activity_task():
         authors = Author.objects.all()
         
         for author in authors:
-            if not author.github_url:
+            if not author.github_url or author.serial == 0:
                 continue
                 
             github_username = author.github_url.rstrip('/').split('/')[-1]

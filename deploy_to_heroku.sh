@@ -3,7 +3,7 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-APP_NAME="aqua-rex6"
+APP_NAME="aqua-rex4"
 
 
 # Define the branch to deploy (default is "main")
@@ -24,8 +24,8 @@ deploy_to_heroku() {
     git push $APP_NAME $BRANCH:main --force
 
     # Add Node.js buildpack
-    echo "Adding Node.js buildpack to $APP_NAME"
-    heroku buildpacks:add --app $APP_NAME heroku/nodejs
+    # echo "Adding Node.js buildpack to $APP_NAME"
+    # heroku buildpacks:add --app $APP_NAME heroku/nodejs
 
     # Ensure a Postgres addon exists
     echo "Ensuring Postgres addon exists for $APP_NAME"
@@ -45,7 +45,11 @@ deploy_to_heroku() {
 
     # Run migrations
     echo "Running migrations for $APP_NAME"
-    heroku run "python3 manage.py migrate" -app $APP_NAME
+    heroku run "python3 manage.py migrate" --app $APP_NAME
+
+    # Scale the Worker
+    echo "Scale the Worker"
+    heroku ps:scale worker=1 --app $APP_NAME
 
 }
 

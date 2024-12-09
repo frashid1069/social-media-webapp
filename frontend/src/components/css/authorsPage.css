@@ -1,7 +1,6 @@
 /* Ensure the footer is always at the bottom of the page */
 
 .authors-page {
-    overflow: auto;
     display: flex;
     flex-direction: column;
     height: 100%; /* Ensure it takes up at least the full viewport height */
@@ -56,13 +55,14 @@
 
 /* Follow button styling */
 .follow-btn {
-    background-color: aliceblue;
-    color: black;
+    background-color: rgb(8, 160, 8);
+    color: white;
+    
 }
 
 .follow-btn:hover {
     background-color: rgb(65, 230, 65);
-    color: white;
+    color: black;
     transform: scale(1.1);
 }
 
@@ -74,6 +74,7 @@
 
 .unfollow-btn:hover {
     background-color: #ff6347;
+    color: black;
     transform: scale(1.1);
 }
 

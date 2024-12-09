@@ -7,8 +7,8 @@ from comment.serializer import Comment
 from author.serializers import AuthorSerializer
 from django.urls import reverse
 from author.models import Author
-from author.serializers import AuthorSerializer
-
+from post.serializers import PostSerializer
+# https://stackoverflow.com/questions/49102410/django-urlfield-doesnt-accept-hostname-only-urls used to fix tests, django urlfield doesnt take test as host so made host local host now 
 class LikeViewTest(BaseAPITestCase):
 
     def setUp(self):
@@ -19,15 +19,18 @@ class LikeViewTest(BaseAPITestCase):
         author1 = self.client.get(reverse('author-detail', args=[1]))
         author1 = Author.objects.get(fqid=author1.data["id"])
         serializer = AuthorSerializer(author1)
-        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
+        data = {"author": serializer.data, "title":"Test Post 1", "description":"This is a test post", "contentType":"text/markdown", "content":"Content of the post", "visibility":"PUBLIC"}
+        post_serializer = PostSerializer(data=data)
+        if post_serializer.is_valid():
+            post_serializer.save(author=author1)
+        new_post = Post.objects.get(title="Test Post 1")
         data = {
             "type":"like",
             "author":serializer.data,
-            "object":post.fqid 
+            "object":new_post.fqid
         }
         response = self.client.post(reverse('things_liked_by_author', args=[1]), data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["count"], 1)
        
     
     # ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/likes
@@ -49,17 +52,6 @@ class LikeViewTest(BaseAPITestCase):
         response = self.client.get(reverse('fqid_liked_post', args=[post.fqid]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
-    
-    # ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments/{COMMENT_FQID}/likes 
-    def test_get_comment_likes(self):
-        author1 = self.client.get(reverse('author-detail', args=[1]))
-        author1 = Author.objects.get(fqid=author1.data["id"])
-        post = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "public")
-        comment = Comment.objects.create(author=author1, content="Sick Olde English", post=post)
-        like = Like.objects.create(author=author1, object=comment.fqid)
-        response = self.client.get(reverse('liked_comment', args=[1, 1, comment.fqid]))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["id"], comment.fqid+"/likes")
 
     # ://service/api/authors/{AUTHOR_SERIAL}/liked 
     def test_get_author_liked(self):

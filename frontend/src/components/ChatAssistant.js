@@ -49,7 +49,7 @@ const ChatAssistant = () => {
             buttonRef.classList.remove('speaking');
             return;
         }
-
+        
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'en-US';
@@ -88,17 +88,17 @@ const ChatAssistant = () => {
                     <div id="chat-header">Chat with Aqua AI</div>
                     <div id="chat-messages">
                         {messages.map((msg, index) => (
-                            <div 
-                            key={index} 
-                            className={`chat-message ${msg.sender}`}
-                            style={{
-                                flexDirection: msg.sender === 'bot' ? 'row' : 'row-reverse',
-                                alignItems: 'center',
-                            }}
+                            <div
+                                key={index}
+                                className={`chat-message ${msg.sender}`}
+                                style={{
+                                    flexDirection: msg.sender === 'bot' ? 'row' : 'row-reverse',
+                                    alignItems: 'center',
+                                }}
                             >
                                 <img
-                                    src={msg.sender === 'bot' 
-                                        ? `${process.env.PUBLIC_URL}/chat-logo.jpg` 
+                                    src={msg.sender === 'bot'
+                                        ? `${process.env.PUBLIC_URL}/chat-logo.jpg`
                                         : `${process.env.PUBLIC_URL}/login-image.png`}
                                     alt={`${msg.sender} logo`}
                                     className="chat-logo"

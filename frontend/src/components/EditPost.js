@@ -103,78 +103,81 @@ const EditPost = () => {
     return (
         <div className="post-edit">
             <Header subtitle={subtitle} />
-            <form onSubmit={handleSubmit}>
-                <div className="form-div">
-                    <label>Title:</label>
-                    <input
-                        type="text"
-                        value={postTitle}
-                        onChange={(e) => setPostTitle(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="form-div">
-                    <label>Description:</label>
-                    <input
-                        type="text"
-                        value={postDescription}
-                        onChange={(e) => setPostDescription(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="form-div">
-                    <label>Content Type:</label>
-                    <select
-                        value={postContentType}
-                        onChange={(e) => {
-                            setPostContentType(e.target.value);
-                            setSelectedImage(null);
-                        }}
-                        required
-                    >
-                        <option value="text/markdown">Markdown</option>
-                        <option value="image/jpeg">JPEG</option>
-                        {/* <option value="text/plain">UTF-8</option>
+            <div id="post-edit-window">
+                <form onSubmit={handleSubmit}>
+                    <div className="form-div">
+                        <label>Title:</label>
+                        <input
+                            type="text"
+                            value={postTitle}
+                            onChange={(e) => setPostTitle(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-div">
+                        <label>Description:</label>
+                        <input
+                            type="text"
+                            value={postDescription}
+                            onChange={(e) => setPostDescription(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-div">
+                        <label>Content Type:</label>
+                        <select
+                            value={postContentType}
+                            onChange={(e) => {
+                                setPostContentType(e.target.value);
+                                setSelectedImage(null);
+                            }}
+                            required
+                        >
+                            <option value="text/markdown">Markdown</option>
+                            <option value="image/jpeg">JPEG</option>
+                            {/* <option value="text/plain">UTF-8</option>
                         <option value="image/jpeg;base64">JPEG</option>
                         <option value="application/base64">JPEG/PNG</option>
                         <option value="image/png;base64">PNG</option> */}
-                    </select>
-                </div>
-                <div className="form-div">
-                    <label>Visibility:</label>
-                    <select
-                        value={visibility}
-                        onChange={(e) => setVisibility(e.target.value)}
-                        required
-                    >
-                        <option value="public">Public</option>
-                        <option value="friends">Friend Only</option>
-                        <option value="unlisted">Unlisted</option>
-                    </select>
-                </div>
-                <div className="form-div">
-                    <label>Content:</label>
-                    {postContentType === "text/markdown" ? (
-                        <textarea
-                            value={postContent}
-                            onChange={(e) => setPostContent(e.target.value)}
+                        </select>
+                    </div>
+                    <div className="form-div">
+                        <label>Visibility:</label>
+                        <select
+                            value={visibility}
+                            onChange={(e) => setVisibility(e.target.value)}
                             required
-                        />
-                    ) : (
-                        <input
-                            type="file"
-                            accept="image/jpeg"
-                            onChange={(e) => setSelectedImage(e.target.files[0])}
-                            required
-                        />)
-                    }
-                </div>
-                <div className="btn-container">
-                    <button className="save-btn" type="submit">Save Changes</button>
-                    <button className="cancel-btn" type="button" onClick={goToStream}>Cancel</button>
-                    <button className="delete-btn" type="button" onClick={deletePost}>Delete</button>
-                </div>
-            </form>
+                        >
+                            <option value="public">Public</option>
+                            <option value="friends">Friend Only</option>
+                            <option value="unlisted">Unlisted</option>
+                        </select>
+                    </div>
+                    <div className="form-div">
+                        <label>Content:</label>
+                        {postContentType === "text/markdown" ? (
+                            <textarea
+                                value={postContent}
+                                onChange={(e) => setPostContent(e.target.value)}
+                                required
+                            />
+                        ) : (
+                            <input
+                                type="file"
+                                accept="image/jpeg"
+                                onChange={(e) => setSelectedImage(e.target.files[0])}
+                                required
+                            />)
+                        }
+                    </div>
+                    <div className="btn-container">
+                        <button className="save-btn" type="submit">Save Changes</button>
+                        <button className="cancel-btn" type="button" onClick={goToStream}>Cancel</button>
+                        <button className="delete-btn" type="button" onClick={deletePost}>Delete</button>
+                    </div>
+                </form>
+            </div>
+
         </div>
     );
 };

@@ -139,6 +139,8 @@ export default function PostCards({ post, currenAuthor, onClick }) {
         if (response.ok) {
           setLiked(true); // Update state to reflect the like
           cusFetchLikes(); // Refresh the list of likes
+          const button = document.querySelector('.btn-like .fa-heart'); 
+          button.classList.toggle('liked')
         } else {
           console.error("Failed to like the post.");
         }
@@ -188,14 +190,14 @@ export default function PostCards({ post, currenAuthor, onClick }) {
           {displayAuthor(post)}
         </button>
         <button
-          className="btn-like"
+          className={`btn-like ${liked ? 'liked' : ''}`}
           disabled={liked} // Disable the button if already liked
           onClick={(e) => {
             e.stopPropagation();
             handleLike();
           }}
         >
-          {liked ? "Liked" : "Like"} ({likes.length})
+          <i className={`fa-heart ${liked ? 'fas' : 'far'}`}></i> ({likes.length})
         </button>
         {post.visibility === "public" && (
           <button className="btn-share" onClick={(e) => { e.stopPropagation(); handleShare(); }}>

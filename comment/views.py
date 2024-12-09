@@ -101,16 +101,31 @@ class CommentView(ModelViewSet):
 # Comments API
 @api_view(['GET'])    
 def comment_list(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
-    '''
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments
-    eg. http://localhost:8000/api/authors/1/posts/1/comments
-    eg. http://localhost:8000/api/authors/1/posts/1/comments?page=1&size=2
-        GET [local, remote]: the comments on the post
-    URL: ://service/api/posts/{POST_FQID}/comments
-    eg. http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/comments
-    eg. http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/comments?page=1&size=2
-        GET [local, remote]: the comments on the post (that our server knows about)
-    '''
+    """
+    Retrieves comments on a specific post, either locally or remotely.
+
+    URL Patterns:
+    1. ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/comments
+       Example: 
+       - http://localhost:8000/api/authors/1/posts/1/comments
+       - http://localhost:8000/api/authors/1/posts/1/comments?page=1&size=2
+       - GET [local, remote]: Retrieves comments for the post identified by `AUTHOR_SERIAL` and `POST_SERIAL`.
+
+    2. ://service/api/posts/{POST_FQID}/comments
+       Example:
+       - http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/comments
+       - http://localhost:8000/api/posts/http://127.0.0.1:8000/api/authors/1/posts/1/comments?page=1&size=2
+       - GET [local, remote]: Retrieves comments for the post identified by `POST_FQID`.
+
+    Parameters:
+    - AUTHOR_SERIAL: (Optional) Numeric identifier for the author.
+    - POST_SERIAL: (Optional) Numeric identifier for the post.
+    - POST_FQID: (Optional) Fully qualified identifier (FQID) for the post.
+
+    Returns:
+    - Paginated list of comments (HTTP 200) with serialized data if successful.
+    - HTTP 404 if the post or comments are not found.
+    """
     if AUTHOR_SERIAL is not None and POST_SERIAL is not None:
         author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False)
         post = get_object_or_404(Post, serial=POST_SERIAL, author__serial=author.serial, is_deleted=False)
@@ -130,9 +145,24 @@ def comment_list(request, AUTHOR_SERIAL=None, POST_SERIAL=None, POST_FQID=None):
 @api_view(['GET'])    
 def comment_detail_post(request,  AUTHOR_SERIAL=None, POST_SERIAL=None, REMOTE_COMMENT_FQID=None):
     """
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/post/{POST_SERIAL}/comment/{REMOTE_COMMENT_FQID}
-    eg. http://localhost:8000/api/authors/1/post/1/comment/http://127.0.0.1:8000/api/authors/2/commented/1
-        GET [local, remote] get the comment}
+    Retrieves a specific comment on a post, either locally or remotely.
+
+    URL Pattern:
+    - ://service/api/authors/{AUTHOR_SERIAL}/post/{POST_SERIAL}/comment/{REMOTE_COMMENT_FQID}
+      Example:
+      - http://localhost:8000/api/authors/1/post/1/comment/http://127.0.0.1:8000/api/authors/2/commented/1
+      - GET [local, remote]: Retrieves the comment specified by `REMOTE_COMMENT_FQID` for the post 
+        identified by `AUTHOR_SERIAL` and `POST_SERIAL`.
+
+    Parameters:
+    - AUTHOR_SERIAL: Numeric identifier for the author.
+    - POST_SERIAL: Numeric identifier for the post.
+    - REMOTE_COMMENT_FQID: Fully qualified identifier (FQID) for the comment.
+
+    Returns:
+    - HTTP 200 with serialized comment data if successful.
+    - HTTP 404 if the author, post, or comment is not found.
+    - HTTP 400 if the request is invalid.
     """
     
     if AUTHOR_SERIAL is not None and POST_SERIAL is not None and REMOTE_COMMENT_FQID is not None:
@@ -149,20 +179,35 @@ def comment_detail_post(request,  AUTHOR_SERIAL=None, POST_SERIAL=None, REMOTE_C
 @api_view(['GET', 'POST'])    
 def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
     """
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/commented
-    eg. http://localhost:8000/api/authors/2/commented
-    eg. http://localhost:8000/api/authors/2/commented?page=1&size=2
-        GET [local, remote] get the list of comments author has made on:
-            [local] any post
-            [remote] public and unlisted posts
-            paginated
-        POST [local] if you post an object of "type":"comment", it will add your comment to the post whose ID is in the post field
-            Then the node you posted it to is responsible for forwarding it to the correct inbox
-    URL: ://service/api/authors/{AUTHOR_FQID}/commented
-    eg. http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/2/commented
-    eg. http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/2/commented?page=1&size=2
-        GET [local] get the list of comments author has made on any post (that local node knows about)
-    
+    Handles retrieval and creation of comments made by an author.
+
+    URL Patterns:
+    1. ://service/api/authors/{AUTHOR_SERIAL}/commented
+       Example:
+       - http://localhost:8000/api/authors/2/commented
+       - http://localhost:8000/api/authors/2/commented?page=1&size=2
+       - GET [local, remote]: Retrieves a paginated list of comments made by the author.
+         - Local: Includes comments made on any post.
+         - Remote: Includes comments on public and unlisted posts.
+       - POST [local]: Creates a new comment for the specified post.
+
+    2. ://service/api/authors/{AUTHOR_FQID}/commented
+       Example:
+       - http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/2/commented
+       - http://localhost:8000/api/authors/http://127.0.0.1:8000/api/authors/2/commented?page=1&size=2
+       - GET [local]: Retrieves a paginated list of comments made by the author known to the local node.
+
+    Parameters:
+    - AUTHOR_SERIAL: Numeric identifier for the author (local).
+    - AUTHOR_FQID: Fully qualified identifier (FQID) for the author (remote).
+
+    Returns:
+    - GET:
+      - HTTP 200: Paginated list of serialized comments.
+    - POST:
+      - HTTP 201: Serialized comment data if successful.
+      - HTTP 403: If the user is unauthorized to post on behalf of the author.
+      - HTTP 400: If the request data is invalid.
     """
     if request.method == 'GET':
         if AUTHOR_SERIAL is not None:
@@ -211,12 +256,29 @@ def author_comment_list(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
 @api_view(['GET'])    
 def comment_detail(request, AUTHOR_SERIAL=None, COMMENT_SERIAL=None, COMMENT_FQID=None):
     """
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/commented/{COMMENT_SERIAL}
-    eg. http://localhost:8000/api/authors/2/commented/1
-        GET [local, remote] get this comment
-    URL: ://service/api/commented/{COMMENT_FQID}
-    eg. http://localhost:8000/api/commented/http://127.0.0.1:8000/api/authors/2/commented/1
-        GET [local] get this comment
+    Retrieves a specific comment either by its serial or FQID.
+
+    URL Patterns:
+    1. ://service/api/authors/{AUTHOR_SERIAL}/commented/{COMMENT_SERIAL}
+       Example:
+       - http://localhost:8000/api/authors/2/commented/1
+       - GET [local, remote]: Retrieves the comment identified by `COMMENT_SERIAL` 
+         associated with the author identified by `AUTHOR_SERIAL`.
+
+    2. ://service/api/commented/{COMMENT_FQID}
+       Example:
+       - http://localhost:8000/api/commented/http://127.0.0.1:8000/api/authors/2/commented/1
+       - GET [local]: Retrieves the comment identified by its fully qualified identifier (FQID).
+
+    Parameters:
+    - AUTHOR_SERIAL: Numeric identifier for the author.
+    - COMMENT_SERIAL: Numeric identifier for the comment (local).
+    - COMMENT_FQID: Fully qualified identifier (FQID) for the comment.
+
+    Returns:
+    - HTTP 200 with serialized comment data if successful.
+    - HTTP 404 if the comment or author is not found.
+    - HTTP 400 if the request is invalid.
     """
     if AUTHOR_SERIAL is not None and COMMENT_SERIAL is not None: 
         author = get_object_or_404(Author, serial=AUTHOR_SERIAL, is_deleted=False)

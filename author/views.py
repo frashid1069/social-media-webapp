@@ -39,24 +39,36 @@ class AuthorView(ModelViewSet):
             
         return queryset.order_by('updated_at')
     
-    @extend_schema(
-        summary="Retrieve a list of authors",
-        description="Fetches a list of all registered authors.",
-        responses={200: AuthorSerializer(many=True)},
-        parameters=[
-            OpenApiParameter(name="limit", description="Limit the number of authors", type=int, required=False),
-            OpenApiParameter(name="offset", description="Offset for pagination", type=int, required=False),
-        ],
-    )
     def list(self, request, *args, **kwargs):
         """
-        URL: ://service/api/authors/
-        eg. http://localhost:8000/api/authors?page=3&size=1
-            GET [local, remote]: retrieve all profiles on the node (paginated)
-                page: how many pages
-                size: how big is a page
+        Handles the retrieval of author profiles (local and remote) in a paginated format.
+
+        URL:
+        - ://service/api/authors/
+        Example: http://localhost:8000/api/authors?page=3&size=1
+
+        Behavior:
+        - GET [local, remote]: Retrieves all profiles on the node (paginated).
+        - Local request:
+            - Returns local authors combined with authors from other allowed nodes.
+        - Remote request:
+            - Returns local authors only.
+
+        Query Parameters:
+        - page: The current page number (optional).
+        - size: The number of items per page (optional).
+
+        User Conditions:
+        - If the user is active and not a staff member:
+        - Fetches and integrates authors from allowed nodes into the local database.
+        - Ensures no duplicate authors are saved.
+
+        Returns:
+        - HTTP 200 with paginated serialized author data if successful.
+        - HTTP 400/500 for errors encountered during remote author validation or processing.
+
         """
-        # local request return local authors + other nodes' authors
+            # local request return local authors + other nodes' authors
         user = request.user
         if user.is_staff == False and user.is_active == True:
             
@@ -149,16 +161,33 @@ class AuthorView(ModelViewSet):
     
     
     
-    
 @api_view(['GET', 'PUT'])
 def author_detail(request, AUTHOR_SERIAL=None, AUTHOR_FQID=None):
     """
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/
-    eg. http://localhost:8000/api/authors/1/
-        GET [local, remote]: retrieve AUTHOR_SERIAL's profile
-        PUT [local]: update AUTHOR_SERIAL's profile
-    URL: ://service/api/authors/{AUTHOR_FQID}/
-        GET [local]: retrieve AUTHOR_FQID's profile
+    Handles retrieval and update of author profiles.
+
+    URL Patterns:
+    1. ://service/api/authors/{AUTHOR_SERIAL}/
+       Example: http://localhost:8000/api/authors/1/
+       - GET [local, remote]: Retrieves the profile of the author identified by `AUTHOR_SERIAL`.
+         - Conditions:
+           - The author must exist.
+           - `is_deleted` must be False.
+           - The associated user must not be null.
+       - PUT [local]: Updates the profile of the author identified by `AUTHOR_SERIAL`.
+
+    2. ://service/api/authors/{AUTHOR_FQID}/
+       Example: http://remote-service/api/authors/abc123/
+       - GET [local]: Retrieves the profile of the author identified by `AUTHOR_FQID`.
+       - GET [remote]: If the author does not exist locally, attempts to fetch it from a remote service.
+
+    Parameters:
+    - AUTHOR_SERIAL: (Optional) Numeric identifier for a local author.
+    - AUTHOR_FQID: (Optional) Fully qualified identifier (URL) for an author.
+
+    Returns:
+    - HTTP 200 with serialized author data if successful.
+    - HTTP 400/404 if an error occurs.
     """
     
     

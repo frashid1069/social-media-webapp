@@ -42,10 +42,6 @@ class PostPagination(PageNumberPagination):
 
 
 class PostView(ModelViewSet):
-    #authentication_classes = [authentication.JwtQueryParamsAuthentication]
-    #authentication_classes = []
-    # queryset = Post.objects
-    # queryset = Post.objects.all()
     queryset = Post.objects.select_related('author').all()
     serializer_class = PostSerializer
     permission_classes = [AllowAny]  # Allows public access for reading
@@ -100,9 +96,6 @@ class PostView(ModelViewSet):
             print(current_author)
             followed_by_user = Author.objects.filter(followers__follower=current_author)
             print(followed_by_user)
-            # followed_by_user is a list of author id who current user followed
-            # author__id__in filter the posts that belong to these author, same for visibility__in
-            #queryset = queryset.filter(author__id__in=followed_by_user,visibility__in=["unlisted", "friends", "public"] )
             queryset = queryset.filter(author__id__in=followed_by_user)
             
         return queryset.order_by("updated_at")
@@ -243,14 +236,51 @@ class PostView(ModelViewSet):
 @api_view(['GET', 'PUT', 'DELETE'])
 def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
     """
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}
-    eg. http://localhost:8000/api/authors/1/posts/1
-        GET [local, remote] get the public post whose serial is POST_SERIAL
-            friends posts: must be authenticated
-        DELETE [local] remove a
-            local posts: must be authenticated locally as the author
-        PUT [local] update a post
-            local posts: must be authenticated locally as the author
+    Handles detailed operations on a specific post.
+
+    URL Pattern:
+    - ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}
+    Example:
+    - http://localhost:8000/api/authors/1/posts/1
+
+    Behavior:
+    1. **GET** [local, remote]:
+    - Retrieves the details of the post identified by `POST_SERIAL` for the author identified by `AUTHOR_SERIAL`.
+    - If the post visibility is set to "friends," the user must either be a friend of the author or the author themselves.
+    - Returns the serialized post data.
+
+    2. **PUT** [local]:
+    - Updates a post identified by `POST_SERIAL` for the author identified by `AUTHOR_SERIAL`.
+    - Only the authenticated author of the post can update it.
+    - Handles updates, including handling image content by encoding it in base64.
+
+    3. **DELETE** [local]:
+    - Performs a soft delete on a post identified by `POST_SERIAL` for the author identified by `AUTHOR_SERIAL`.
+    - Only the authenticated author of the post can delete it.
+    - Sets the post visibility to "deleted" and marks it as deleted.
+
+    Parameters:
+    - AUTHOR_SERIAL: Numeric identifier for the author.
+    - POST_SERIAL: Numeric identifier for the post.
+
+    Returns:
+    - GET:
+    - HTTP 200 with serialized post data if successful.
+    - HTTP 403 if the user is unauthorized to access the post.
+    - HTTP 404 if the post is not found or already deleted.
+    - PUT:
+    - HTTP 200 with serialized updated post data if successful.
+    - HTTP 403 if the user is unauthorized to update the post.
+    - HTTP 400 for validation errors.
+    - HTTP 500 for unexpected errors during save.
+    - DELETE:
+    - HTTP 204 if the post is successfully deleted.
+    - HTTP 403 if the user is unauthorized to delete the post.
+    - HTTP 400 if the post deletion fails.
+
+    Special Cases:
+    - If the post visibility is "friends," the `check_friend` function verifies access rights for the requesting user.
+    - Handles image uploads by converting image content to base64 format for storage.
     """
     if POST_SERIAL is not None and AUTHOR_SERIAL is not None:
         author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
@@ -330,9 +360,30 @@ def post_detail(request, POST_SERIAL=None, AUTHOR_SERIAL=None):
 @api_view(['GET'])
 def fqid_post_detail(request, POST_FQID=None):
     """
-    URL: ://service/api/posts/{POST_FQID}
-        GET [local] get the public post whose URL is POST_FQID
-            friends posts: must be authenticated
+    Retrieves the details of a specific post using its fully qualified identifier (FQID).
+
+    URL Pattern:
+    - ://service/api/posts/{POST_FQID}
+    Example:
+    - GET [local]: Retrieves the public post identified by `POST_FQID`.
+
+    Behavior:
+    - Fetches the post identified by its FQID.
+    - If the post's visibility is set to "friends," access is restricted:
+    - The requesting user must be authenticated and either a friend of the author or the author themselves.
+    - Returns the serialized post data.
+
+    Parameters:
+    - POST_FQID: Fully qualified identifier for the post.
+
+    Returns:
+    - HTTP 200 with serialized post data if successful.
+    - HTTP 403 if the user is unauthorized to access the post.
+    - HTTP 404 if the post is not found or is already deleted.
+
+    Special Cases:
+    - Ensures that deleted posts (`is_deleted=True`) are not accessible.
+    - Visibility checks are performed using the `check_friend` function for posts restricted to "friends."
     """
     if POST_FQID is None:
         return Response({"detail": "Post not found with POST_FQID."}, status=status.HTTP_404_NOT_FOUND)
@@ -357,17 +408,49 @@ def fqid_post_detail(request, POST_FQID=None):
 @api_view(['POST', 'GET'])
 def post_list(request, AUTHOR_SERIAL):
     """
-    URL ://service/api/authors/{AUTHOR_SERIAL}/posts/
-    eg. http://localhost:8000/api/authors/1/posts/
-    eg. http://localhost:8000/api/authors/3/posts/?page=1&size=1
-        GET [local, remote] get the recent posts from author AUTHOR_SERIAL (paginated)
-            Not authenticated: only public posts.
-            Authenticated locally as author: all posts.
-            Authenticated locally as friend of author: public + friends posts.
-            Authenticated as remote node: This probably should not happen. Remember, the way remote node becomes aware of local posts is by local node pushing those posts to inbox, not by remote node pulling.
-        POST [local] create a new post but generate a new ID
-            Authenticated locally as author
+    Handles retrieval and creation of posts for a specific author.
+
+    URL Pattern:
+    - ://service/api/authors/{AUTHOR_SERIAL}/posts/
+    Example:
+    - GET [local, remote]: Retrieves recent posts from the author identified by `AUTHOR_SERIAL` (paginated).
+        - Not authenticated: Retrieves only public posts.
+        - Authenticated locally as the author: Retrieves all posts.
+        - Authenticated locally as a friend of the author: Retrieves public and "friends" posts.
+        - Authenticated as a remote node: This scenario should not occur, as remote nodes become aware of posts through inbox pushes, not pulls.
+    - POST [local]: Creates a new post for the author identified by `AUTHOR_SERIAL`.
+
+    Behavior:
+    1. **GET**:
+    - Retrieves a paginated list of posts based on the authentication and relationship of the requesting user with the author.
+    - Posts visibility rules:
+        - Public posts: Accessible to all users.
+        - "Friends" posts: Accessible to authenticated friends or the author themselves.
+        - Private posts: Accessible only to the author.
+
+    2. **POST**:
+    - Allows the authenticated author to create a new post.
+    - Supports handling of image content, which is base64 encoded before saving.
+    - The new post is pushed to the appropriate inbox.
+
+    Parameters:
+    - AUTHOR_SERIAL: Numeric identifier for the author.
+
+    Returns:
+    - GET:
+    - HTTP 200 with paginated serialized posts if successful.
+    - Pagination includes a count of the returned posts.
+    - POST:
+    - HTTP 201 with serialized post data if successful.
+    - HTTP 403 if the user is unauthorized to create a post for the author.
+    - HTTP 400 for validation errors.
+
+    Special Cases:
+    - Image posts: Image content is base64 encoded before saving.
+    - Friends-only posts: Access is determined using the `check_friend` function.
+    - Push notifications: Created posts are pushed to the author's inbox.
     """
+
     author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
     
     if request.method == 'GET':
@@ -378,9 +461,6 @@ def post_list(request, AUTHOR_SERIAL):
             posts = Post.objects.filter(author=author).filter(visibility__in=['public', 'friends'])
         else:
             posts = Post.objects.filter(author=author, visibility='public')
-
-             
-        # TODO: to_representation and to_internal_value
         
         paginator = PostPagination()
         paged_posts = paginator.paginate_queryset(posts, request)
@@ -426,15 +506,41 @@ def post_list(request, AUTHOR_SERIAL):
 @permission_classes([AllowAny])
 def post_image(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
     """
-    URL: ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/image
-    eg. http://127.0.0.1:8000/api/authors/3/posts/7/image
-        GET [local, remote] get the public post converted to binary as an image
-        return 404 if not an image
-    URL: ://service/api/posts/{POST_FQID}/image
-    eg. http://127.0.0.1:8000/api/posts/http://127.0.0.1:8000/api/authors/3/posts/7/image
-        GET [local, remote] get the public post converted to binary as an image
-        return 404 if not an image
+    Retrieves a post's content as an image in binary format.
+
+    URL Patterns:
+    1. ://service/api/authors/{AUTHOR_SERIAL}/posts/{POST_SERIAL}/image
+    Example:
+    - http://127.0.0.1:8000/api/authors/3/posts/7/image
+    - GET [local, remote]: Retrieves the image content of the post identified by `POST_SERIAL` for the author identified by `AUTHOR_SERIAL`.
+    - Returns HTTP 404 if the post's content is not an image.
+
+    2. ://service/api/posts/{POST_FQID}/image
+    Example:
+    - http://127.0.0.1:8000/api/posts/http://127.0.0.1:8000/api/authors/3/posts/7/image
+    - GET [local, remote]: Retrieves the image content of the post identified by `POST_FQID`.
+    - Returns HTTP 404 if the post's content is not an image.
+
+    Behavior:
+    - Converts the base64-encoded content of a post to binary and returns it as an image.
+    - Verifies that the post's content type is either `image/png` or `image/jpeg`.
+    - Handles retrieval for both `AUTHOR_SERIAL/POST_SERIAL` and `POST_FQID` formats.
+
+    Parameters:
+    - AUTHOR_SERIAL: Numeric identifier for the author.
+    - POST_SERIAL: Numeric identifier for the post.
+    - POST_FQID: Fully qualified identifier for the post.
+
+    Returns:
+    - HTTP 200 with the binary image data if successful.
+    - HTTP 404 if the post or its image content is not found.
+    - HTTP 404 if the post's content type is not an image (e.g., `image/png` or `image/jpeg`).
+
+    Special Cases:
+    - Base64-encoded content is decoded into binary format before returning.
+    - Content type is verified to ensure only image formats are supported.
     """
+
     if POST_SERIAL is not None and AUTHOR_SERIAL is not None:
         author = get_object_or_404(Author, serial=AUTHOR_SERIAL)
         image_post = get_object_or_404(Post, author=author.id, serial=POST_SERIAL)
@@ -462,8 +568,37 @@ def post_image(request, POST_SERIAL=None, AUTHOR_SERIAL=None, POST_FQID=None):
 @api_view(['GET'])        
 def get_all_visible_post(request):
     """
-    URL ://service/api/posts/
+    Retrieves all posts visible to the authenticated user.
+
+    URL Pattern:
+    - ://service/api/posts/
+    Example:
+    - GET: Retrieves all visible posts based on the user's authentication and relationships.
+
+    Behavior:
+    - Retrieves posts visible to the authenticated user, including:
+    - All public posts (`visibility='public'`).
+    - Posts authored by the authenticated user.
+    - Posts from followed authors:
+        - If the followed author is a friend, includes posts with visibility `unlisted` and `friends`.
+        - Otherwise, includes posts with visibility `unlisted`.
+
+    - Filters out deleted posts (`is_deleted=False`) and orders the posts by the latest updates.
+
+    Parameters:
+    - None (uses the authenticated user from the request).
+
+    Returns:
+    - HTTP 200 with a serialized list of visible posts:
+    - "type": Always set to "posts".
+    - "count": Total number of visible posts.
+    - "src": Serialized post data.
+
+    Special Cases:
+    - Handles posts with visibility settings (`public`, `friends`, `unlisted`) based on the user's relationships.
+    - Posts are ordered by the `updated_at` timestamp in descending order.
     """
+
     
     author = request.user.author
     follow_objects = author.following.filter(pending='no')

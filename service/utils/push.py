@@ -65,8 +65,7 @@ def push(author, request, data):
         elif author.host in post_fqid:
             print("send to local post owner")
             headers = {"Authorization": f"Bearer {request.auth}"}
-            response = requests.post(f"{url}/inbox", headers=headers, json=data)
-            response_data = f"Notify {url} in local with {response} Successfully"
+            response_data = f"Notify {author} in local Successfully"
         else:
             response_data = f"Error fetching from {url}"
         

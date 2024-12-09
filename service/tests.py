@@ -12,20 +12,20 @@ from author.models import Author
 class BaseAPITestCase(APITestCase):
     def setUp(self):
         super().setUp()
-        self.user1, self.author1 = self.create_test_user_and_author()
-        self.user2, self.author2 = self.create_test_user_and_author()
-        self.user3, self.author3 = self.create_test_user_and_author()
+        self.user1, self.author1 = self.create_test_user_and_author("http://127.0.0.1:8000/")
+        self.user2, self.author2 = self.create_test_user_and_author("http://127.0.0.1:8000/")
+        self.user3, self.author3 = self.create_test_user_and_author("http://127.0.0.1:8000/")
         # Login to obtain token and set credentials
         self.token = self.login_and_get_token()
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
-    def create_test_user_and_author(self):
+    def create_test_user_and_author(self, host):
         users = User.objects.all()
         user = User.objects.create_user(username=f"testuser{len(users)}", password="password")
         user.is_active = True
         user.save()
         validated_data = {"display_name":"test user", "bio":"bio", "github_url":"http://localhost:3000/home/signup"}
-        author = Author.objects.create(user=user, host="http://test/api/", fqid=f"http://test/api/authors/{user.id}", **validated_data)
+        author = Author.objects.create(user=user, host=f"{host}api", fqid=f"{host}api/authors/{user.id}", **validated_data)
         return user, author
 
     def login_and_get_token(self):

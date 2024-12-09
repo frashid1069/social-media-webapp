@@ -1,10 +1,10 @@
+# Backend set up
 ## Backend dependency install
 ```
 pip3 install -r requirements.txt
 python3 -m venv venv
 source venv/bin/activate
 ```
-
 
 ## Django:
 ### How to set up database
@@ -65,6 +65,19 @@ all has 1 public post
 
 ### citation
 https://chatgpt.com/
+
+# Frontend set up
+## Frontend dependency install
+```
+cd frontend
+npm install
+```
+
+## Run
+```
+npm start
+```
+
 
 
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/zUKWOP3z)

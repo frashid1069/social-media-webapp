@@ -38,7 +38,7 @@ class CommentViewTest(BaseAPITestCase):
         comment = Comment.objects.create(author=author1, content="new comment", post=post.fqid)
         response = self.client.get(reverse('comment-detail', args=[1, 1, comment.fqid]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["id"], "http://test/api/authors/1/commented/1")
+        self.assertEqual(response.data["id"], "http://127.0.0.1:8000/api/authors/1/commented/1")
     
     # ://service/api/authors/{AUTHOR_SERIAL}/commented Get 
     def test_get_commented(self):
@@ -57,12 +57,13 @@ class CommentViewTest(BaseAPITestCase):
         author1 = Author.objects.get(fqid=author1.data["id"])
         serializer = AuthorSerializer(author1)
         post1 = Post.objects.create(author=author1, title="Test Post 1", description = "This is a test post", content_type = "text/markdown", content = "Content of the post", visibility = "PUBLIC")
+        post1.save()
         data = {
             "type":"comment",
             "author":serializer.data,
             "comment":"Sick Olde English",
             "contentType":"text/markdown", 
-            "post":post1.fqid+"/"
+            "post":post1.fqid
         }
         response = self.client.post(reverse('author_comment_list', args=[1]), data, format="json")
         comments = Comment.objects.all()
@@ -87,7 +88,7 @@ class CommentViewTest(BaseAPITestCase):
         comment = Comment.objects.create(author=author1, content="new comment", post=post.fqid)
         response = self.client.get(reverse('comment_detail', args=[1, 1]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["id"], "http://test/api/authors/1/commented/1")
+        self.assertEqual(response.data["id"], "http://127.0.0.1:8000/api/authors/1/commented/1")
     
     # ://service/api/commented/{COMMENT_FQID} 
     def test_get_fqid_commented_comment(self):
@@ -97,4 +98,4 @@ class CommentViewTest(BaseAPITestCase):
         comment = Comment.objects.create(author=author1, content="new comment", post=post.fqid)
         response = self.client.get(reverse('fqid_comment_detail', args=[comment.fqid]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["id"], "http://test/api/authors/1/commented/1")
+        self.assertEqual(response.data["id"], "http://127.0.0.1:8000/api/authors/1/commented/1")
